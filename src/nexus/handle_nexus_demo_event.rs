@@ -15,6 +15,7 @@ use crate::session_row_for_click::session_row_for_click;
 use crate::show_failed_to_start_new_chat_toast::show_failed_to_start_new_chat_toast;
 use crate::start_new_nexus_chat::start_new_nexus_chat;
 use crate::toggle_left_pane_visibility::toggle_left_pane_visibility;
+use crate::toggle_session_folder::toggle_session_folder;
 use crate::visible_session_rows::visible_session_rows;
 
 const MOUSE_SCROLL_LINES_PER_TICK: usize = 3;
@@ -151,7 +152,7 @@ fn handle_left_click(app: &mut NexusDemo, mouse: ratkit::MouseEvent) {
         return;
     };
     match row {
-        SessionListRow::Folder { path, .. } => app.toggle_folder(path),
+        SessionListRow::Folder { path, .. } => toggle_session_folder(app, path),
         SessionListRow::Session { index } => {
             app.focused_index = index;
             app.activate_focused_session();

@@ -112,6 +112,8 @@ mod start_terminal_copy_selection;
 mod terminal_copy_selection;
 #[path = "nexus/toggle_left_pane_visibility.rs"]
 mod toggle_left_pane_visibility;
+#[path = "nexus/toggle_session_folder.rs"]
+mod toggle_session_folder;
 #[path = "nexus/update_terminal_copy_selection.rs"]
 mod update_terminal_copy_selection;
 #[path = "nexus/visible_session_rows.rs"]

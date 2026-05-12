@@ -1,10 +1,9 @@
-use std::collections::BTreeSet;
-use std::path::PathBuf;
-
 use anyhow::Result;
 use ratatui::layout::Rect;
 use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
+use std::collections::BTreeSet;
+use std::path::PathBuf;
 
 use crate::clamp_visible_offset::clamp_visible_offset;
 use crate::focused_pane::FocusedPane;
@@ -117,13 +116,6 @@ impl NexusDemo {
     pub fn select_relative_session(&mut self, direction: isize) {
         self.move_focused_session(direction);
         self.activate_focused_session();
-    }
-
-    /// Toggles whether sessions under a folder are visible.
-    pub fn toggle_folder(&mut self, folder: PathBuf) {
-        if !self.collapsed_folders.remove(&folder) {
-            self.collapsed_folders.insert(folder);
-        }
     }
 
     /// Activates the focused session and displays its terminal.
