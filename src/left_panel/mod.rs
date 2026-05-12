@@ -10,6 +10,8 @@ pub mod focus_left_panel_row;
 pub mod focus_left_panel_start;
 pub mod focused_left_row;
 pub mod folder_display_name;
+pub mod folder_has_running_session;
+pub mod folder_icon;
 pub mod format_session_age;
 pub mod handle_session_drag_mouse;
 pub mod left_panel_hotkey_footer;

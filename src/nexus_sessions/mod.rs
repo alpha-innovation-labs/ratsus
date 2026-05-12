@@ -14,6 +14,7 @@ pub mod parse_nexus_session_registry;
 pub mod parse_nexus_sessions;
 pub mod parse_nexus_sessions_json;
 pub mod process_is_alive;
+pub mod session_file_is_active;
 pub mod session_info;
 pub mod spawn_new_nexus_session_terminal;
 pub mod spawn_session_refresh_worker;

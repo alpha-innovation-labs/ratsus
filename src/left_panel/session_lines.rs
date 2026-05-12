@@ -5,6 +5,8 @@ use ratatui::text::{Line, Span};
 use crate::app::nexus_demo_state::NexusDemo;
 use crate::layout::focused_pane::FocusedPane;
 use crate::left_panel::folder_display_name::folder_display_name;
+use crate::left_panel::folder_has_running_session::folder_has_running_session;
+use crate::left_panel::folder_icon::folder_icon;
 use crate::left_panel::format_session_age::format_session_age;
 use crate::left_panel::running_session_indicator::running_session_indicator;
 use crate::left_panel::session_icon::session_icon;
@@ -59,10 +61,12 @@ fn folder_line(
     total_session_count: usize,
     row_index: usize,
 ) -> Line<'static> {
-    let marker = if app.collapsed_folders.contains(path) {
-        "▸"
+    let is_collapsed = app.collapsed_folders.contains(path);
+    let icon = folder_icon(is_collapsed);
+    let marker = if folder_has_running_session(path, &app.session_terminals) {
+        format!("{} {}", icon, running_session_indicator(app.loader_tick))
     } else {
-        "▾"
+        icon.to_string()
     };
     let text = format!(
         "{} {} ({}/{})",
