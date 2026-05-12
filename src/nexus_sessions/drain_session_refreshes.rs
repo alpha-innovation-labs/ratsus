@@ -9,6 +9,10 @@ pub fn drain_session_refreshes(app: &mut NexusDemo) -> bool {
     let Some(refreshed_sessions) = latest_successful_refresh(app) else {
         return false;
     };
+    let refreshed_sessions = refreshed_sessions
+        .into_iter()
+        .filter(|session| !app.closed_chat_session_ids.contains(&session.id))
+        .collect();
     let changed = apply_session_refresh(&mut app.session_terminals, refreshed_sessions);
     if changed {
         app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);

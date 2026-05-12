@@ -24,7 +24,7 @@ pub struct NexusTerminal {
     writer: Arc<Mutex<Box<dyn Write + Send>>>,
     master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     redraw_signal: RedrawSignal,
-    _child: Box<dyn Child + Send + Sync>,
+    child: Box<dyn Child + Send + Sync>,
 }
 
 impl NexusTerminal {
@@ -70,8 +70,13 @@ impl NexusTerminal {
             writer,
             master: Arc::new(Mutex::new(master)),
             redraw_signal,
-            _child: child,
+            child,
         })
+    }
+
+    /// Returns whether the backing child process has exited.
+    pub fn has_exited(&mut self) -> bool {
+        self.child.try_wait().ok().flatten().is_some()
     }
 
     /// Resizes both the parser and backing PTY.

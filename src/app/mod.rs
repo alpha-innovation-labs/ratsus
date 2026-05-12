@@ -3,15 +3,22 @@
 use ratatui::Frame;
 use ratkit::{CoordinatorAction, CoordinatorApp, CoordinatorEvent};
 
+pub mod adjust_index_after_removals;
+pub mod clamp_session_index;
+pub mod close_exited_sessions;
+pub mod exited_session_indices;
 pub mod handle_keyboard_event;
 pub mod handle_left_keyboard;
 pub mod handle_nexus_demo_event;
 pub mod handle_nexus_demo_mouse;
 pub mod handle_terminal_keyboard;
 pub mod handle_tick_event;
+pub mod next_chat_index;
 pub mod nexus_demo_methods;
 pub mod nexus_demo_state;
 pub mod redraw_action;
+pub mod remove_exited_sessions;
+pub mod restore_focus_after_removals;
 pub mod run_nexus_app;
 pub mod start_new_normal_terminal;
 pub mod toggle_focused_pane;
