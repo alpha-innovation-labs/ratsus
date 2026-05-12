@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, CoordinatorEvent, KeyboardEvent, ResizeEvent};
 
+use crate::drain_session_refreshes::drain_session_refreshes;
 use crate::encode_key_event::encode_key_event;
 use crate::focused_pane::FocusedPane;
 use crate::handle_resizable_grid_mouse::handle_resizable_grid_mouse;
@@ -9,6 +10,7 @@ use crate::handle_terminal_copy_keyboard::handle_terminal_copy_keyboard;
 use crate::handle_terminal_copy_mouse::handle_terminal_copy_mouse;
 use crate::is_resizing_layout::is_resizing_layout;
 use crate::nexus_demo_state::NexusDemo;
+use crate::redraw_action::redraw_action;
 use crate::scroll_delta_for_mouse_kind::{scroll_delta_for_mouse_kind, TerminalScrollAction};
 use crate::session_list_row::SessionListRow;
 use crate::session_row_for_click::session_row_for_click;
@@ -176,19 +178,17 @@ fn handle_terminal_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> Coor
     CoordinatorAction::Redraw
 }
 
-/// Converts pending terminal redraw flags into a coordinator action.
-fn handle_tick_event(app: &NexusDemo) -> CoordinatorAction {
+/// Converts completed background refreshes and terminal redraw flags into a coordinator action.
+fn handle_tick_event(app: &mut NexusDemo) -> CoordinatorAction {
+    let sessions_changed = drain_session_refreshes(app);
     if is_resizing_layout(&app.layout_widget_state) {
-        return CoordinatorAction::Continue;
+        return redraw_action(sessions_changed);
     }
 
-    let needs_redraw = app
+    let terminal_changed = app
         .session_terminals
         .iter()
-        .any(|entry| entry.terminal.take_needs_redraw());
-    if needs_redraw {
-        CoordinatorAction::Redraw
-    } else {
-        CoordinatorAction::Continue
-    }
+        .filter_map(|entry| entry.terminal.as_ref())
+        .any(|terminal| terminal.take_needs_redraw());
+    redraw_action(sessions_changed || terminal_changed)
 }

@@ -4,6 +4,8 @@ use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState
 use ratkit::primitives::toast::ToastManager;
 use std::collections::BTreeSet;
 use std::path::PathBuf;
+use std::sync::mpsc::Receiver;
+use std::time::Duration;
 
 use crate::clamp_visible_offset::clamp_visible_offset;
 use crate::focused_pane::FocusedPane;
@@ -14,6 +16,7 @@ use crate::session_drag_state::SessionDragState;
 use crate::session_terminal::SessionTerminal;
 use crate::session_visible_row_index::session_visible_row_index;
 use crate::should_resize_active_terminal::should_resize_active_terminal;
+use crate::spawn_session_refresh_worker::{spawn_session_refresh_worker, SessionRefreshResult};
 use crate::visible_session_rows::visible_session_rows;
 
 /// Pane id for the left session list pane.
@@ -21,6 +24,9 @@ pub const LEFT_PANE_ID: u32 = 0;
 
 /// Pane id for the active terminal pane.
 pub const TERMINAL_PANE_ID: u32 = 1;
+
+/// How long the background worker waits after a completed session refresh.
+const SESSION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 /// Demo app state for Nexus session terminals.
 pub struct NexusDemo {
@@ -40,6 +46,7 @@ pub struct NexusDemo {
     pub last_session_list_area: Rect,
     pub left_pane_visible: bool,
     pub focused_pane: FocusedPane,
+    pub session_refresh_receiver: Receiver<SessionRefreshResult>,
 }
 
 impl NexusDemo {
@@ -49,11 +56,10 @@ impl NexusDemo {
         let _ = layout.split_pane_vertically(LEFT_PANE_ID);
         layout.set_split_percent(20);
 
-        let sessions = load_nexus_sessions()?;
-        let mut session_terminals = Vec::new();
-        for session in sessions {
-            session_terminals.push(SessionTerminal::spawn(session, 24, 80)?);
-        }
+        let session_terminals = load_nexus_sessions()?
+            .into_iter()
+            .map(SessionTerminal::dormant)
+            .collect();
 
         Ok(Self {
             layout,
@@ -72,6 +78,7 @@ impl NexusDemo {
             last_session_list_area: Rect::default(),
             left_pane_visible: true,
             focused_pane: FocusedPane::Terminal,
+            session_refresh_receiver: spawn_session_refresh_worker(SESSION_REFRESH_INTERVAL),
         })
     }
 
@@ -79,14 +86,7 @@ impl NexusDemo {
     pub fn active_terminal(&self) -> Option<&NexusTerminal> {
         self.session_terminals
             .get(self.active_index)
-            .map(|entry| &entry.terminal)
-    }
-
-    /// Returns the active terminal for mutable operations.
-    pub fn active_terminal_mut(&mut self) -> Option<&mut NexusTerminal> {
-        self.session_terminals
-            .get_mut(self.active_index)
-            .map(|entry| &mut entry.terminal)
+            .and_then(|entry| entry.terminal.as_ref())
     }
 
     /// Returns the active session terminal entry for mutable operations.
@@ -125,8 +125,8 @@ impl NexusDemo {
         }
         self.active_index = self.focused_index;
         let area = self.last_terminal_area;
-        if let Some(terminal) = self.active_terminal_mut() {
-            terminal.resize(area.height, area.width);
+        if let Some(entry) = self.session_terminals.get_mut(self.active_index) {
+            let _ = entry.ensure_terminal(area.height, area.width);
         }
         self.active_terminal_area = area;
     }
@@ -189,8 +189,10 @@ impl NexusDemo {
         if !should_resize_active_terminal(is_dragging) {
             return;
         }
-        if let Some(terminal) = self.active_terminal_mut() {
-            terminal.resize(area.height, area.width);
+        if let Some(entry) = self.session_terminals.get_mut(self.active_index) {
+            if let Ok(terminal) = entry.ensure_terminal(area.height, area.width) {
+                terminal.resize(area.height, area.width);
+            }
         }
         self.active_terminal_area = area;
     }

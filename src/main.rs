@@ -6,12 +6,16 @@ use ratkit::{
 
 #[path = "nexus/apply_cursor_style.rs"]
 mod apply_cursor_style;
+#[path = "nexus/apply_session_refresh.rs"]
+mod apply_session_refresh;
 #[path = "nexus/clamp_visible_offset.rs"]
 mod clamp_visible_offset;
 #[path = "nexus/clear_terminal_copy_selection.rs"]
 mod clear_terminal_copy_selection;
 #[path = "nexus/copy_text_to_clipboard.rs"]
 mod copy_text_to_clipboard;
+#[path = "nexus/drain_session_refreshes.rs"]
+mod drain_session_refreshes;
 #[path = "nexus/encode_key_event.rs"]
 mod encode_key_event;
 #[path = "nexus/finish_terminal_copy_selection.rs"]
@@ -34,6 +38,8 @@ mod handle_session_drag_mouse;
 mod handle_terminal_copy_keyboard;
 #[path = "nexus/handle_terminal_copy_mouse.rs"]
 mod handle_terminal_copy_mouse;
+#[path = "nexus/is_new_nexus_chat_session.rs"]
+mod is_new_nexus_chat_session;
 #[path = "nexus/is_resizing_layout.rs"]
 mod is_resizing_layout;
 #[path = "nexus/is_terminal_copy_selection_active.rs"]
@@ -54,6 +60,8 @@ mod parse_nexus_sessions;
 mod parse_nexus_sessions_json;
 #[path = "nexus/process_terminal_output.rs"]
 mod process_terminal_output;
+#[path = "nexus/redraw_action.rs"]
+mod redraw_action;
 #[path = "nexus/render_nexus_demo.rs"]
 mod render_nexus_demo;
 #[path = "nexus/render_resize_placeholder.rs"]
@@ -100,6 +108,8 @@ mod show_copied_to_clipboard_toast;
 mod show_failed_to_start_new_chat_toast;
 #[path = "nexus/spawn_new_nexus_session_terminal.rs"]
 mod spawn_new_nexus_session_terminal;
+#[path = "nexus/spawn_session_refresh_worker.rs"]
+mod spawn_session_refresh_worker;
 #[path = "nexus/spawn_terminal_reader.rs"]
 mod spawn_terminal_reader;
 #[path = "nexus/split_terminal_demo_layout.rs"]

@@ -37,7 +37,10 @@ pub fn handle_terminal_copy_mouse(
 
     match mouse.kind {
         MouseEventKind::Down(MouseButton::Left) => {
-            let Some(screen) = entry.terminal.screen_snapshot() else {
+            let Some(terminal) = entry.terminal.as_ref() else {
+                return false;
+            };
+            let Some(screen) = terminal.screen_snapshot() else {
                 return false;
             };
             let Some(position) = selection_position_for_mouse(mouse, area, screen.scrollback())

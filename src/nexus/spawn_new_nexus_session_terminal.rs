@@ -17,7 +17,7 @@ pub fn spawn_new_nexus_session_terminal(
     let terminal = NexusTerminal::spawn_with_command_in_dir("nexus", &[], working_dir, rows, cols)?;
     Ok(SessionTerminal {
         session,
-        terminal,
+        terminal: Some(terminal),
         copy_selection: TerminalCopySelection::default(),
     })
 }

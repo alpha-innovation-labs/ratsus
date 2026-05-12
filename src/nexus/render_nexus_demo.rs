@@ -140,9 +140,11 @@ fn render_active_terminal(app: &NexusDemo, frame: &mut Frame, area: ratatui::lay
                     frame.buffer_mut(),
                 );
             }
+        } else if let Some(terminal) = entry.terminal.as_ref() {
+            terminal.render(frame, area);
+            render_terminal_cursor(app, terminal, frame, area);
         } else {
-            entry.terminal.render(frame, area);
-            render_terminal_cursor(app, &entry.terminal, frame, area);
+            frame.render_widget(Paragraph::new("Starting Nexus session…"), area);
         }
     } else {
         frame.render_widget(Paragraph::new("No Nexus sessions found"), area);
