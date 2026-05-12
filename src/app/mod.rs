@@ -16,6 +16,7 @@ pub mod handle_tick_event;
 pub mod next_chat_index;
 pub mod nexus_demo_methods;
 pub mod nexus_demo_state;
+pub mod normal_terminal_working_dir;
 pub mod redraw_action;
 pub mod remove_exited_sessions;
 pub mod restore_focus_after_removals;
