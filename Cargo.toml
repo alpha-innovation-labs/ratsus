@@ -1,0 +1,18 @@
+[package]
+name = "ratsus"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Nexus session TUI wrapper built with Ratkit"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+arboard = "3"
+crossterm = "0.28"
+portable-pty = "0.8"
+ratatui = "0.29"
+ratkit = { version = "0.2.14", features = ["termtui", "resizable-grid", "toast"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }

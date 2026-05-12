@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "ratkit": {
+      "source": "alpha-innovation-labs/ratkit",
+      "sourceType": "github",
+      "computedHash": "4d5ad2220e5efa4befa2367c03b118be59334ba24857df986335dc12bbecd2e0"
+    }
+  }
+}
