@@ -66,8 +66,9 @@ fn updates_running_status_by_id() {
 
     let changed = apply_session_refresh(
         &mut entries,
-        vec![NexusSession::new("date-2", "Existing", "session-1", "/tmp/project")
-            .with_running(true)],
+        vec![
+            NexusSession::new("date-2", "Existing", "session-1", "/tmp/project").with_running(true),
+        ],
     );
 
     assert!(changed);
