@@ -9,10 +9,11 @@ license = "MIT"
 [dependencies]
 anyhow = "1"
 arboard = "3"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 crossterm = "0.28"
 portable-pty = "0.8"
 ratatui = "0.29"
-ratkit = { version = "0.2.14", features = ["termtui", "resizable-grid", "toast"] }
+ratkit = { version = "0.2.14", features = ["termtui", "resizable-grid", "toast", "dialog", "file-system-tree", "hotkey-footer"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "1", features = ["v4"] }

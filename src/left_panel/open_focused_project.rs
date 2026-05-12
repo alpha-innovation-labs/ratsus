@@ -1,0 +1,25 @@
+use crate::app::nexus_demo_state::NexusDemo;
+use crate::left_panel::focused_left_row::focused_left_row;
+use crate::left_panel::persist_session_order_preferences::persist_session_order_preferences;
+use crate::left_panel::session_list_row::SessionListRow;
+
+/// Expands the project folder associated with the focused left-panel row.
+pub fn open_focused_project(app: &mut NexusDemo) {
+    let Some(path) = focused_project_path(app) else {
+        return;
+    };
+    app.collapsed_folders.remove(&path);
+    app.keep_focused_row_visible();
+    persist_session_order_preferences(app);
+}
+
+/// Returns the project path associated with the focused left-panel row.
+fn focused_project_path(app: &NexusDemo) -> Option<std::path::PathBuf> {
+    match focused_left_row(app)? {
+        SessionListRow::Folder { path, .. } | SessionListRow::FolderMore { path } => Some(path),
+        SessionListRow::Session { index } => app
+            .session_terminals
+            .get(index)
+            .map(|entry| entry.session.working_dir.clone()),
+    }
+}
