@@ -14,6 +14,7 @@ use crate::left_panel::apply_session_id_order::apply_session_id_order;
 use crate::left_panel::load_session_order_preferences::load_session_order_preferences;
 use crate::left_panel::session_drag_state::SessionDragState;
 use crate::left_panel::session_visible_row_index::session_visible_row_index;
+use crate::left_panel::sort_sessions_by_recent_activity::sort_sessions_by_recent_activity;
 use crate::left_panel::sync_folder_order::sync_folder_order;
 use crate::left_panel::visible_session_rows::visible_session_rows;
 use crate::main_pane::file_system_tree_view::FileSystemTreeView;
@@ -71,6 +72,7 @@ impl NexusDemo {
             .into_iter()
             .map(SessionTerminal::dormant)
             .collect::<Vec<_>>();
+        sort_sessions_by_recent_activity(&mut session_terminals);
         apply_session_id_order(&mut session_terminals, &preferences.session_ids);
         let folder_order = sync_folder_order(&preferences.folder_paths, &session_terminals);
         let active_index = preferences

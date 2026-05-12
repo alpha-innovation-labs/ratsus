@@ -1,9 +1,8 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
-use chrono::Utc;
+use std::cmp::Reverse;
 
-use crate::left_panel::session_is_recent::session_is_recent;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::session_modified_timestamp::session_modified_timestamp;
 use crate::terminal::session_terminal::SessionTerminal;
@@ -17,10 +16,9 @@ pub fn visible_session_rows(
     folder_order: &[PathBuf],
 ) -> Vec<SessionListRow> {
     let mut rows = Vec::new();
-    let now = Utc::now();
     for folder in folder_order {
-        let recent_indexes = recent_session_indexes_for_folder(session_terminals, folder, now);
-        let indexes = limited_session_indexes(recent_indexes);
+        let indexes =
+            limited_session_indexes(session_indexes_for_folder(session_terminals, folder));
         let total_session_count = total_session_count_for_folder(session_terminals, folder);
         if indexes.is_empty() {
             continue;
@@ -64,22 +62,18 @@ fn total_session_count_for_folder(
         .count()
 }
 
-/// Returns recent flat session indexes that belong to a folder.
-fn recent_session_indexes_for_folder(
+/// Returns folder session indexes sorted from newest to oldest activity.
+fn session_indexes_for_folder(
     session_terminals: &[SessionTerminal],
     folder: &PathBuf,
-    now: chrono::DateTime<Utc>,
 ) -> Vec<usize> {
     let mut indexes = session_terminals
         .iter()
         .enumerate()
-        .filter_map(|(index, entry)| {
-            (entry.session.working_dir == *folder && session_is_recent(&entry.session, now))
-                .then_some(index)
-        })
+        .filter_map(|(index, entry)| (entry.session.working_dir == *folder).then_some(index))
         .collect::<Vec<_>>();
     indexes.sort_by_key(|index| {
-        std::cmp::Reverse(session_modified_timestamp(
+        Reverse(session_modified_timestamp(
             &session_terminals[*index].session,
         ))
     });

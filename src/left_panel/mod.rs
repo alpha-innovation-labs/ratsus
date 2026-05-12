@@ -15,6 +15,7 @@ pub mod folder_icon;
 pub mod format_session_age;
 pub mod handle_session_drag_mouse;
 pub mod left_panel_hotkey_footer;
+#[cfg(test)]
 pub mod left_panel_scroll_regression_tests;
 pub mod load_session_order_preferences;
 pub mod move_folder_order;
@@ -37,7 +38,10 @@ pub mod session_order_preferences_path;
 pub mod session_row_for_click;
 pub mod session_visible_row_index;
 pub mod should_toggle_folder_on_drop;
+pub mod sort_sessions_by_recent_activity;
 pub mod sync_folder_order;
 pub mod toggle_session_folder;
 pub mod truncate_text_to_width;
 pub mod visible_session_rows;
+#[cfg(test)]
+mod visible_session_rows_tests;
