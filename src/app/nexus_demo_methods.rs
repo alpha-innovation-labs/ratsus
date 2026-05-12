@@ -106,6 +106,14 @@ impl NexusDemo {
     /// Starts dragging a folder row.
     pub fn start_folder_drag(&mut self, path: PathBuf) {
         self.folder_drag = Some(path);
+        self.folder_drag_moved = false;
+    }
+
+    /// Marks the active folder drag as having moved beyond the initial click.
+    pub fn mark_folder_drag_moved(&mut self) {
+        if self.folder_drag.is_some() {
+            self.folder_drag_moved = true;
+        }
     }
 
     /// Moves the active dragged folder before the target folder row.
@@ -122,6 +130,7 @@ impl NexusDemo {
     pub fn finish_left_panel_drag(&mut self) {
         self.session_drag = None;
         self.folder_drag = None;
+        self.folder_drag_moved = false;
     }
 
     /// Keeps the focused session visible in the left pane viewport.
