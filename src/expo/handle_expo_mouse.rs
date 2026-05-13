@@ -1,6 +1,6 @@
 use ratkit::CoordinatorAction;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::expo_card_session_index_at_position::expo_card_session_index_at_position;
 use crate::expo::scroll_expo_view::scroll_expo_view;
 use crate::terminal::scroll_delta_for_mouse_kind::{
@@ -8,7 +8,7 @@ use crate::terminal::scroll_delta_for_mouse_kind::{
 };
 
 /// Activates the conversation represented by a clicked Expo card.
-pub fn handle_expo_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> CoordinatorAction {
+pub fn handle_expo_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> CoordinatorAction {
     match scroll_delta_for_mouse_kind(mouse.kind, 1) {
         TerminalScrollAction::Up(rows) => {
             if scroll_expo_view(app, -(rows as isize)) {

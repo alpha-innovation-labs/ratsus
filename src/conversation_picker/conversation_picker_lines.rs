@@ -7,7 +7,7 @@ use crate::conversation_picker::conversation_picker_item::{
 use crate::conversation_picker::conversation_picker_start_index::conversation_picker_start_index;
 use crate::left_panel::running_session_indicator::running_session_indicator;
 use crate::left_panel::session_row_line::{
-    folder_row_line, nexus_session_row_line, FolderRowLineConfig, NexusSessionRowLineConfig,
+    folder_row_line, session_row_line, ChatSessionRowLineConfig, FolderRowLineConfig,
 };
 
 /// Values needed to build conversation picker body lines.
@@ -151,7 +151,7 @@ fn conversation_picker_line(
             } else {
                 icon.as_str()
             };
-            nexus_session_row_line(NexusSessionRowLineConfig {
+            session_row_line(ChatSessionRowLineConfig {
                 title: &item.title,
                 age,
                 icon: visible_icon,

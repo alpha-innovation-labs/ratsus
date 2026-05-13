@@ -1,17 +1,26 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::keyboard::list_key_behavior::ListKeyBehavior;
 use crate::keyboard::list_key_outcome::ListKeyOutcome;
 use crate::left_panel::focus_adjacent_folder::focus_adjacent_folder;
 use crate::left_panel::left_panel_key_behavior::LeftPanelKeyBehavior;
+use crate::main_pane::handle_file_system_tree_key::handle_file_system_tree_key;
+use crate::main_pane::main_pane_tab::MainPaneTab;
 
 /// Handles keyboard input while the left session pane is focused.
 pub fn handle_left_keyboard(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> ratkit::LayoutResult<CoordinatorAction> {
+    if app.active_main_pane_tab == MainPaneTab::Files {
+        return Ok(handle_file_system_tree_key(
+            &mut app.file_system_tree_view,
+            &keyboard,
+        ));
+    }
+
     if let Some(direction) = folder_jump_direction(&keyboard) {
         focus_adjacent_folder(app, direction);
         return Ok(CoordinatorAction::Redraw);

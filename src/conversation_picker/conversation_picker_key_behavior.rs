@@ -1,4 +1,4 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::activate_selected_conversation::activate_selected_conversation;
 use crate::conversation_picker::apply_conversation_picker_query_change::apply_conversation_picker_query_change;
 use crate::conversation_picker::collapse_selected_conversation_project::collapse_selected_conversation_project;
@@ -15,12 +15,12 @@ use crate::keyboard::list_key_behavior::ListKeyBehavior;
 
 /// Adapts the conversation picker modal to the shared list keyboard contract.
 pub struct ConversationPickerKeyBehavior<'a> {
-    app: &'a mut NexusDemo,
+    app: &'a mut AppState,
 }
 
 impl<'a> ConversationPickerKeyBehavior<'a> {
     /// Creates a shared-key adapter for the conversation picker.
-    pub fn new(app: &'a mut NexusDemo) -> Self {
+    pub fn new(app: &'a mut AppState) -> Self {
         Self { app }
     }
 }

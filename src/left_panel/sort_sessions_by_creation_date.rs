@@ -10,13 +10,13 @@ pub fn sort_sessions_by_creation_date(entries: &mut [SessionTerminal]) {
 
 #[cfg(test)]
 mod tests {
+    use crate::harness::chat_session::ChatSession;
     use crate::left_panel::sort_sessions_by_creation_date::sort_sessions_by_creation_date;
-    use crate::nexus_sessions::session_info::NexusSession;
     use crate::terminal::session_terminal::SessionTerminal;
 
     /// Builds a dormant session entry with separate created and modified dates.
     fn session_entry(created_at: &str, modified_at: &str, id: &str) -> SessionTerminal {
-        SessionTerminal::dormant(NexusSession::new_with_created(
+        SessionTerminal::dormant(ChatSession::new_with_created(
             modified_at,
             created_at,
             id,

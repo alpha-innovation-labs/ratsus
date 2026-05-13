@@ -27,14 +27,14 @@ pub fn adjacent_chat_index_in_left_pane_order(
 #[cfg(test)]
 mod tests {
     use super::adjacent_chat_index_in_left_pane_order;
+    use crate::harness::chat_session::ChatSession;
     use crate::left_panel::session_list_row::SessionListRow;
-    use crate::nexus_sessions::session_info::NexusSession;
     use crate::terminal::normal_terminal_session_info::normal_terminal_session_info;
     use crate::terminal::session_terminal::SessionTerminal;
 
     /// Builds a dormant chat fixture for adjacent chat tests.
     fn chat(id: &str) -> SessionTerminal {
-        SessionTerminal::dormant(NexusSession::new("now", id, id, "/tmp/project"))
+        SessionTerminal::dormant(ChatSession::new("now", id, id, "/tmp/project"))
     }
 
     /// Builds a dormant terminal fixture for adjacent chat tests.

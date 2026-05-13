@@ -1,10 +1,10 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Returns the split pane close button hit by a screen position.
 pub fn terminal_pane_close_button_at_position(
-    app: &NexusDemo,
+    app: &AppState,
     column: u16,
     row: u16,
 ) -> Option<PaneId> {

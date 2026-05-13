@@ -1,15 +1,15 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
+use crate::harness::chat_session::ChatSession;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::visible_session_rows::visible_session_rows;
-use crate::nexus_sessions::session_info::NexusSession;
 use crate::terminal::normal_terminal_session_info::normal_terminal_session_info;
 use crate::terminal::session_terminal::SessionTerminal;
 
 /// Builds a dormant session entry for left-pane ordering tests.
 fn session_entry(date: &str, title: &str, id: &str, working_dir: &str) -> SessionTerminal {
-    SessionTerminal::dormant(NexusSession::new(date, title, id, working_dir))
+    SessionTerminal::dormant(ChatSession::new(date, title, id, working_dir))
 }
 
 /// Verifies visible rows preserve the manual/vector session order within a folder.

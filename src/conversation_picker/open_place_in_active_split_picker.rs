@@ -1,10 +1,10 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItemKind;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
 
 /// Opens the conversation picker in placement mode for adding an existing chat to the active split.
-pub fn open_place_in_active_split_picker(app: &mut NexusDemo) {
+pub fn open_place_in_active_split_picker(app: &mut AppState) {
     app.conversation_picker.is_open = true;
     app.conversation_picker.query.clear();
     app.conversation_picker.is_filtering = false;
@@ -31,13 +31,13 @@ pub fn open_place_in_active_split_picker(app: &mut NexusDemo) {
 mod tests {
     use super::open_place_in_active_split_picker;
     use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
+    use crate::test_support::app_fixture::app_fixture;
     use crate::test_support::dormant_session::dormant_session;
-    use crate::test_support::nexus_demo_fixture::nexus_demo_fixture;
 
     /// Ctrl+Shift placement mode should open the picker without creating sessions.
     #[test]
     fn opens_picker_in_place_mode_without_creating_session() -> anyhow::Result<()> {
-        let mut app = nexus_demo_fixture(vec![
+        let mut app = app_fixture(vec![
             dormant_session("Alpha", "a", "/tmp/project"),
             dormant_session("Beta", "b", "/tmp/project"),
         ])?;

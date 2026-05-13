@@ -1,7 +1,7 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Scrolls the left-panel viewport without changing the focused or active session.
-pub fn scroll_left_panel_view(app: &mut NexusDemo, delta: isize) -> bool {
+pub fn scroll_left_panel_view(app: &mut AppState, delta: isize) -> bool {
     let before = app.session_scroll;
     let row_count = app.visible_row_count();
     let visible_height = usize::from(app.last_session_list_area.height).max(1);

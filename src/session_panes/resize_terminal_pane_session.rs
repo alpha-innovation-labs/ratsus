@@ -1,11 +1,11 @@
 use ratatui::layout::Rect;
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::session_panes::session_index_for_pane::session_index_for_pane;
 
 /// Resizes the terminal assigned to one split pane when its visible area changes.
-pub fn resize_terminal_pane_session(app: &mut NexusDemo, pane_id: PaneId, area: Rect) {
+pub fn resize_terminal_pane_session(app: &mut AppState, pane_id: PaneId, area: Rect) {
     if app
         .terminal_pane_areas
         .get(&pane_id)

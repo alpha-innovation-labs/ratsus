@@ -1,9 +1,9 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::filtered_expo_session_indices::filtered_expo_session_indices;
 use crate::expo::keep_focused_expo_card_visible::keep_focused_expo_card_visible;
 
 /// Moves Expo focus through filtered conversation cards.
-pub fn move_focused_expo_conversation(app: &mut NexusDemo, delta: isize) {
+pub fn move_focused_expo_conversation(app: &mut AppState, delta: isize) {
     let indices = filtered_expo_session_indices(app);
     if indices.is_empty() {
         return;

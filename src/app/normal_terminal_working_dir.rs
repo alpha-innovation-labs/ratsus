@@ -21,12 +21,12 @@ pub fn normal_terminal_working_dir(
 #[cfg(test)]
 mod tests {
     use super::normal_terminal_working_dir;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
     use crate::terminal::session_terminal::SessionTerminal;
 
     /// Builds a dormant session fixture with a specific working directory.
     fn session(path: &str) -> SessionTerminal {
-        SessionTerminal::dormant(NexusSession::new("now", path, path, path))
+        SessionTerminal::dormant(ChatSession::new("now", path, path, path))
     }
 
     /// New terminals should open in the active selected session folder before focused row fallback.

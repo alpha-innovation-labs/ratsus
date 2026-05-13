@@ -1,10 +1,10 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::session_visible_row_index::session_visible_row_index;
 
 /// Returns active folder/session rows that should be pinned above the scroll viewport.
 pub fn pinned_left_panel_rows(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     visible_end: usize,
 ) -> Vec<(usize, SessionListRow)> {
@@ -36,7 +36,7 @@ fn push_if_hidden(
 }
 
 /// Finds the folder row for the active session.
-fn active_folder_row(app: &NexusDemo, rows: &[SessionListRow]) -> Option<(usize, SessionListRow)> {
+fn active_folder_row(app: &AppState, rows: &[SessionListRow]) -> Option<(usize, SessionListRow)> {
     let active_folder = &app
         .session_terminals
         .get(app.active_index)?

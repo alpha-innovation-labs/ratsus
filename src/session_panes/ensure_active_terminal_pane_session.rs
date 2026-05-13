@@ -1,8 +1,8 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::session_panes::session_index_for_pane::session_index_for_pane;
 
 /// Ensures the active terminal pane has a valid session assignment.
-pub fn ensure_active_terminal_pane_session(app: &mut NexusDemo) {
+pub fn ensure_active_terminal_pane_session(app: &mut AppState) {
     if session_index_for_pane(app, app.active_terminal_pane_id).is_some() {
         return;
     }

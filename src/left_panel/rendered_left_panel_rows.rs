@@ -1,11 +1,11 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::pinned_left_panel_rows::pinned_left_panel_rows;
 use crate::left_panel::pinned_running_left_panel_rows::pinned_running_left_panel_rows;
 use crate::left_panel::rendered_left_panel_row::RenderedLeftPanelRow;
 use crate::left_panel::session_list_row::SessionListRow;
 
 /// Builds the rendered left-panel rows, including pinned sections and separators.
-pub fn rendered_left_panel_rows(app: &NexusDemo) -> Vec<RenderedLeftPanelRow> {
+pub fn rendered_left_panel_rows(app: &AppState) -> Vec<RenderedLeftPanelRow> {
     let rows = app.visible_rows();
     let visible_height = usize::from(app.last_session_list_area.height);
     rendered_left_panel_rows_from_rows(app, &rows, visible_height)
@@ -13,7 +13,7 @@ pub fn rendered_left_panel_rows(app: &NexusDemo) -> Vec<RenderedLeftPanelRow> {
 
 /// Builds rendered rows from a precomputed visible row list.
 pub fn rendered_left_panel_rows_from_rows(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     visible_height: usize,
 ) -> Vec<RenderedLeftPanelRow> {
@@ -47,7 +47,7 @@ pub fn rendered_left_panel_rows_from_rows(
 
 /// Returns the viewport end after reserving pinned row sections.
 fn visible_end_after_pins(
-    app: &NexusDemo,
+    app: &AppState,
     row_count: usize,
     visible_height: usize,
     running_pinned: &[(usize, SessionListRow)],

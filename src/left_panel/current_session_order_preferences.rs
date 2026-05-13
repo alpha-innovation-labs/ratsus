@@ -1,8 +1,8 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::session_order_preferences::SessionOrderPreferences;
 
 /// Builds persisted ordering preferences from current app state.
-pub fn current_session_order_preferences(app: &NexusDemo) -> SessionOrderPreferences {
+pub fn current_session_order_preferences(app: &AppState) -> SessionOrderPreferences {
     SessionOrderPreferences {
         active_session_id: app
             .session_terminals

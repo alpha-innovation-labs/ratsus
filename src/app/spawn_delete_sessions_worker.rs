@@ -1,39 +1,49 @@
 use std::sync::mpsc::{self, Receiver};
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 
 use crate::app::delete_sessions_result::DeleteSessionsResult;
-use crate::nexus_sessions::delete_nexus_session::delete_nexus_session;
+use crate::harness::chat_harness::ChatHarness;
 
-/// Spawns parallel deletion of Nexus chat sessions on a background thread.
+/// Spawns parallel deletion of chat sessions on a background thread.
 pub fn spawn_delete_sessions_worker(
+    chat_harness: Arc<dyn ChatHarness>,
     chat_session_ids: Vec<String>,
 ) -> Receiver<DeleteSessionsResult> {
     let (sender, receiver) = mpsc::channel();
     thread::spawn(move || {
-        let result = delete_chat_sessions_in_parallel(chat_session_ids);
+        let result = delete_chat_sessions_in_parallel(chat_harness, chat_session_ids);
         let _ = sender.send(result);
     });
     receiver
 }
 
-/// Deletes Nexus chat sessions concurrently and returns all outcomes.
-fn delete_chat_sessions_in_parallel(chat_session_ids: Vec<String>) -> DeleteSessionsResult {
+/// Deletes chat sessions concurrently and returns all outcomes.
+fn delete_chat_sessions_in_parallel(
+    chat_harness: Arc<dyn ChatHarness>,
+    chat_session_ids: Vec<String>,
+) -> DeleteSessionsResult {
     let handles = chat_session_ids
         .into_iter()
-        .map(spawn_one_delete)
+        .map(|session_id| spawn_one_delete(chat_harness.clone(), session_id))
         .collect::<Vec<_>>();
     collect_delete_results(handles)
 }
 
-/// Spawns one Nexus CLI delete command for one chat session.
-fn spawn_one_delete(session_id: String) -> JoinHandle<Result<String, (String, String)>> {
-    thread::spawn(move || match delete_nexus_session(&session_id) {
-        Ok(()) => Ok(session_id),
-        Err(error) => {
-            let message = format!("Failed to delete session {session_id}: {error}");
-            Err((session_id, message))
-        }
-    })
+/// Spawns one harness delete command for one chat session.
+fn spawn_one_delete(
+    chat_harness: Arc<dyn ChatHarness>,
+    session_id: String,
+) -> JoinHandle<Result<String, (String, String)>> {
+    thread::spawn(
+        move || match chat_harness.delete_chat_session(&session_id) {
+            Ok(()) => Ok(session_id),
+            Err(error) => {
+                let message = format!("Failed to delete session {session_id}: {error}");
+                Err((session_id, message))
+            }
+        },
+    )
 }
 
 /// Collects all parallel delete results.

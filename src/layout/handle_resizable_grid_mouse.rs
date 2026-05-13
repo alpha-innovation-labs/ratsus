@@ -1,10 +1,10 @@
 use crossterm::event::{MouseButton, MouseEventKind};
 use ratkit::primitives::resizable_grid::ResizableGridWidget;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Updates the resizable grid from mouse input and reports whether it consumed the event.
-pub fn handle_resizable_grid_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> bool {
+pub fn handle_resizable_grid_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> bool {
     if !app.left_pane_visible {
         return false;
     }

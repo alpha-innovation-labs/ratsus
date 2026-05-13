@@ -1,9 +1,9 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Finds the split terminal pane under a screen position.
-pub fn terminal_pane_id_at_position(app: &NexusDemo, column: u16, row: u16) -> Option<PaneId> {
+pub fn terminal_pane_id_at_position(app: &AppState, column: u16, row: u16) -> Option<PaneId> {
     app.terminal_layout
         .layout_panes(app.last_terminal_area)
         .into_iter()

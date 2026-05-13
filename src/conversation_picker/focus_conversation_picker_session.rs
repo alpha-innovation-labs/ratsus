@@ -1,11 +1,11 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_item::{
     ConversationPickerItem, ConversationPickerItemKind,
 };
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 
 /// Moves picker selection to the row for the given stable session id when visible.
-pub fn focus_conversation_picker_session(app: &mut NexusDemo, session_id: &str) {
+pub fn focus_conversation_picker_session(app: &mut AppState, session_id: &str) {
     let items = conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,
@@ -25,7 +25,7 @@ pub fn focus_conversation_picker_session(app: &mut NexusDemo, session_id: &str) 
 
 /// Returns whether a picker item points at the requested stable session id.
 fn picker_item_has_session_id(
-    app: &NexusDemo,
+    app: &AppState,
     item: &ConversationPickerItem,
     session_id: &str,
 ) -> bool {

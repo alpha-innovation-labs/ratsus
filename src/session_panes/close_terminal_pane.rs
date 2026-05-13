@@ -1,11 +1,11 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::session_panes::activate_terminal_pane::activate_terminal_pane;
 use crate::session_panes::fallback_terminal_pane_id::fallback_terminal_pane_id;
 
 /// Removes a split terminal pane from the layout and restores focus to a remaining pane.
-pub fn close_terminal_pane(app: &mut NexusDemo, pane_id: PaneId) -> bool {
+pub fn close_terminal_pane(app: &mut AppState, pane_id: PaneId) -> bool {
     if app
         .terminal_layout
         .layout_panes(app.last_terminal_area)
@@ -34,13 +34,13 @@ pub fn close_terminal_pane(app: &mut NexusDemo, pane_id: PaneId) -> bool {
 mod tests {
     use super::close_terminal_pane;
     use crate::layout::pane_ids::TERMINAL_PANE_ID;
+    use crate::test_support::app_fixture::app_fixture;
     use crate::test_support::dormant_session::dormant_session;
-    use crate::test_support::nexus_demo_fixture::nexus_demo_fixture;
 
     /// Closing a split removes its pane state and leaves the remaining pane active.
     #[test]
     fn removes_split_pane_and_state() -> anyhow::Result<()> {
-        let mut app = nexus_demo_fixture(vec![
+        let mut app = app_fixture(vec![
             dormant_session("Alpha", "a", "/tmp/project"),
             dormant_session("Beta", "b", "/tmp/project"),
         ])?;

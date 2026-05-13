@@ -1,12 +1,12 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::layout::focused_pane::FocusedPane;
 use crate::main_pane::main_pane_tab::MainPaneTab;
 use crate::session_panes::session_index_for_pane::session_index_for_pane;
 
 /// Focuses a terminal pane and activates its assigned session.
-pub fn activate_terminal_pane(app: &mut NexusDemo, pane_id: PaneId) {
+pub fn activate_terminal_pane(app: &mut AppState, pane_id: PaneId) {
     let Some(index) = session_index_for_pane(app, pane_id) else {
         return;
     };

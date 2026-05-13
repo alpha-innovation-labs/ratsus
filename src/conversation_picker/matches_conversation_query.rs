@@ -1,7 +1,7 @@
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
 
-/// Returns whether a Nexus session title should be shown for the current picker query.
-pub fn matches_conversation_query(session: &NexusSession, query: &str) -> bool {
+/// Returns whether a chat session title should be shown for the current picker query.
+pub fn matches_conversation_query(session: &ChatSession, query: &str) -> bool {
     let query = query.trim().to_lowercase();
     query.is_empty() || session.title.to_lowercase().contains(&query)
 }
@@ -9,11 +9,11 @@ pub fn matches_conversation_query(session: &NexusSession, query: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::matches_conversation_query;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
 
     /// Builds a reusable session fixture for filter tests.
-    fn session() -> NexusSession {
-        NexusSession::new("2026-01-01", "Build Rust modal", "abc123", "/tmp/project")
+    fn session() -> ChatSession {
+        ChatSession::new("2026-01-01", "Build Rust modal", "abc123", "/tmp/project")
     }
 
     /// Empty queries should include every conversation.

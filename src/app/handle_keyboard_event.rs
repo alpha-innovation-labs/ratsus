@@ -1,21 +1,21 @@
 use crossterm::event::KeyModifiers;
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
+use crate::app::app_state::AppState;
 use crate::app::chat_cycle_direction_for_keyboard::chat_cycle_direction_for_keyboard;
 use crate::app::cycle_chat_in_left_pane_order::cycle_chat_in_left_pane_order;
 use crate::app::handle_delete_session_confirmation_keyboard::handle_delete_session_confirmation_keyboard;
 use crate::app::handle_left_keyboard::handle_left_keyboard;
 use crate::app::handle_terminal_keyboard::handle_terminal_keyboard;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::app::open_expo_for_focused_conversation::open_expo_for_focused_conversation;
 use crate::app::start_new_normal_terminal::start_new_normal_terminal;
 use crate::app::toggle_focused_pane::toggle_focused_pane;
+use crate::chat_sessions::start_new_chat::start_new_chat;
 use crate::conversation_picker::handle_conversation_picker_keyboard::handle_conversation_picker_keyboard;
 use crate::conversation_picker::open_conversation_picker::open_conversation_picker;
 use crate::conversation_picker::open_place_in_active_split_picker::open_place_in_active_split_picker;
 use crate::layout::focused_pane::FocusedPane;
 use crate::layout::toggle_left_pane_visibility::toggle_left_pane_visibility;
-use crate::nexus_sessions::start_new_nexus_chat::start_new_nexus_chat;
 use crate::notifications::show_failed_to_start_new_chat_toast::show_failed_to_start_new_chat_toast;
 use crate::notifications::show_failed_to_start_terminal_toast::show_failed_to_start_terminal_toast;
 use crate::session_panes::split_active_terminal_pane::split_active_terminal_pane;
@@ -24,7 +24,7 @@ use crate::session_panes::terminal_split_direction_for_keyboard::terminal_split_
 
 /// Handles keyboard input for global shortcuts and the focused pane.
 pub fn handle_keyboard_event(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> ratkit::LayoutResult<CoordinatorAction> {
     if !keyboard.is_key_down() {
@@ -61,7 +61,7 @@ pub fn handle_keyboard_event(
         return Ok(CoordinatorAction::Redraw);
     }
     if keyboard.is_char('n') && keyboard.modifiers.contains(KeyModifiers::CONTROL) {
-        if let Err(error) = start_new_nexus_chat(app) {
+        if let Err(error) = start_new_chat(app) {
             show_failed_to_start_new_chat_toast(&mut app.toast_manager, &error);
         }
         return Ok(CoordinatorAction::Redraw);

@@ -1,10 +1,10 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::app::selected_delete_targets::selected_delete_targets;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItemKind;
 use crate::conversation_picker::selected_conversation_picker_item::selected_conversation_picker_item;
 
 /// Opens delete confirmation for selected picker sessions or the highlighted session.
-pub fn open_selected_conversation_delete_confirmation(app: &mut NexusDemo) {
+pub fn open_selected_conversation_delete_confirmation(app: &mut AppState) {
     let selected_targets = selected_delete_targets(app);
     if !selected_targets.is_empty() {
         app.delete_confirmation.open_many(0, selected_targets);
@@ -14,7 +14,7 @@ pub fn open_selected_conversation_delete_confirmation(app: &mut NexusDemo) {
 }
 
 /// Opens delete confirmation for the highlighted picker session.
-fn open_highlighted_conversation_delete_confirmation(app: &mut NexusDemo) {
+fn open_highlighted_conversation_delete_confirmation(app: &mut AppState) {
     let Some(item) = selected_conversation_picker_item(app) else {
         return;
     };

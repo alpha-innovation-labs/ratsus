@@ -1,7 +1,7 @@
 use ratatui::layout::Rect;
 use ratatui::Frame;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::expo_session_indices::expo_session_indices;
 use crate::expo::render_empty_expo::render_empty_expo;
 use crate::expo::render_expo_cards::render_expo_cards;
@@ -9,7 +9,7 @@ use crate::expo::render_expo_footer::render_expo_footer;
 use crate::expo::split_expo_view_area::split_expo_view_area;
 
 /// Renders Expo as scrollable masonry cards for all selected-folder sessions.
-pub fn render_expo_view(app: &mut NexusDemo, frame: &mut Frame, area: Rect) {
+pub fn render_expo_view(app: &mut AppState, frame: &mut Frame, area: Rect) {
     app.expo_card_areas.clear();
     let (body_area, footer_area) = split_expo_view_area(area);
     if app.selected_expo_folder.is_none() {

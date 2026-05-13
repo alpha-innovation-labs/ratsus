@@ -1,9 +1,9 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItem;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 
 /// Returns the currently selected conversation picker item.
-pub fn selected_conversation_picker_item(app: &NexusDemo) -> Option<ConversationPickerItem> {
+pub fn selected_conversation_picker_item(app: &AppState) -> Option<ConversationPickerItem> {
     conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,

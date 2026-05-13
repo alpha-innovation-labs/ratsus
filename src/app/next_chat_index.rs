@@ -14,13 +14,13 @@ pub fn next_chat_index(sessions: &[SessionTerminal], preferred_index: usize) -> 
 #[cfg(test)]
 mod tests {
     use super::next_chat_index;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
     use crate::terminal::normal_terminal_session_info::normal_terminal_session_info;
     use crate::terminal::session_terminal::SessionTerminal;
 
     /// Builds a dormant chat fixture for focus selection tests.
     fn chat(id: &str) -> SessionTerminal {
-        SessionTerminal::dormant(NexusSession::new("now", id, id, "/tmp/project"))
+        SessionTerminal::dormant(ChatSession::new("now", id, id, "/tmp/project"))
     }
 
     /// Builds a dormant terminal fixture for focus selection tests.

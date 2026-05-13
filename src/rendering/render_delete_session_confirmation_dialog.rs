@@ -2,13 +2,13 @@ use ratatui::layout::Alignment;
 use ratatui::Frame;
 use ratkit::primitives::dialog::{Dialog, DialogModalMode, DialogWidget};
 
+use crate::app::app_state::AppState;
 use crate::app::delete_session_confirmation_message::delete_session_confirmation_message;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::left_panel::running_session_indicator::running_session_indicator;
 use crate::rendering::default_border_color::default_border_color;
 
 /// Renders the delete confirmation modal when sessions are pending deletion.
-pub fn render_delete_session_confirmation_dialog(app: &NexusDemo, frame: &mut Frame) {
+pub fn render_delete_session_confirmation_dialog(app: &AppState, frame: &mut Frame) {
     if !app.delete_confirmation.is_open() {
         return;
     }

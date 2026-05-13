@@ -1,7 +1,7 @@
 use crossterm::event::{MouseButton, MouseEventKind};
 use ratkit::MouseEvent;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::copy_mode::copy_text_to_clipboard::copy_text_to_clipboard;
 use crate::copy_mode::finish_terminal_copy_selection::finish_terminal_copy_selection;
 use crate::copy_mode::selection_position_for_mouse::selection_position_for_mouse;
@@ -14,7 +14,7 @@ use crate::terminal::scroll_delta_for_mouse_kind::{
 
 /// Handles mouse events that create or update mprocs-style terminal copy selection.
 pub fn handle_terminal_copy_mouse(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     mouse: MouseEvent,
     scroll_lines_per_tick: usize,
 ) -> bool {

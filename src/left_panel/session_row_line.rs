@@ -70,8 +70,8 @@ fn folder_path_width(width: u16, marker: &str, suffix: &str) -> usize {
     usize::from(width).saturating_sub(reserved)
 }
 
-/// Values needed to build a Nexus session row line.
-pub struct NexusSessionRowLineConfig<'a> {
+/// Values needed to build a chat session row line.
+pub struct ChatSessionRowLineConfig<'a> {
     pub title: &'a str,
     pub age: &'a str,
     pub icon: &'a str,
@@ -83,8 +83,8 @@ pub struct NexusSessionRowLineConfig<'a> {
     pub bundle_marker: Option<SessionBundleMarker>,
 }
 
-/// Builds one styled line for a Nexus session row using the shared left-panel visual design.
-pub fn nexus_session_row_line(config: NexusSessionRowLineConfig<'_>) -> Line<'static> {
+/// Builds one styled line for a chat session row using the shared left-panel visual design.
+pub fn session_row_line(config: ChatSessionRowLineConfig<'_>) -> Line<'static> {
     let text_width = session_title_column_width(config.age, config.width);
     let text = truncate_text_to_width(
         &format!(
@@ -155,7 +155,7 @@ fn session_line_padding(text: &str, age: &str, width: u16) -> String {
     " ".repeat(spaces)
 }
 
-/// Returns the style for a Nexus session row.
+/// Returns the style for a chat session row.
 fn session_line_style(is_selected: bool, is_active: bool, is_dragging: bool) -> Style {
     if is_dragging {
         return Style::default()

@@ -1,4 +1,4 @@
-/// Returns the animated loader glyph for a running Nexus session.
+/// Returns the animated loader glyph for a running chat session.
 pub fn running_session_indicator(tick: u64) -> &'static str {
     const FRAMES: [&str; 4] = ["⠋", "⠙", "⠹", "⠸"];
     const TICKS_PER_FRAME: u64 = 4;

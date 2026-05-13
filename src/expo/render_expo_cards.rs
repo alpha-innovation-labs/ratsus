@@ -1,7 +1,7 @@
 use ratatui::layout::Rect;
 use ratatui::Frame;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::expo_card_area::ExpoCardArea;
 use crate::expo::expo_card_models::expo_card_models;
 use crate::expo::expo_card_visible_area::expo_card_visible_area;
@@ -9,7 +9,7 @@ use crate::expo::layout_expo_masonry::layout_expo_masonry;
 use crate::expo::render_conversation_card::render_conversation_card;
 
 /// Renders the visible window of all Expo conversation cards in masonry columns.
-pub fn render_expo_cards(app: &mut NexusDemo, frame: &mut Frame, area: Rect) {
+pub fn render_expo_cards(app: &mut AppState, frame: &mut Frame, area: Rect) {
     let cards = expo_card_models(app);
     let (items, content_height) = layout_expo_masonry(area, cards, app.expo_card_width);
     app.expo_scroll = app

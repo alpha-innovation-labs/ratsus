@@ -1,47 +1,78 @@
-use anyhow::Result;
+use std::sync::Arc;
+
+use anyhow::{bail, Result};
 
 use crate::copy_mode::terminal_copy_selection::TerminalCopySelection;
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_harness::ChatHarness;
+use crate::harness::chat_session::ChatSession;
+use crate::terminal::chat_terminal::ChatTerminal;
 use crate::terminal::default_shell_command::default_shell_command;
 use crate::terminal::is_normal_terminal_session::is_normal_terminal_session;
-use crate::terminal::nexus_terminal::NexusTerminal;
 
-/// A Nexus session paired with its lazily spawned terminal process.
+/// A chat or shell session paired with its lazily spawned terminal process.
 pub struct SessionTerminal {
-    pub session: NexusSession,
-    pub terminal: Option<NexusTerminal>,
+    pub session: ChatSession,
+    pub terminal: Option<ChatTerminal>,
     pub copy_selection: TerminalCopySelection,
+    pub chat_harness: Option<Arc<dyn ChatHarness>>,
 }
 
 impl SessionTerminal {
-    /// Creates session state without starting the backing PTY.
-    pub fn dormant(session: NexusSession) -> Self {
+    /// Creates session state without starting the backing terminal.
+    pub fn dormant(session: ChatSession) -> Self {
         Self {
             session,
             terminal: None,
             copy_selection: TerminalCopySelection::default(),
+            chat_harness: None,
         }
     }
 
-    /// Starts the backing PTY when it has not been started yet.
-    pub fn ensure_terminal(&mut self, rows: u16, cols: u16) -> Result<&mut NexusTerminal> {
+    /// Creates dormant chat session state attached to a backend harness.
+    pub fn dormant_with_harness(session: ChatSession, chat_harness: Arc<dyn ChatHarness>) -> Self {
+        Self {
+            session,
+            terminal: None,
+            copy_selection: TerminalCopySelection::default(),
+            chat_harness: Some(chat_harness),
+        }
+    }
+
+    /// Creates session state with an already-started or fake terminal.
+    pub fn with_terminal(session: ChatSession, terminal: ChatTerminal) -> Self {
+        Self {
+            session,
+            terminal: Some(terminal),
+            copy_selection: TerminalCopySelection::default(),
+            chat_harness: None,
+        }
+    }
+
+    /// Starts the backing terminal when it has not been started yet.
+    pub fn ensure_terminal(&mut self, rows: u16, cols: u16) -> Result<&mut ChatTerminal> {
         if self.terminal.is_none() {
-            self.terminal = Some(spawn_terminal_for_session(&self.session, rows, cols)?);
+            self.terminal = Some(spawn_terminal_for_session(
+                &self.session,
+                self.chat_harness.as_ref(),
+                rows,
+                cols,
+            )?);
         }
         Ok(self.terminal.as_mut().expect("terminal is initialized"))
     }
 }
 
-/// Spawns the correct PTY command for a chat or normal terminal session.
+/// Spawns the correct terminal for a chat or normal terminal session.
 fn spawn_terminal_for_session(
-    session: &NexusSession,
+    session: &ChatSession,
+    chat_harness: Option<&Arc<dyn ChatHarness>>,
     rows: u16,
     cols: u16,
-) -> Result<NexusTerminal> {
+) -> Result<ChatTerminal> {
     let working_dir = session.working_dir.clone();
     if is_normal_terminal_session(session) {
         let shell = default_shell_command();
-        return NexusTerminal::spawn_with_command_in_dir(
+        return ChatTerminal::spawn_with_command_in_dir(
             &shell,
             &[],
             &working_dir,
@@ -49,11 +80,11 @@ fn spawn_terminal_for_session(
             cols.max(1),
         );
     }
-    NexusTerminal::spawn_with_command_in_dir(
-        "nexus",
-        &["--resume", session.id.as_str()],
-        &working_dir,
-        rows.max(1),
-        cols.max(1),
+    if let Some(chat_harness) = chat_harness {
+        return chat_harness.spawn_existing_chat(session, rows.max(1), cols.max(1));
+    }
+    bail!(
+        "cannot spawn chat session {} without an attached chat harness",
+        session.id
     )
 }

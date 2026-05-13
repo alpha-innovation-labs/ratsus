@@ -1,24 +1,25 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 
 use crossterm::event::{KeyModifiers, MouseButton, MouseEventKind};
 use ratatui::layout::Rect;
 use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
 
-use crate::app::handle_nexus_demo_mouse::handle_nexus_demo_mouse;
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
+use crate::app::handle_app_mouse::handle_app_mouse;
+use crate::chat_sessions::spawn_session_refresh_worker::SessionRefreshResult;
 use crate::conversation_picker::conversation_picker_state::ConversationPickerState;
+use crate::harness::chat_session::ChatSession;
+use crate::harnesses::stub::StubHarness;
 use crate::layout::focused_pane::FocusedPane;
 use crate::layout::pane_ids::{LEFT_PANE_ID, TERMINAL_PANE_ID};
 use crate::left_panel::visible_session_rows_cache::VisibleSessionRowsCache;
 use crate::main_pane::file_system_tree_view::FileSystemTreeView;
 use crate::main_pane::main_pane_tab::MainPaneTab;
-use crate::menu_bar::nexus_menu_bar::nexus_menu_bar;
-use crate::nexus_sessions::session_info::NexusSession;
-use crate::nexus_sessions::spawn_session_refresh_worker::SessionRefreshResult;
+use crate::menu_bar::app_menu_bar::app_menu_bar;
 use crate::terminal::session_terminal::SessionTerminal;
 
 /// Reproduces the wheel-lag path and verifies wheel bursts do not rebuild rows per event.
@@ -29,7 +30,7 @@ fn left_panel_wheel_burst_reuses_cached_visible_rows() -> anyhow::Result<()> {
     let initial_rebuilds = app.visible_rows_rebuild_count();
 
     for _ in 0..80 {
-        handle_nexus_demo_mouse(&mut app, mouse_event(MouseEventKind::ScrollDown, 2));
+        handle_app_mouse(&mut app, mouse_event(MouseEventKind::ScrollDown, 2));
     }
 
     assert_eq!(initial_rebuilds, 1);
@@ -44,11 +45,11 @@ fn folder_toggle_updates_cached_visible_rows() -> anyhow::Result<()> {
     let mut app = lag_test_app(1, 12)?;
     let expanded_count = app.visible_row_count();
 
-    handle_nexus_demo_mouse(
+    handle_app_mouse(
         &mut app,
         mouse_event_at_column(MouseEventKind::Down(MouseButton::Left), 1, 1),
     );
-    handle_nexus_demo_mouse(
+    handle_app_mouse(
         &mut app,
         mouse_event_at_column(MouseEventKind::Up(MouseButton::Left), 1, 1),
     );
@@ -64,15 +65,15 @@ fn folder_toggle_updates_cached_visible_rows() -> anyhow::Result<()> {
 fn session_drag_updates_cached_visible_rows() -> anyhow::Result<()> {
     let mut app = lag_test_app(1, 3)?;
 
-    handle_nexus_demo_mouse(
+    handle_app_mouse(
         &mut app,
         mouse_event(MouseEventKind::Down(MouseButton::Left), 2),
     );
-    handle_nexus_demo_mouse(
+    handle_app_mouse(
         &mut app,
         mouse_event(MouseEventKind::Drag(MouseButton::Left), 3),
     );
-    handle_nexus_demo_mouse(
+    handle_app_mouse(
         &mut app,
         mouse_event(MouseEventKind::Up(MouseButton::Left), 3),
     );
@@ -98,13 +99,13 @@ fn mouse_event_at_column(kind: MouseEventKind, row: u16, column: u16) -> ratkit:
     }
 }
 
-/// Builds a Nexus demo state with many visible rows for mouse-lag regression tests.
-fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Result<NexusDemo> {
+/// Builds a app state with many visible rows for mouse-lag regression tests.
+fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Result<AppState> {
     let (_sender, receiver) = mpsc::channel::<SessionRefreshResult>();
     let mut layout = ResizableGrid::new(LEFT_PANE_ID);
     let _ = layout.split_pane_vertically(LEFT_PANE_ID);
 
-    Ok(NexusDemo {
+    Ok(AppState {
         layout,
         layout_widget_state: ResizableGridWidgetState::default(),
         terminal_layout: ResizableGrid::new(TERMINAL_PANE_ID),
@@ -115,7 +116,7 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         terminal_pane_close_buttons: BTreeMap::new(),
         active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
-        menu_bar: nexus_menu_bar(MainPaneTab::Chat),
+        menu_bar: app_menu_bar(MainPaneTab::Chat),
         conversation_picker: ConversationPickerState::new(),
         delete_confirmation:
             crate::app::delete_session_confirmation_state::DeleteSessionConfirmationState::default(),
@@ -157,6 +158,7 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         file_system_tree_view: FileSystemTreeView::new()?,
         loader_tick: 0,
         session_refresh_receiver: receiver,
+        chat_harness: Arc::new(StubHarness::new()),
     })
 }
 
@@ -165,7 +167,7 @@ fn lag_test_sessions(folder_count: usize, sessions_per_folder: usize) -> Vec<Ses
     (0..folder_count)
         .flat_map(|folder| {
             (0..sessions_per_folder).map(move |session| {
-                SessionTerminal::dormant(NexusSession::new(
+                SessionTerminal::dormant(ChatSession::new(
                     "2026-05-12T10:00:00Z",
                     format!("Session {folder}-{session}"),
                     format!("session-{folder}-{session}"),

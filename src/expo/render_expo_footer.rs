@@ -1,12 +1,12 @@
 use ratatui::layout::Rect;
 use ratatui::Frame;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::expo_hotkey_footer::expo_hotkey_footer;
 use crate::expo::render_expo_filter_bar::render_expo_filter_bar;
 
 /// Renders Expo footer hotkeys or active filter input.
-pub fn render_expo_footer(app: &NexusDemo, frame: &mut Frame, area: Rect) {
+pub fn render_expo_footer(app: &AppState, frame: &mut Frame, area: Rect) {
     if area.height == 0 {
         return;
     }

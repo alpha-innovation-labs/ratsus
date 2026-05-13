@@ -1,13 +1,13 @@
 use crossterm::event::KeyCode;
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
+use crate::app::app_state::AppState;
 use crate::app::confirm_delete_session::confirm_delete_session;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::notifications::show_failed_to_delete_session_toast::show_failed_to_delete_session_toast;
 
 /// Handles keyboard input while delete confirmation is open.
 pub fn handle_delete_session_confirmation_keyboard(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> CoordinatorAction {
     if app.delete_confirmation.is_deleting {

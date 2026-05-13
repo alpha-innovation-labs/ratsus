@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItemKind;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
 
 /// Opens the conversation picker scoped to one project folder.
-pub fn open_folder_conversation_picker(app: &mut NexusDemo, folder: PathBuf) {
+pub fn open_folder_conversation_picker(app: &mut AppState, folder: PathBuf) {
     app.conversation_picker.is_open = true;
     app.conversation_picker.query.clear();
     app.conversation_picker.is_filtering = false;

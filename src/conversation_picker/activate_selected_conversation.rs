@@ -1,13 +1,13 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
+use crate::chat_sessions::start_new_chat_in_dir::start_new_chat_in_dir;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItemKind;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
-use crate::nexus_sessions::start_new_nexus_chat_in_dir::start_new_nexus_chat_in_dir;
 use crate::notifications::show_failed_to_start_new_chat_toast::show_failed_to_start_new_chat_toast;
 use crate::session_panes::place_existing_session_in_active_terminal_pane::place_existing_session_in_active_terminal_pane;
 
 /// Activates the conversation or folder action highlighted in the picker.
-pub fn activate_selected_conversation(app: &mut NexusDemo) {
+pub fn activate_selected_conversation(app: &mut AppState) {
     let items = conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,
@@ -34,8 +34,8 @@ pub fn activate_selected_conversation(app: &mut NexusDemo) {
 }
 
 /// Starts a new chat in the selected folder and closes the picker on success.
-fn activate_folder(app: &mut NexusDemo, path: std::path::PathBuf) {
-    if let Err(error) = start_new_nexus_chat_in_dir(app, &path) {
+fn activate_folder(app: &mut AppState, path: std::path::PathBuf) {
+    if let Err(error) = start_new_chat_in_dir(app, &path) {
         show_failed_to_start_new_chat_toast(&mut app.toast_manager, &error);
         return;
     }
@@ -43,20 +43,20 @@ fn activate_folder(app: &mut NexusDemo, path: std::path::PathBuf) {
 }
 
 /// Focuses an existing selected conversation and closes the picker.
-fn activate_session(app: &mut NexusDemo, index: usize) {
+fn activate_session(app: &mut AppState, index: usize) {
     app.focused_index = index;
     app.activate_focused_session();
     close_picker(app);
 }
 
 /// Places an existing conversation into the active split and closes the picker.
-fn place_session(app: &mut NexusDemo, index: usize) {
+fn place_session(app: &mut AppState, index: usize) {
     place_existing_session_in_active_terminal_pane(app, index);
     close_picker(app);
 }
 
 /// Closes the picker and restores normal activation mode.
-fn close_picker(app: &mut NexusDemo) {
+fn close_picker(app: &mut AppState) {
     app.conversation_picker.is_open = false;
     app.conversation_picker.folder_filter = None;
     app.conversation_picker.mode = ConversationPickerMode::Open;
@@ -67,13 +67,13 @@ mod tests {
     use super::activate_selected_conversation;
     use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
     use crate::layout::pane_ids::TERMINAL_PANE_ID;
+    use crate::test_support::app_fixture::app_fixture;
     use crate::test_support::dormant_session::dormant_session;
-    use crate::test_support::nexus_demo_fixture::nexus_demo_fixture;
 
     /// Placement mode should add an existing selected session to the active split bundle.
     #[test]
     fn place_mode_bundles_existing_session_without_creating_one() -> anyhow::Result<()> {
-        let mut app = nexus_demo_fixture(vec![
+        let mut app = app_fixture(vec![
             dormant_session("Alpha", "a", "/tmp/project"),
             dormant_session("Beta", "b", "/tmp/project"),
         ])?;

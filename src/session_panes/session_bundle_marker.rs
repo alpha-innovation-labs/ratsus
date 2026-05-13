@@ -1,4 +1,4 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Visual position for a session inside a terminal pane bundle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -12,7 +12,7 @@ pub enum SessionBundleMarker {
 }
 
 /// Returns the bundle marker for a session row when it belongs to a multi-session pane.
-pub fn session_bundle_marker(app: &NexusDemo, session_index: usize) -> Option<SessionBundleMarker> {
+pub fn session_bundle_marker(app: &AppState, session_index: usize) -> Option<SessionBundleMarker> {
     let session_id = &app.session_terminals.get(session_index)?.session.id;
     app.terminal_pane_session_bundles
         .values()

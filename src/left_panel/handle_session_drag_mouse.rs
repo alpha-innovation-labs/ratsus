@@ -1,7 +1,7 @@
 use crossterm::event::{MouseButton, MouseEventKind};
 
 use crate::app::activate_expo_folder::activate_expo_folder;
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::folder_click_hits_label::folder_click_hits_icon;
 use crate::left_panel::rendered_left_panel_rows::rendered_left_panel_rows;
 use crate::left_panel::session_list_row::SessionListRow;
@@ -10,7 +10,7 @@ use crate::left_panel::should_toggle_folder_on_drop::should_toggle_folder_on_dro
 use crate::left_panel::toggle_session_folder::toggle_session_folder;
 
 /// Handles left-pane drag-and-drop session reordering mouse input.
-pub fn handle_session_drag_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> bool {
+pub fn handle_session_drag_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> bool {
     match mouse.kind {
         MouseEventKind::Down(MouseButton::Left) => start_drag_from_mouse(app, mouse.row),
         MouseEventKind::Drag(MouseButton::Left) => move_drag_from_mouse(app, mouse.row),
@@ -22,7 +22,7 @@ pub fn handle_session_drag_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent)
 }
 
 /// Starts a session or folder drag from the row under the mouse.
-fn start_drag_from_mouse(app: &mut NexusDemo, row: u16) -> bool {
+fn start_drag_from_mouse(app: &mut AppState, row: u16) -> bool {
     let Some(list_row) = left_panel_row_for_mouse(app, row) else {
         return false;
     };
@@ -35,7 +35,7 @@ fn start_drag_from_mouse(app: &mut NexusDemo, row: u16) -> bool {
 }
 
 /// Moves the dragged session or folder to the row under the mouse.
-fn move_drag_from_mouse(app: &mut NexusDemo, row: u16) -> bool {
+fn move_drag_from_mouse(app: &mut AppState, row: u16) -> bool {
     if app.session_drag.is_none() && app.folder_drag.is_none() {
         return false;
     }
@@ -45,7 +45,7 @@ fn move_drag_from_mouse(app: &mut NexusDemo, row: u16) -> bool {
 }
 
 /// Applies the final drop target and clears the active drag state.
-fn finish_drag_from_mouse(app: &mut NexusDemo, row: u16, column: u16) -> bool {
+fn finish_drag_from_mouse(app: &mut AppState, row: u16, column: u16) -> bool {
     if app.session_drag.is_none() && app.folder_drag.is_none() {
         return false;
     }
@@ -64,7 +64,7 @@ fn finish_drag_from_mouse(app: &mut NexusDemo, row: u16, column: u16) -> bool {
 }
 
 /// Returns a folder path when a folder drag ended as a click.
-fn folder_click_for_drop(app: &NexusDemo, row: u16) -> Option<std::path::PathBuf> {
+fn folder_click_for_drop(app: &AppState, row: u16) -> Option<std::path::PathBuf> {
     let source = app.folder_drag.as_ref()?;
     let SessionListRow::Folder { path, .. } = left_panel_row_for_mouse(app, row)? else {
         return None;
@@ -73,7 +73,7 @@ fn folder_click_for_drop(app: &NexusDemo, row: u16) -> Option<std::path::PathBuf
 }
 
 /// Moves an active drag operation onto the row under the mouse.
-fn move_drag_to_mouse_row(app: &mut NexusDemo, row: u16) {
+fn move_drag_to_mouse_row(app: &mut AppState, row: u16) {
     let Some(list_row) = left_panel_row_for_mouse(app, row) else {
         return;
     };
@@ -89,7 +89,7 @@ fn move_drag_to_mouse_row(app: &mut NexusDemo, row: u16) {
 }
 
 /// Resolves the rendered left-panel row for a mouse row.
-fn left_panel_row_for_mouse(app: &NexusDemo, row: u16) -> Option<SessionListRow> {
+fn left_panel_row_for_mouse(app: &AppState, row: u16) -> Option<SessionListRow> {
     let rows = rendered_left_panel_rows(app);
     session_row_for_rendered_click(row, app.last_session_list_area, &rows).map(|(_, row)| row)
 }

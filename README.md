@@ -1,15 +1,17 @@
 # Ratsus
 
-Nexus session TUI wrapper built with the public `ratkit` crate from crates.io.
+Harness-backed session TUI built with the public `ratkit` crate from crates.io.
 
 ## Run
 
 ```bash
-just dev
+just dev       # real Nexus harness
+just dev-stub  # deterministic stub harness; no Nexus CLI or Nexus data paths
 ```
 
 ## Repository organization
 
-- `src/main.rs` wires the Ratkit coordinator app and delegates event/render work.
-- `src/nexus/` holds one concern per file for session state, terminal IO, layout, rendering, selection, clipboard, and mouse/keyboard handling.
-- `.agents/skills/ratkit/` bundles the local Ratkit agent reference used by Nexus contributors.
+- `src/main.rs` selects the requested harness and starts the Ratkit app.
+- `src/harness/` defines backend-neutral chat contracts.
+- `src/harnesses/` contains concrete Nexus and stub harnesses.
+- `src/app/`, `src/terminal/`, and UI folders keep event, render, and terminal orchestration code.

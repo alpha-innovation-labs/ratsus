@@ -1,8 +1,8 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 
 /// Returns the number of rows currently visible in the conversation picker.
-pub fn current_conversation_picker_item_count(app: &NexusDemo) -> usize {
+pub fn current_conversation_picker_item_count(app: &AppState) -> usize {
     conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,

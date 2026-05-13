@@ -2,9 +2,8 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::copy_mode::terminal_copy_selection::TerminalCopySelection;
+use crate::terminal::chat_terminal::ChatTerminal;
 use crate::terminal::default_shell_command::default_shell_command;
-use crate::terminal::nexus_terminal::NexusTerminal;
 use crate::terminal::normal_terminal_session_info::normal_terminal_session_info;
 use crate::terminal::session_terminal::SessionTerminal;
 
@@ -15,10 +14,9 @@ pub fn spawn_normal_terminal_session(
     cols: u16,
 ) -> Result<SessionTerminal> {
     let shell = default_shell_command();
-    let terminal = NexusTerminal::spawn_with_command_in_dir(&shell, &[], working_dir, rows, cols)?;
-    Ok(SessionTerminal {
-        session: normal_terminal_session_info(working_dir),
-        terminal: Some(terminal),
-        copy_selection: TerminalCopySelection::default(),
-    })
+    let terminal = ChatTerminal::spawn_with_command_in_dir(&shell, &[], working_dir, rows, cols)?;
+    Ok(SessionTerminal::with_terminal(
+        normal_terminal_session_info(working_dir),
+        terminal,
+    ))
 }

@@ -3,12 +3,12 @@ use std::path::PathBuf;
 
 use super::conversation_picker_items::conversation_picker_items;
 use crate::conversation_picker::conversation_picker_item::ConversationPickerItemKind;
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
 use crate::terminal::session_terminal::SessionTerminal;
 
 /// Builds a dormant session fixture for picker grouping tests.
 fn session(title: &str, folder: &str) -> SessionTerminal {
-    SessionTerminal::dormant(NexusSession::new("today", title, title, folder))
+    SessionTerminal::dormant(ChatSession::new("today", title, title, folder))
 }
 
 /// Folders should be emitted as selectable parent rows before their conversations.

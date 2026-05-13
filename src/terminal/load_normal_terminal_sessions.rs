@@ -1,16 +1,16 @@
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
+use crate::terminal::chat_session_from_persisted_normal_terminal_session::chat_session_from_persisted_normal_terminal_session;
 use crate::terminal::load_persisted_normal_terminal_sessions::load_persisted_normal_terminal_sessions;
-use crate::terminal::nexus_session_from_persisted_normal_terminal_session::nexus_session_from_persisted_normal_terminal_session;
 use crate::terminal::normal_terminal_legacy_registry_path::normal_terminal_legacy_registry_path;
 use crate::terminal::normal_terminal_registry_path::normal_terminal_registry_path;
 use crate::terminal::persisted_normal_terminal_session::PersistedNormalTerminalSession;
 use crate::terminal::save_normal_terminal_sessions::save_normal_terminal_sessions;
 
-/// Loads persisted normal terminal sessions from the Nexus data directory.
-pub fn load_normal_terminal_sessions() -> Vec<NexusSession> {
+/// Loads persisted normal terminal sessions from the Ratsus data directory.
+pub fn load_normal_terminal_sessions() -> Vec<ChatSession> {
     load_normal_terminal_entries()
         .into_iter()
-        .map(nexus_session_from_persisted_normal_terminal_session)
+        .map(chat_session_from_persisted_normal_terminal_session)
         .collect()
 }
 

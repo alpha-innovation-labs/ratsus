@@ -1,11 +1,11 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::truncate_text_to_width::truncate_text_to_width;
 
 const TITLE_WIDTH: usize = 54;
 const MAX_VISIBLE_TITLES: usize = 6;
 
 /// Builds the delete confirmation message for one or many sessions.
-pub fn delete_session_confirmation_message(app: &NexusDemo) -> String {
+pub fn delete_session_confirmation_message(app: &AppState) -> String {
     delete_session_confirmation_message_for_titles(
         &app.delete_confirmation.session_titles,
         app.delete_confirmation.is_deleting,

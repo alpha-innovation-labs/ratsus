@@ -1,7 +1,7 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Returns the insertion point directly after the active terminal pane bundle.
-pub fn active_terminal_bundle_insert_index(app: &NexusDemo) -> usize {
+pub fn active_terminal_bundle_insert_index(app: &AppState) -> usize {
     let Some(bundle) = app
         .terminal_pane_session_bundles
         .get(&app.active_terminal_pane_id)

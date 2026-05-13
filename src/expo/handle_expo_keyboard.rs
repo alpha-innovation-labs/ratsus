@@ -1,13 +1,13 @@
 use crossterm::event::KeyCode;
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::decrease_expo_card_width::decrease_expo_card_width;
 use crate::expo::increase_expo_card_width::increase_expo_card_width;
 use crate::expo::move_focused_expo_conversation::move_focused_expo_conversation;
 
 /// Handles keyboard input for Expo filtering.
-pub fn handle_expo_keyboard(app: &mut NexusDemo, keyboard: &KeyboardEvent) -> CoordinatorAction {
+pub fn handle_expo_keyboard(app: &mut AppState, keyboard: &KeyboardEvent) -> CoordinatorAction {
     if keyboard.is_char('/') && keyboard.modifiers.is_empty() {
         app.expo_filtering = true;
         return CoordinatorAction::Redraw;
@@ -36,7 +36,7 @@ pub fn handle_expo_keyboard(app: &mut NexusDemo, keyboard: &KeyboardEvent) -> Co
 }
 
 /// Handles Expo focus navigation while not actively filtering.
-fn handle_expo_navigation(app: &mut NexusDemo, keyboard: &KeyboardEvent) -> CoordinatorAction {
+fn handle_expo_navigation(app: &mut AppState, keyboard: &KeyboardEvent) -> CoordinatorAction {
     match keyboard.key_code {
         KeyCode::Char('h') | KeyCode::Char('k') | KeyCode::Left | KeyCode::Up => {
             move_focused_expo_conversation(app, -1);

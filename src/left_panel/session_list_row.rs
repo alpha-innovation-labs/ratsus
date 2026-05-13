@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-/// One visible row in the left Nexus session tree.
+/// One visible row in the left chat session tree.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SessionListRow {
     Folder {

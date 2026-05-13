@@ -1,9 +1,9 @@
 use std::collections::BTreeSet;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Removes deleted session ids from terminal pane bundle state.
-pub fn prune_terminal_pane_session_bundles(app: &mut NexusDemo) {
+pub fn prune_terminal_pane_session_bundles(app: &mut AppState) {
     let valid_ids = app
         .session_terminals
         .iter()

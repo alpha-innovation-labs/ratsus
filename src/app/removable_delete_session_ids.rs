@@ -1,8 +1,8 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::terminal::is_chat_session::is_chat_session;
 
 /// Returns selected sessions that can be removed after delete worker completion.
-pub fn removable_delete_session_ids(app: &NexusDemo, deleted_chat_ids: &[String]) -> Vec<String> {
+pub fn removable_delete_session_ids(app: &AppState, deleted_chat_ids: &[String]) -> Vec<String> {
     app.session_terminals
         .iter()
         .filter(|entry| {
@@ -16,7 +16,7 @@ pub fn removable_delete_session_ids(app: &NexusDemo, deleted_chat_ids: &[String]
 }
 
 /// Returns whether one selected session is removable now.
-fn can_remove_session(app: &NexusDemo, session_id: &str, deleted_chat_ids: &[String]) -> bool {
+fn can_remove_session(app: &AppState, session_id: &str, deleted_chat_ids: &[String]) -> bool {
     let Some(entry) = app
         .session_terminals
         .iter()

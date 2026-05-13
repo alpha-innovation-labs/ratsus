@@ -1,9 +1,9 @@
 use chrono::{DateTime, Duration, Utc};
 
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
 
 /// Returns whether a session was modified within the recent-history window.
-pub fn session_is_recent(session: &NexusSession, now: DateTime<Utc>) -> bool {
+pub fn session_is_recent(session: &ChatSession, now: DateTime<Utc>) -> bool {
     if session.date == "now" {
         return true;
     }
@@ -19,14 +19,14 @@ mod tests {
     use chrono::{Duration, TimeZone, Utc};
 
     use super::session_is_recent;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
 
     /// Verifies sessions modified within twenty-four hours are visible.
     #[test]
     fn includes_recent_session() {
         let now = Utc.with_ymd_and_hms(2026, 5, 12, 12, 0, 0).unwrap();
         let modified = (now - Duration::hours(23)).to_rfc3339();
-        let session = NexusSession::new(modified, "Recent", "id", "/tmp/project");
+        let session = ChatSession::new(modified, "Recent", "id", "/tmp/project");
 
         assert!(session_is_recent(&session, now));
     }
@@ -36,7 +36,7 @@ mod tests {
     fn excludes_old_session() {
         let now = Utc.with_ymd_and_hms(2026, 5, 12, 12, 0, 0).unwrap();
         let modified = (now - Duration::hours(25)).to_rfc3339();
-        let session = NexusSession::new(modified, "Old", "id", "/tmp/project");
+        let session = ChatSession::new(modified, "Old", "id", "/tmp/project");
 
         assert!(!session_is_recent(&session, now));
     }

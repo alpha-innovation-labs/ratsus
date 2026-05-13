@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::copy_mode::clear_terminal_copy_selection::clear_terminal_copy_selection;
 use crate::copy_mode::copy_text_to_clipboard::copy_text_to_clipboard;
 use crate::copy_mode::finish_terminal_copy_selection::finish_terminal_copy_selection;
@@ -9,7 +9,7 @@ use crate::notifications::show_copied_to_clipboard_toast::show_copied_to_clipboa
 
 /// Handles keyboard commands while terminal copy selection owns input.
 pub fn handle_terminal_copy_keyboard(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     keyboard: &KeyboardEvent,
 ) -> Option<CoordinatorAction> {
     let entry = app.active_session_terminal_mut()?;

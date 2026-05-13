@@ -1,10 +1,10 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::persist_session_order_preferences::persist_session_order_preferences;
 use crate::left_panel::reordered_index_after_move::reordered_index_after_move;
 
 /// Moves one session entry to another index while preserving active and focused references.
 pub fn reorder_session_to_index(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     from_index: usize,
     target_index: usize,
 ) -> bool {

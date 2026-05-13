@@ -1,11 +1,11 @@
+use crate::app::app_state::AppState;
 use crate::app::clamp_session_index::clamp_session_index;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::left_panel::sync_folder_order::sync_folder_order;
 use crate::session_panes::prune_terminal_pane_session_bundles::prune_terminal_pane_session_bundles;
 
 /// Restores active, focused, and folder state after deleting one session.
 pub fn restore_focus_after_delete(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     deleted_index: usize,
     deleted_was_active: bool,
 ) {

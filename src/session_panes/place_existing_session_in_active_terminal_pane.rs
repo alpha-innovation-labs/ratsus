@@ -1,9 +1,9 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::layout::focused_pane::FocusedPane;
 use crate::session_panes::set_active_terminal_pane_bundle_session::set_active_terminal_pane_bundle_session;
 
 /// Adds an existing session to the active terminal pane bundle and focuses it there.
-pub fn place_existing_session_in_active_terminal_pane(app: &mut NexusDemo, index: usize) {
+pub fn place_existing_session_in_active_terminal_pane(app: &mut AppState, index: usize) {
     let Some(session_id) = app
         .session_terminals
         .get(index)

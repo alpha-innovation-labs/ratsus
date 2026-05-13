@@ -1,4 +1,4 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::app::open_delete_session_confirmation::open_delete_session_confirmation;
 use crate::conversation_picker::open_conversation_picker::open_conversation_picker;
 use crate::keyboard::list_key_behavior::ListKeyBehavior;
@@ -11,12 +11,12 @@ use crate::left_panel::toggle_focused_left_conversation_selection::toggle_focuse
 
 /// Adapts the left session pane to the shared list keyboard contract.
 pub struct LeftPanelKeyBehavior<'a> {
-    app: &'a mut NexusDemo,
+    app: &'a mut AppState,
 }
 
 impl<'a> LeftPanelKeyBehavior<'a> {
     /// Creates a shared-key adapter for the left session pane.
-    pub fn new(app: &'a mut NexusDemo) -> Self {
+    pub fn new(app: &'a mut AppState) -> Self {
         Self { app }
     }
 }

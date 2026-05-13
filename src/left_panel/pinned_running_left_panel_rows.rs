@@ -1,12 +1,12 @@
 use std::collections::BTreeSet;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::session_visible_row_index::session_visible_row_index;
 
 /// Returns running session context rows that should be pinned above active context.
 pub fn pinned_running_left_panel_rows(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     visible_end: usize,
 ) -> Vec<(usize, SessionListRow)> {
@@ -28,7 +28,7 @@ pub fn pinned_running_left_panel_rows(
 
 /// Returns running session indexes whose rows are outside the viewport.
 fn hidden_running_session_indexes(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     visible_end: usize,
 ) -> Vec<usize> {
@@ -46,7 +46,7 @@ fn hidden_running_session_indexes(
 
 /// Returns true when a session row is outside the viewport.
 fn session_row_is_hidden(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     session_index: usize,
     visible_end: usize,
@@ -57,7 +57,7 @@ fn session_row_is_hidden(
 
 /// Adds the hidden folder row for a running session when needed.
 fn push_hidden_folder(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     session_index: usize,
     visible_end: usize,
@@ -97,7 +97,7 @@ fn push_unique(
 
 /// Finds the folder row that contains a session.
 fn folder_row_for_session(
-    app: &NexusDemo,
+    app: &AppState,
     rows: &[SessionListRow],
     session_index: usize,
 ) -> Option<(usize, SessionListRow)> {

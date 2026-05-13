@@ -1,9 +1,9 @@
 use ratatui::layout::Rect;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Reconstructs the last full frame area from the stored app body layout area.
-pub fn conversation_picker_frame_area(app: &NexusDemo) -> Rect {
+pub fn conversation_picker_frame_area(app: &AppState) -> Rect {
     Rect::new(
         app.last_layout_area.x,
         0,

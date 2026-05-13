@@ -1,9 +1,9 @@
 use chrono::DateTime;
 
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
 
 /// Returns a comparable creation timestamp for ordering sessions by creation date.
-pub fn session_created_timestamp(session: &NexusSession) -> i64 {
+pub fn session_created_timestamp(session: &ChatSession) -> i64 {
     if session.created_at == "now" {
         return i64::MAX;
     }
@@ -15,11 +15,11 @@ pub fn session_created_timestamp(session: &NexusSession) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::session_created_timestamp;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
 
     /// Builds a timestamp test session.
-    fn session(created_at: &str) -> NexusSession {
-        NexusSession::new_with_created("updated", created_at, "Title", created_at, "/tmp/project")
+    fn session(created_at: &str) -> ChatSession {
+        ChatSession::new_with_created("updated", created_at, "Title", created_at, "/tmp/project")
     }
 
     /// Verifies newer creation timestamps compare greater than older timestamps.

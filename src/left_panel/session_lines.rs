@@ -1,7 +1,7 @@
 use chrono::Utc;
 use ratatui::text::Line;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::layout::focused_pane::FocusedPane;
 use crate::left_panel::folder_has_running_session::folder_has_running_session;
 use crate::left_panel::format_session_age::format_session_age;
@@ -13,16 +13,19 @@ use crate::left_panel::session_icon::session_icon;
 use crate::left_panel::session_is_active_chat_row::session_is_active_chat_row;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::session_row_line::{
-    folder_more_row_line, folder_row_line, nexus_session_row_line, session_row_separator_line,
-    FolderRowLineConfig, NexusSessionRowLineConfig,
+    folder_more_row_line, folder_row_line, session_row_line, session_row_separator_line,
+    ChatSessionRowLineConfig, FolderRowLineConfig,
 };
 use crate::main_pane::main_pane_tab::MainPaneTab;
 use crate::session_panes::session_bundle_marker::session_bundle_marker;
 
 /// Builds the visible session list lines for the left pane.
-pub fn session_lines(app: &NexusDemo) -> Vec<Line<'static>> {
+pub fn session_lines(app: &AppState) -> Vec<Line<'static>> {
     if app.session_terminals.is_empty() {
-        return vec![Line::from("No Nexus sessions")];
+        return vec![Line::from(format!(
+            "No {} sessions",
+            app.chat_harness.display_name()
+        ))];
     }
 
     let rows = app.visible_rows();
@@ -35,7 +38,7 @@ pub fn session_lines(app: &NexusDemo) -> Vec<Line<'static>> {
 
 /// Builds one line from a rendered row, including separators.
 fn rendered_session_line(
-    app: &NexusDemo,
+    app: &AppState,
     rendered_row: &RenderedLeftPanelRow,
     line_width: u16,
 ) -> Line<'static> {
@@ -50,7 +53,7 @@ fn rendered_session_line(
 
 /// Builds one styled line for a folder or session row.
 fn session_tree_line(
-    app: &NexusDemo,
+    app: &AppState,
     row: &SessionListRow,
     row_index: usize,
     line_width: u16,
@@ -78,8 +81,8 @@ fn session_tree_line(
     }
 }
 
-/// Builds one styled line for a Nexus session row.
-fn session_line(app: &NexusDemo, index: usize, row_index: usize, line_width: u16) -> Line<'static> {
+/// Builds one styled line for a chat session row.
+fn session_line(app: &AppState, index: usize, row_index: usize, line_width: u16) -> Line<'static> {
     let entry = &app.session_terminals[index];
     let age = format_session_age(&entry.session, Utc::now());
     let icon = if entry.session.is_running {
@@ -87,7 +90,7 @@ fn session_line(app: &NexusDemo, index: usize, row_index: usize, line_width: u16
     } else {
         session_icon(&entry.session)
     };
-    nexus_session_row_line(NexusSessionRowLineConfig {
+    session_row_line(ChatSessionRowLineConfig {
         title: &entry.session.title,
         age: &age,
         icon,
@@ -103,12 +106,12 @@ fn session_line(app: &NexusDemo, index: usize, row_index: usize, line_width: u16
 }
 
 /// Returns whether a folder owns the active Expo view.
-fn is_active_expo_folder(app: &NexusDemo, path: &std::path::Path) -> bool {
+fn is_active_expo_folder(app: &AppState, path: &std::path::Path) -> bool {
     app.active_main_pane_tab == MainPaneTab::Expo
         && app.selected_expo_folder.as_deref() == Some(path)
 }
 
 /// Returns whether the row has the left pane keyboard selection highlight.
-fn is_selected(app: &NexusDemo, row_index: usize) -> bool {
+fn is_selected(app: &AppState, row_index: usize) -> bool {
     row_index == app.focused_row && app.focused_pane == FocusedPane::Left
 }

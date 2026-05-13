@@ -1,17 +1,17 @@
 use anyhow::Result;
 
 use crate::app::adjust_index_after_removals::adjust_index_after_removals;
+use crate::app::app_state::AppState;
 use crate::app::clamp_session_index::clamp_session_index;
 use crate::app::next_chat_index::next_chat_index;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::app::remove_exited_sessions::RemovedExitedSessions;
-use crate::nexus_sessions::start_new_nexus_chat_in_dir::start_new_nexus_chat_in_dir;
+use crate::chat_sessions::start_new_chat_in_dir::start_new_chat_in_dir;
 use crate::session_panes::prune_terminal_pane_session_bundles::prune_terminal_pane_session_bundles;
 use crate::session_panes::session_index_for_pane::session_index_for_pane;
 
 /// Restores a valid active/focused session after exited entries were removed.
 pub fn restore_focus_after_removals(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     exited_indices: &[usize],
     removed: RemovedExitedSessions,
     closed_exited_pane: bool,
@@ -30,7 +30,7 @@ pub fn restore_focus_after_removals(
 
 /// Restores focus after a split pane closed because its displayed session exited.
 fn restore_focus_after_closed_exited_pane(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     exited_indices: &[usize],
     removed_active: bool,
 ) {
@@ -45,7 +45,7 @@ fn restore_focus_after_closed_exited_pane(
 
 /// Focuses the next chat or starts a replacement chat when none remain.
 fn focus_next_chat_or_create(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     removed: RemovedExitedSessions,
     preferred_index: usize,
 ) -> Result<()> {
@@ -54,11 +54,11 @@ fn focus_next_chat_or_create(
         app.activate_focused_session();
         return Ok(());
     }
-    start_new_nexus_chat_in_dir(app, &removed.fallback_working_dir)
+    start_new_chat_in_dir(app, &removed.fallback_working_dir)
 }
 
 /// Restores focus after terminal removals and non-active chat removals.
-fn restore_existing_focus(app: &mut NexusDemo, exited_indices: &[usize], removed_active: bool) {
+fn restore_existing_focus(app: &mut AppState, exited_indices: &[usize], removed_active: bool) {
     app.active_index = if removed_active {
         clamp_session_index(preferred_index(exited_indices), app.session_terminals.len())
     } else {

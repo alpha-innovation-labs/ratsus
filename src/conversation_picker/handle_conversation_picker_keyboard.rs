@@ -1,13 +1,13 @@
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_key_behavior::ConversationPickerKeyBehavior;
 use crate::keyboard::list_key_behavior::ListKeyBehavior;
 use crate::keyboard::list_key_outcome::ListKeyOutcome;
 
 /// Handles keyboard input while the conversation picker modal is open.
 pub fn handle_conversation_picker_keyboard(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> CoordinatorAction {
     let mut behavior = ConversationPickerKeyBehavior::new(app);

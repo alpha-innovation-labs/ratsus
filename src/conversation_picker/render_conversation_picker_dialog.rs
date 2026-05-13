@@ -2,14 +2,14 @@ use ratatui::layout::Alignment;
 use ratatui::Frame;
 use ratkit::primitives::dialog::{Dialog, DialogModalMode, DialogWidget};
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::conversation_picker_body::ConversationPickerBody;
 use crate::conversation_picker::conversation_picker_items::conversation_picker_items;
 use crate::conversation_picker::conversation_picker_mode::ConversationPickerMode;
 use crate::rendering::default_border_color::default_border_color;
 
 /// Renders the centered conversation picker modal dialog when it is open.
-pub fn render_conversation_picker_dialog(app: &NexusDemo, frame: &mut Frame) {
+pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
     if !app.conversation_picker.is_open {
         return;
     }

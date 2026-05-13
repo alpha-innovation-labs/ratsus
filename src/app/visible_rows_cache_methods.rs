@@ -1,7 +1,7 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::session_list_row::SessionListRow;
 
-impl NexusDemo {
+impl AppState {
     /// Returns the currently visible left-panel tree rows from the row cache.
     pub fn visible_rows(&self) -> Vec<SessionListRow> {
         self.visible_rows_cache

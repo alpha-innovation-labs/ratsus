@@ -16,6 +16,7 @@ pub fn render_file_system_tree_view(view: &mut FileSystemTreeView, frame: &mut F
         .constraints([Constraint::Min(0), Constraint::Length(3)])
         .split(area);
 
+    view.last_tree_area = layout[0];
     let tree = view.tree.clone();
     frame.render_stateful_widget(tree, layout[0], &mut view.state);
 

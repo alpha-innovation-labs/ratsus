@@ -20,14 +20,14 @@ pub fn ordered_chat_indices_from_left_rows(
 #[cfg(test)]
 mod tests {
     use crate::app::ordered_chat_indices_from_left_rows::ordered_chat_indices_from_left_rows;
+    use crate::harness::chat_session::ChatSession;
     use crate::left_panel::session_list_row::SessionListRow;
-    use crate::nexus_sessions::session_info::NexusSession;
     use crate::terminal::normal_terminal_session_info::normal_terminal_session_info;
     use crate::terminal::session_terminal::SessionTerminal;
 
     /// Builds a dormant chat fixture for left-pane order tests.
     fn chat(id: &str) -> SessionTerminal {
-        SessionTerminal::dormant(NexusSession::new("now", id, id, "/tmp/project"))
+        SessionTerminal::dormant(ChatSession::new("now", id, id, "/tmp/project"))
     }
 
     /// Builds a dormant terminal fixture for left-pane order tests.

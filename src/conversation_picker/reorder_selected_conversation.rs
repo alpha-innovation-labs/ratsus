@@ -1,4 +1,4 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::app::reorder_session_to_index::reorder_session_to_index;
 use crate::conversation_picker::conversation_picker_item::{
     ConversationPickerItem, ConversationPickerItemKind,
@@ -7,7 +7,7 @@ use crate::conversation_picker::conversation_picker_items::conversation_picker_i
 use crate::conversation_picker::focus_conversation_picker_session::focus_conversation_picker_session;
 
 /// Reorders the selected picker conversation by moving it to the next visible session target.
-pub fn reorder_selected_conversation(app: &mut NexusDemo, direction: isize) {
+pub fn reorder_selected_conversation(app: &mut AppState, direction: isize) {
     let items = current_items(app);
     let selected_position = app.conversation_picker.selected_position;
     let Some(from_index) = selected_session_index(&items, selected_position) else {
@@ -25,7 +25,7 @@ pub fn reorder_selected_conversation(app: &mut NexusDemo, direction: isize) {
 }
 
 /// Builds the current picker item snapshot.
-fn current_items(app: &NexusDemo) -> Vec<ConversationPickerItem> {
+fn current_items(app: &AppState) -> Vec<ConversationPickerItem> {
     conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,
@@ -44,7 +44,7 @@ fn selected_session_index(items: &[ConversationPickerItem], position: usize) -> 
 }
 
 /// Returns a stable session id for a session vector index.
-fn session_id_at_index(app: &NexusDemo, index: usize) -> Option<String> {
+fn session_id_at_index(app: &AppState, index: usize) -> Option<String> {
     app.session_terminals
         .get(index)
         .map(|entry| entry.session.id.clone())

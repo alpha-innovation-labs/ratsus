@@ -1,13 +1,13 @@
 use std::sync::mpsc::TryRecvError;
 
+use crate::app::app_state::AppState;
 use crate::app::complete_delete_sessions::complete_delete_sessions;
 use crate::app::delete_sessions_result::DeleteSessionsResult;
-use crate::app::nexus_demo_state::NexusDemo;
 use crate::app::removable_delete_session_ids::removable_delete_session_ids;
 use crate::notifications::show_failed_to_delete_session_toast::show_failed_to_delete_session_toast;
 
 /// Drains the background delete worker result when available.
-pub fn drain_delete_session_receiver(app: &mut NexusDemo) -> bool {
+pub fn drain_delete_session_receiver(app: &mut AppState) -> bool {
     let Some(receiver) = app.delete_session_receiver.as_ref() else {
         return false;
     };
@@ -23,7 +23,7 @@ pub fn drain_delete_session_receiver(app: &mut NexusDemo) -> bool {
 }
 
 /// Applies a completed delete worker result to app state.
-fn handle_delete_result(app: &mut NexusDemo, result: DeleteSessionsResult) -> bool {
+fn handle_delete_result(app: &mut AppState, result: DeleteSessionsResult) -> bool {
     let removable_ids = removable_delete_session_ids(app, &result.deleted_chat_ids);
     if result.has_errors() {
         show_failed_to_delete_session_toast(

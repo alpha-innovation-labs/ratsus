@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::ChatSession;
 
 /// Formats how long ago a session was modified for compact left-panel display.
-pub fn format_session_age(session: &NexusSession, now: DateTime<Utc>) -> String {
+pub fn format_session_age(session: &ChatSession, now: DateTime<Utc>) -> String {
     if session.date == "now" {
         return "0m".to_string();
     }
@@ -43,14 +43,14 @@ mod tests {
     use chrono::{Duration, TimeZone, Utc};
 
     use super::format_session_age;
-    use crate::nexus_sessions::session_info::NexusSession;
+    use crate::harness::chat_session::ChatSession;
 
     /// Builds a session whose modified time is relative to a fixed clock.
-    fn session_with_age(duration: Duration) -> (NexusSession, chrono::DateTime<Utc>) {
+    fn session_with_age(duration: Duration) -> (ChatSession, chrono::DateTime<Utc>) {
         let now = Utc.with_ymd_and_hms(2026, 5, 12, 12, 0, 0).unwrap();
         let modified = (now - duration).to_rfc3339();
         (
-            NexusSession::new(modified, "Title", "id", "/tmp/project"),
+            ChatSession::new(modified, "Title", "id", "/tmp/project"),
             now,
         )
     }

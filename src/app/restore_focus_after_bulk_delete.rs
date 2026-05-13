@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::app::session_index_after_delete::session_index_after_delete;
 use crate::left_panel::session_visible_row_index::session_visible_row_index;
 use crate::left_panel::sync_folder_order::sync_folder_order;
@@ -8,7 +8,7 @@ use crate::left_panel::visible_session_rows::visible_session_rows;
 use crate::session_panes::prune_terminal_pane_session_bundles::prune_terminal_pane_session_bundles;
 
 /// Restores active, focused, and folder state after deleting multiple sessions.
-pub fn restore_focus_after_bulk_delete(app: &mut NexusDemo, preferred_row: usize) {
+pub fn restore_focus_after_bulk_delete(app: &mut AppState, preferred_row: usize) {
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
     prune_terminal_pane_session_bundles(app);
     if app.session_terminals.is_empty() {
@@ -29,21 +29,21 @@ pub fn restore_focus_after_bulk_delete(app: &mut NexusDemo, preferred_row: usize
 }
 
 /// Clears focus when no sessions remain.
-fn clear_focus(app: &mut NexusDemo) {
+fn clear_focus(app: &mut AppState) {
     app.active_index = 0;
     app.focused_index = 0;
     app.focused_row = 0;
 }
 
 /// Opens the folder containing the next focused session.
-fn open_next_session_folder(app: &mut NexusDemo, next_index: usize) {
+fn open_next_session_folder(app: &mut AppState, next_index: usize) {
     if let Some(entry) = app.session_terminals.get(next_index) {
         app.collapsed_folders.remove(&entry.session.working_dir);
     }
 }
 
 /// Focuses and activates the next session after deletion.
-fn focus_next_session(app: &mut NexusDemo, next_index: usize) {
+fn focus_next_session(app: &mut AppState, next_index: usize) {
     let rows = visible_session_rows(
         &app.session_terminals,
         &app.collapsed_folders,

@@ -3,7 +3,7 @@ name = "ratsus"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
-description = "Nexus session TUI wrapper built with Ratkit"
+description = "Harness-backed session TUI built with Ratkit"
 license = "MIT"
 
 [dependencies]

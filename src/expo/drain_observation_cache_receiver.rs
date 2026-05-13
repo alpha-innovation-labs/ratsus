@@ -1,9 +1,9 @@
 use std::sync::mpsc::TryRecvError;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Applies a completed background observation-cache load when one is ready.
-pub fn drain_observation_cache_receiver(app: &mut NexusDemo) -> bool {
+pub fn drain_observation_cache_receiver(app: &mut AppState) -> bool {
     let Some(receiver) = app.observation_cache_receiver.as_ref() else {
         return false;
     };

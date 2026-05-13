@@ -1,10 +1,10 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Activates one session inside an existing terminal pane bundle.
 pub fn set_active_terminal_pane_bundle_session(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     pane_id: PaneId,
     session_id: String,
 ) {
@@ -19,7 +19,7 @@ pub fn set_active_terminal_pane_bundle_session(
 }
 
 /// Removes duplicate session ids from one pane bundle while preserving order.
-fn deduplicate_bundle(app: &mut NexusDemo, pane_id: PaneId) {
+fn deduplicate_bundle(app: &mut AppState, pane_id: PaneId) {
     let Some(bundle) = app.terminal_pane_session_bundles.get_mut(&pane_id) else {
         return;
     };

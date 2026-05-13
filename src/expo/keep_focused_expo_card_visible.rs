@@ -1,10 +1,10 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::expo::expo_card_models::expo_card_models;
 use crate::expo::expo_cards_body_area::expo_cards_body_area;
 use crate::expo::layout_expo_masonry::layout_expo_masonry;
 
 /// Adjusts Expo scroll so the focused conversation card remains visible.
-pub fn keep_focused_expo_card_visible(app: &mut NexusDemo) {
+pub fn keep_focused_expo_card_visible(app: &mut AppState) {
     let body = expo_cards_body_area(app.last_terminal_area);
     let (items, _) = layout_expo_masonry(body, expo_card_models(app), app.expo_card_width);
     let Some(item) = items

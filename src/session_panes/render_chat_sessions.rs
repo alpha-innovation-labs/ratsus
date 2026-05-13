@@ -4,7 +4,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Paragraph};
 use ratatui::Frame;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::copy_mode::is_terminal_copy_selection_active::is_terminal_copy_selection_active;
 use crate::copy_mode::render_screen_with_selection::render_screen_with_selection;
 use crate::layout::focused_pane::FocusedPane;
@@ -15,10 +15,10 @@ use crate::session_panes::resize_terminal_pane_session::resize_terminal_pane_ses
 use crate::session_panes::session_index_for_pane::session_index_for_pane;
 use crate::session_panes::terminal_pane_close_button_area::terminal_pane_close_button_area;
 use crate::session_panes::terminal_pane_session_ids::terminal_pane_session_ids;
-use crate::terminal::nexus_terminal::NexusTerminal;
+use crate::terminal::chat_terminal::ChatTerminal;
 
 /// Renders every visible chat split and updates terminal sizes to match pane areas.
-pub fn render_chat_sessions(app: &mut NexusDemo, frame: &mut Frame, area: Rect) {
+pub fn render_chat_sessions(app: &mut AppState, frame: &mut Frame, area: Rect) {
     ensure_active_terminal_pane_session(app);
     let panes = app.terminal_layout.layout_panes(area);
     app.terminal_pane_close_buttons.clear();
@@ -37,7 +37,7 @@ pub fn render_chat_sessions(app: &mut NexusDemo, frame: &mut Frame, area: Rect) 
 
 /// Renders optional chrome around split panes and returns the pane content area.
 fn render_split_chrome(
-    app: &NexusDemo,
+    app: &AppState,
     frame: &mut Frame,
     pane_id: u32,
     area: Rect,
@@ -64,7 +64,7 @@ fn render_split_chrome(
 }
 
 /// Stores the close-button hit target for one rendered split pane.
-fn register_close_button(app: &mut NexusDemo, pane_id: u32, area: Rect) {
+fn register_close_button(app: &mut AppState, pane_id: u32, area: Rect) {
     if let Some(button_area) = terminal_pane_close_button_area(area) {
         app.terminal_pane_close_buttons.insert(pane_id, button_area);
     }
@@ -80,7 +80,7 @@ fn close_title() -> Line<'static> {
 }
 
 /// Returns a compact title for a split terminal pane.
-fn split_title(app: &NexusDemo, pane_id: u32) -> String {
+fn split_title(app: &AppState, pane_id: u32) -> String {
     session_index_for_pane(app, pane_id)
         .and_then(|index| app.session_terminals.get(index))
         .map(|entry| {
@@ -95,7 +95,7 @@ fn split_title(app: &NexusDemo, pane_id: u32) -> String {
 }
 
 /// Renders the terminal or placeholder assigned to a split pane.
-fn render_pane_session(app: &NexusDemo, frame: &mut Frame, pane_id: u32, area: Rect) {
+fn render_pane_session(app: &AppState, frame: &mut Frame, pane_id: u32, area: Rect) {
     let Some(index) = session_index_for_pane(app, pane_id) else {
         frame.render_widget(Paragraph::new("No session assigned"), area);
         return;
@@ -112,15 +112,15 @@ fn render_pane_session(app: &NexusDemo, frame: &mut Frame, pane_id: u32, area: R
         terminal.render(frame, area);
         render_terminal_cursor(app, pane_id, terminal, frame, area);
     } else {
-        frame.render_widget(Paragraph::new("Starting Nexus session…"), area);
+        frame.render_widget(Paragraph::new("Starting chat session…"), area);
     }
 }
 
 /// Renders the cursor for the active terminal split when it is visible.
 fn render_terminal_cursor(
-    app: &NexusDemo,
+    app: &AppState,
     pane_id: u32,
-    terminal: &NexusTerminal,
+    terminal: &ChatTerminal,
     frame: &mut Frame,
     area: Rect,
 ) {

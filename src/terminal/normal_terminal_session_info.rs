@@ -2,16 +2,17 @@ use std::path::Path;
 
 use uuid::Uuid;
 
-use crate::nexus_sessions::session_info::NexusSession;
+use crate::harness::chat_session::{ChatSession, ChatSessionKind};
 
 /// Creates metadata for a normal shell terminal session.
-pub fn normal_terminal_session_info(working_dir: &Path) -> NexusSession {
-    NexusSession::new(
+pub fn normal_terminal_session_info(working_dir: &Path) -> ChatSession {
+    ChatSession::new(
         "now",
         "Terminal",
         format!("terminal-{}", Uuid::new_v4()),
         working_dir.to_path_buf(),
     )
+    .with_kind(ChatSessionKind::NormalTerminal)
 }
 
 #[cfg(test)]

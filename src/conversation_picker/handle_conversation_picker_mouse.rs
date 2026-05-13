@@ -1,7 +1,7 @@
 use crossterm::event::{KeyModifiers, MouseButton, MouseEventKind};
 use ratkit::CoordinatorAction;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::conversation_picker::activate_selected_conversation::activate_selected_conversation;
 use crate::conversation_picker::conversation_picker_dialog_body_area::conversation_picker_dialog_body_area;
 use crate::conversation_picker::conversation_picker_frame_area::conversation_picker_frame_area;
@@ -21,7 +21,7 @@ const PICKER_SCROLL_LINES_PER_TICK: usize = 3;
 
 /// Handles mouse wheel scrolling and drag reordering while the conversation picker is open.
 pub fn handle_conversation_picker_mouse(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     mouse: ratkit::MouseEvent,
 ) -> CoordinatorAction {
     if handle_conversation_picker_drag_mouse(app, mouse) {
@@ -38,7 +38,7 @@ pub fn handle_conversation_picker_mouse(
 }
 
 /// Handles picker mouse drag events that reorder conversation rows.
-fn handle_conversation_picker_drag_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> bool {
+fn handle_conversation_picker_drag_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> bool {
     match mouse.kind {
         MouseEventKind::Down(MouseButton::Left) => start_picker_mouse(app, mouse),
         MouseEventKind::Drag(MouseButton::Left) => move_picker_drag(app, mouse.row),
@@ -48,7 +48,7 @@ fn handle_conversation_picker_drag_mouse(app: &mut NexusDemo, mouse: ratkit::Mou
 }
 
 /// Handles picker mouse down by opening normal clicks or starting Shift-drag reorder.
-fn start_picker_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> bool {
+fn start_picker_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> bool {
     let Some((position, item)) = picker_item_at_row(app, mouse.row) else {
         return false;
     };
@@ -62,7 +62,7 @@ fn start_picker_mouse(app: &mut NexusDemo, mouse: ratkit::MouseEvent) -> bool {
 }
 
 /// Starts a picker drag and focuses the row under the mouse.
-fn start_picker_drag(app: &mut NexusDemo, position: usize, item: ConversationPickerItem) -> bool {
+fn start_picker_drag(app: &mut AppState, position: usize, item: ConversationPickerItem) -> bool {
     app.conversation_picker.mouse_down_position = Some(position);
     app.conversation_picker.mouse_drag_moved = false;
     let ConversationPickerItemKind::Session { index, .. } = item.kind else {
@@ -74,7 +74,7 @@ fn start_picker_drag(app: &mut NexusDemo, position: usize, item: ConversationPic
 }
 
 /// Moves the active picker drag to the session row under the mouse.
-fn move_picker_drag(app: &mut NexusDemo, row: u16) -> bool {
+fn move_picker_drag(app: &mut AppState, row: u16) -> bool {
     if app.session_drag.is_none() {
         if app.conversation_picker.mouse_down_position.is_some() {
             app.conversation_picker.mouse_drag_moved = true;
@@ -103,7 +103,7 @@ fn move_picker_drag(app: &mut NexusDemo, row: u16) -> bool {
 }
 
 /// Finishes a picker mouse gesture by opening clicks or ending drag reorders.
-fn finish_picker_mouse(app: &mut NexusDemo) -> bool {
+fn finish_picker_mouse(app: &mut AppState) -> bool {
     if app.conversation_picker.mouse_down_position.is_none() && app.session_drag.is_none() {
         return false;
     }
@@ -118,13 +118,13 @@ fn finish_picker_mouse(app: &mut NexusDemo) -> bool {
 }
 
 /// Clears picker-local mouse gesture tracking.
-fn clear_picker_mouse_gesture(app: &mut NexusDemo) {
+fn clear_picker_mouse_gesture(app: &mut AppState) {
     app.conversation_picker.mouse_down_position = None;
     app.conversation_picker.mouse_drag_moved = false;
 }
 
 /// Returns the currently dragged session id.
-fn dragged_session_id(app: &NexusDemo) -> Option<String> {
+fn dragged_session_id(app: &AppState) -> Option<String> {
     let index = app.session_drag?.current_index;
     app.session_terminals
         .get(index)
@@ -132,7 +132,7 @@ fn dragged_session_id(app: &NexusDemo) -> Option<String> {
 }
 
 /// Resolves a mouse row to a picker item snapshot and visible position.
-fn picker_item_at_row(app: &NexusDemo, row: u16) -> Option<(usize, ConversationPickerItem)> {
+fn picker_item_at_row(app: &AppState, row: u16) -> Option<(usize, ConversationPickerItem)> {
     let items = current_picker_items(app);
     let body_area = conversation_picker_dialog_body_area(conversation_picker_frame_area(app));
     let position = conversation_picker_item_position_at_row(
@@ -145,7 +145,7 @@ fn picker_item_at_row(app: &NexusDemo, row: u16) -> Option<(usize, ConversationP
 }
 
 /// Builds the current picker item snapshot.
-fn current_picker_items(app: &NexusDemo) -> Vec<ConversationPickerItem> {
+fn current_picker_items(app: &AppState) -> Vec<ConversationPickerItem> {
     conversation_picker_items(
         &app.session_terminals,
         &app.folder_order,

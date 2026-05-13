@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::terminal::is_chat_session::is_chat_session;
 
 /// Summary of entries removed after their terminal process exited.
@@ -12,7 +12,7 @@ pub struct RemovedExitedSessions {
 
 /// Removes exited session entries and records enough context to recover focus.
 pub fn remove_exited_sessions(
-    app: &mut NexusDemo,
+    app: &mut AppState,
     exited_indices: &[usize],
 ) -> RemovedExitedSessions {
     let fallback_working_dir = fallback_working_dir(app, exited_indices);
@@ -38,7 +38,7 @@ pub fn remove_exited_sessions(
 }
 
 /// Returns a working directory to use if a removed chat needs replacement.
-fn fallback_working_dir(app: &NexusDemo, exited_indices: &[usize]) -> PathBuf {
+fn fallback_working_dir(app: &AppState, exited_indices: &[usize]) -> PathBuf {
     exited_indices
         .iter()
         .find_map(|index| app.session_terminals.get(*index))

@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 
 use ratatui::backend::TestBackend;
 use ratatui::layout::Rect;
@@ -10,9 +10,12 @@ use ratatui::Terminal;
 use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
 
+use crate::app::app_state::AppState;
 use crate::app::delete_session_confirmation_state::DeleteSessionConfirmationState;
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::chat_sessions::spawn_session_refresh_worker::SessionRefreshResult;
 use crate::conversation_picker::conversation_picker_state::ConversationPickerState;
+use crate::harness::chat_session::ChatSession;
+use crate::harnesses::stub::StubHarness;
 use crate::layout::focused_pane::FocusedPane;
 use crate::layout::pane_ids::{LEFT_PANE_ID, TERMINAL_PANE_ID};
 use crate::left_panel::focus_left_panel_row::focus_left_panel_row;
@@ -21,9 +24,7 @@ use crate::left_panel::session_lines::session_lines;
 use crate::left_panel::visible_session_rows_cache::VisibleSessionRowsCache;
 use crate::main_pane::file_system_tree_view::FileSystemTreeView;
 use crate::main_pane::main_pane_tab::MainPaneTab;
-use crate::menu_bar::nexus_menu_bar::nexus_menu_bar;
-use crate::nexus_sessions::session_info::NexusSession;
-use crate::nexus_sessions::spawn_session_refresh_worker::SessionRefreshResult;
+use crate::menu_bar::app_menu_bar::app_menu_bar;
 use crate::terminal::session_terminal::SessionTerminal;
 
 /// Verifies the left pane renders Ratkit's scrollbar extension when rows overflow.
@@ -102,13 +103,13 @@ fn selecting_folder_opens_expo() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Builds a Nexus demo state with one left-panel folder and fixed viewport geometry.
-fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Result<NexusDemo> {
+/// Builds a app state with one left-panel folder and fixed viewport geometry.
+fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Result<AppState> {
     let (_sender, receiver) = mpsc::channel::<SessionRefreshResult>();
     let mut layout = ResizableGrid::new(LEFT_PANE_ID);
     let _ = layout.split_pane_vertically(LEFT_PANE_ID);
 
-    Ok(NexusDemo {
+    Ok(AppState {
         layout,
         layout_widget_state: ResizableGridWidgetState::default(),
         terminal_layout: ResizableGrid::new(TERMINAL_PANE_ID),
@@ -119,7 +120,7 @@ fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Re
         terminal_pane_close_buttons: BTreeMap::new(),
         active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
-        menu_bar: nexus_menu_bar(MainPaneTab::Chat),
+        menu_bar: app_menu_bar(MainPaneTab::Chat),
         conversation_picker: ConversationPickerState::new(),
         delete_confirmation: DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
@@ -160,6 +161,7 @@ fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Re
         file_system_tree_view: FileSystemTreeView::new()?,
         loader_tick: 0,
         session_refresh_receiver: receiver,
+        chat_harness: Arc::new(StubHarness::new()),
     })
 }
 
@@ -167,7 +169,7 @@ fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Re
 fn scrollbar_test_sessions(session_count: usize) -> Vec<SessionTerminal> {
     (0..session_count)
         .map(|index| {
-            SessionTerminal::dormant(NexusSession::new(
+            SessionTerminal::dormant(ChatSession::new(
                 "now",
                 format!("Session {index}"),
                 format!("session-{index}"),

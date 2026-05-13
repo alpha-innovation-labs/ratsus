@@ -1,7 +1,7 @@
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 
 /// Returns the title for the pending delete confirmation target.
-pub fn delete_session_title(app: &NexusDemo) -> Option<String> {
+pub fn delete_session_title(app: &AppState) -> Option<String> {
     app.delete_confirmation.session_title.clone()
 }
 

@@ -1,9 +1,9 @@
 use crate::app::activate_expo_folder::activate_expo_folder;
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
 use crate::left_panel::session_list_row::SessionListRow;
 
 /// Focuses a visible left-panel row and activates it when it is a session row.
-pub fn focus_left_panel_row(app: &mut NexusDemo, row_index: usize) {
+pub fn focus_left_panel_row(app: &mut AppState, row_index: usize) {
     let rows = app.visible_rows();
     if rows.is_empty() {
         return;

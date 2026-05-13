@@ -1,20 +1,20 @@
 use anyhow::Result;
 
-use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::app_state::AppState;
+use crate::chat_sessions::focused_chat_session_working_dir::focused_chat_session_working_dir;
 use crate::layout::focused_pane::FocusedPane;
 use crate::left_panel::sync_folder_order::sync_folder_order;
-use crate::nexus_sessions::focused_nexus_session_working_dir::focused_nexus_session_working_dir;
-use crate::nexus_sessions::spawn_new_nexus_session_terminal::spawn_new_nexus_session_terminal;
 use crate::session_panes::active_terminal_bundle_insert_index::active_terminal_bundle_insert_index;
 use crate::session_panes::active_terminal_spawn_area::active_terminal_spawn_area;
 use crate::session_panes::set_active_terminal_pane_bundle_session::set_active_terminal_pane_bundle_session;
 
-/// Opens a new Nexus chat and bundles it into the active terminal split pane.
-pub fn bundle_new_session_in_active_terminal_pane(app: &mut NexusDemo) -> Result<()> {
-    let working_dir = focused_nexus_session_working_dir(app)?;
+/// Opens a new chat and bundles it into the active terminal split pane.
+pub fn bundle_new_session_in_active_terminal_pane(app: &mut AppState) -> Result<()> {
+    let working_dir = focused_chat_session_working_dir(app)?;
     let area = active_terminal_spawn_area(app);
     let session_terminal =
-        spawn_new_nexus_session_terminal(&working_dir, area.height.max(1), area.width.max(1))?;
+        app.chat_harness
+            .spawn_new_chat(&working_dir, area.height.max(1), area.width.max(1))?;
     let session_id = session_terminal.session.id.clone();
     let insert_index = active_terminal_bundle_insert_index(app);
     let previous_session_id = app
