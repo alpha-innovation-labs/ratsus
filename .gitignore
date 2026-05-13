@@ -1,2 +1,4 @@
 /target/
 .DS_Store
+confirm_delete_session.rs
+plan.md
