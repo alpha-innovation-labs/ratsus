@@ -1,0 +1,28 @@
+use ratatui::layout::Rect;
+use ratatui::Frame;
+
+use crate::app::state::app_state::AppState;
+use crate::extensions::expo::card::area::ExpoCardArea;
+use crate::extensions::expo::card::models::expo_card_models;
+use crate::extensions::expo::card::render_conversation::render_conversation_card;
+use crate::extensions::expo::card::visible_area::expo_card_visible_area;
+use crate::extensions::expo::layout::masonry::layout_expo_masonry;
+
+/// Renders the visible window of all Expo conversation cards in masonry columns.
+pub fn render_expo_cards(app: &mut AppState, frame: &mut Frame, area: Rect) {
+    let cards = expo_card_models(app);
+    let (items, content_height) = layout_expo_masonry(area, cards, app.expo_card_width);
+    app.expo_scroll = app
+        .expo_scroll
+        .min(content_height.saturating_sub(usize::from(area.height)));
+    for item in items {
+        let Some(card_area) = expo_card_visible_area(item.area, area, app.expo_scroll) else {
+            continue;
+        };
+        render_conversation_card(frame, card_area, &item.title, &item.preview);
+        app.expo_card_areas.push(ExpoCardArea {
+            session_index: item.session_index,
+            area: card_area,
+        });
+    }
+}
