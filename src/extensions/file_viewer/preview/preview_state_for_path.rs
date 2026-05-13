@@ -17,8 +17,8 @@ pub fn preview_state_for_path(path: &Path, is_dir: bool) -> FilePreviewState {
 mod tests {
     use std::fs;
 
-    use super::file_preview_state::FilePreviewState;
     use super::preview_state_for_path;
+    use crate::extensions::file_viewer::preview::file_preview_state::FilePreviewState;
 
     /// Markdown files should be routed to Ratkit's Markdown widget.
     #[test]
