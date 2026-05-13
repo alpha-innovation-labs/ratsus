@@ -23,7 +23,6 @@ pub struct StubHarness {
 struct StubHarnessState {
     sessions: Vec<ChatSession>,
     next_id: usize,
-    refresh_tick: usize,
 }
 
 impl StubHarness {
@@ -32,11 +31,7 @@ impl StubHarness {
         let sessions = stub_sessions();
         let next_id = sessions.len().saturating_add(1);
         Self {
-            state: Arc::new(Mutex::new(StubHarnessState {
-                sessions,
-                next_id,
-                refresh_tick: 0,
-            })),
+            state: Arc::new(Mutex::new(StubHarnessState { sessions, next_id })),
         }
     }
 }
@@ -60,14 +55,9 @@ impl ChatHarness for StubHarness {
         Ok(state.sessions.clone())
     }
 
-    /// Toggles fake running state without reading external registry files.
+    /// Returns current fake sessions without changing deterministic running state.
     fn refresh_sessions(&self) -> Result<Vec<ChatSession>> {
-        let mut state = self.state.lock().expect("stub harness state is available");
-        state.refresh_tick = state.refresh_tick.saturating_add(1);
-        let tick = state.refresh_tick;
-        for (index, session) in state.sessions.iter_mut().enumerate() {
-            session.is_running = (tick + index) % 2 == 0;
-        }
+        let state = self.state.lock().expect("stub harness state is available");
         Ok(state.sessions.clone())
     }
 

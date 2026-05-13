@@ -5,16 +5,16 @@ use crate::extensions::harness::stub::data::stub_session::stub_session;
 pub fn epsilon_stub_sessions() -> Vec<ChatSession> {
     vec![
         stub_session(
-            "2026-05-17T09:00:00Z",
+            "2026-05-13T09:00:00Z",
             "Explore epsilon project",
-            "stub-33",
+            "stub-40",
             "/tmp/ratsus-epsilon",
             false,
         ),
         stub_session(
-            "2026-05-17T10:00:00Z",
+            "2026-05-13T10:00:00Z",
             "Finalize epsilon state",
-            "stub-34",
+            "stub-41",
             "/tmp/ratsus-epsilon",
             false,
         ),
