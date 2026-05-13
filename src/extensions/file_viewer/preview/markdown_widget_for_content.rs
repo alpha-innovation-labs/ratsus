@@ -3,7 +3,7 @@ use ratkit::widgets::markdown_preview::{
     MarkdownWidget, ScrollState, SelectionState, SourceState, VimState,
 };
 
-/// Builds a persistent Ratkit markdown preview widget for file content.
+/// Builds a configured Markdown widget for file-preview content.
 pub fn markdown_widget_for_content(content: String) -> MarkdownWidget<'static> {
     let mut source = SourceState::default();
     source.set_source_string(content.clone());
@@ -13,7 +13,6 @@ pub fn markdown_widget_for_content(content: String) -> MarkdownWidget<'static> {
 
     let mut display = DisplaySettings::default();
     display.set_show_document_line_numbers(true);
-    display.set_show_line_numbers(true);
 
     MarkdownWidget::new(
         content,

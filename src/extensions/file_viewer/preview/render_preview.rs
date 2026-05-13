@@ -3,7 +3,7 @@ use ratatui::Frame;
 
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 
-/// Renders the selected file-system item with Ratkit's markdown preview widget.
+/// Renders the selected file-system item with Ratkit's code widget.
 pub fn render_file_preview(view: &mut FileSystemTreeView, frame: &mut Frame, area: Rect) {
     view.render_preview(frame, area);
 }

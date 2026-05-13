@@ -108,7 +108,7 @@ fn snapshots_bundled_session_left_panel_markers() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Snapshots the Files tab with the file tree on the left and markdown preview on the right.
+/// Snapshots the Files tab with the file tree on the left and code preview on the right.
 #[test]
 fn snapshots_files_tab_tree_and_preview() -> anyhow::Result<()> {
     let root = std::env::temp_dir().join(format!("ratsus-files-tab-{}", uuid::Uuid::new_v4()));

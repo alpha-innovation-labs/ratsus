@@ -1220,9 +1220,7 @@ dependencies = [
 
 [[package]]
 name = "ratkit"
-version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d55b2afc720fbeaddaad55d1d9bf350f52bf268f93436d2f0060a4d60c0bbf7"
+version = "0.2.16"
 dependencies = [
  "anyhow",
  "arboard",

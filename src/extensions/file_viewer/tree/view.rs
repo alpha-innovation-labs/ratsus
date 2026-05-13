@@ -4,10 +4,9 @@ use std::path::PathBuf;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use ratkit::widgets::file_system_tree::{FileSystemTree, FileSystemTreeState};
-use ratkit::widgets::markdown_preview::MarkdownWidget;
 
-use crate::extensions::file_viewer::preview::markdown_for_path::file_preview_markdown_for_path;
-use crate::extensions::file_viewer::preview::markdown_widget_for_content::markdown_widget_for_content;
+use crate::extensions::file_viewer::preview::file_preview_state::FilePreviewState;
+use crate::extensions::file_viewer::preview::preview_state_for_path::preview_state_for_path;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 
 /// File-system tree state copied from the Ratkit file system tree demo.
@@ -16,7 +15,7 @@ pub struct FileSystemTreeView {
     pub(super) state: FileSystemTreeState,
     last_selection: String,
     pub(super) last_tree_area: Rect,
-    pub(super) preview: MarkdownWidget<'static>,
+    pub(super) preview_state: FilePreviewState,
     pending_g: bool,
 }
 
@@ -33,14 +32,14 @@ impl FileSystemTreeView {
             .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         let mut state = FileSystemTreeState::new();
         state.select(vec![0]);
-        let preview = markdown_widget_for_content(file_preview_markdown_for_path(&root, true));
+        let preview_state = preview_state_for_path(&root, true);
 
         Ok(Self {
             tree,
             state,
             last_selection: root.display().to_string(),
             last_tree_area: Rect::default(),
-            preview,
+            preview_state,
             pending_g: false,
         })
     }
@@ -178,7 +177,7 @@ impl FileSystemTreeView {
         let path = entry.path.clone();
         let is_dir = entry.is_dir;
         self.last_selection = path.display().to_string();
-        self.preview = markdown_widget_for_content(file_preview_markdown_for_path(&path, is_dir));
+        self.preview_state = preview_state_for_path(&path, is_dir);
         outcome
     }
 }
