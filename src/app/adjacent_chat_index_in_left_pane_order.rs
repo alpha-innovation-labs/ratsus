@@ -13,12 +13,12 @@ pub fn adjacent_chat_index_in_left_pane_order(
     if chat_indices.is_empty() {
         return None;
     }
-    let current_position = chat_indices
-        .iter()
-        .position(|index| *index == active_index);
+    let current_position = chat_indices.iter().position(|index| *index == active_index);
     match (current_position, direction.is_negative()) {
         (Some(position), false) => Some(chat_indices[(position + 1) % chat_indices.len()]),
-        (Some(position), true) => Some(chat_indices[(position + chat_indices.len() - 1) % chat_indices.len()]),
+        (Some(position), true) => {
+            Some(chat_indices[(position + chat_indices.len() - 1) % chat_indices.len()])
+        }
         (None, false) => chat_indices.first().copied(),
         (None, true) => chat_indices.last().copied(),
     }

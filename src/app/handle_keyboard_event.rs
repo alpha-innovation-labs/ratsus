@@ -1,6 +1,8 @@
 use crossterm::event::KeyModifiers;
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
+use crate::app::chat_cycle_direction_for_keyboard::chat_cycle_direction_for_keyboard;
+use crate::app::cycle_chat_in_left_pane_order::cycle_chat_in_left_pane_order;
 use crate::app::handle_delete_session_confirmation_keyboard::handle_delete_session_confirmation_keyboard;
 use crate::app::handle_left_keyboard::handle_left_keyboard;
 use crate::app::handle_terminal_keyboard::handle_terminal_keyboard;
@@ -33,6 +35,12 @@ pub fn handle_keyboard_event(
     }
     if app.conversation_picker.is_open {
         return Ok(handle_conversation_picker_keyboard(app, keyboard));
+    }
+    if let Some(direction) = chat_cycle_direction_for_keyboard(&keyboard) {
+        if cycle_chat_in_left_pane_order(app, direction) {
+            return Ok(CoordinatorAction::Redraw);
+        }
+        return Ok(CoordinatorAction::Continue);
     }
     if keyboard.is_char('k') && keyboard.modifiers.contains(KeyModifiers::CONTROL) {
         open_conversation_picker(app);
