@@ -1,0 +1,1 @@
+- List-like panes, panels, and modals must implement the shared `ListKeyBehavior` contract so default hotkeys such as `j/k`, arrows, `gg/G`, Enter, `/`, `d`, and `q` stay consistent.
