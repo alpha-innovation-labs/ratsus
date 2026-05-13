@@ -29,10 +29,12 @@ struct StubHarnessState {
 impl StubHarness {
     /// Creates a deterministic stub harness with fake sessions across folders.
     pub fn new() -> Self {
+        let sessions = stub_sessions();
+        let next_id = sessions.len().saturating_add(1);
         Self {
             state: Arc::new(Mutex::new(StubHarnessState {
-                sessions: stub_sessions(),
-                next_id: 4,
+                sessions,
+                next_id,
                 refresh_tick: 0,
             })),
         }
