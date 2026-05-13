@@ -4,7 +4,8 @@
     "ratkit": {
       "source": "alpha-innovation-labs/ratkit",
       "sourceType": "github",
-      "computedHash": "4d5ad2220e5efa4befa2367c03b118be59334ba24857df986335dc12bbecd2e0"
+      "skillPath": "skills/ratkit/SKILL.md",
+      "computedHash": "742a6603478cbfd4976c1bd0c0cfcfc42db77f45adaeb6ffe626988630484de8"
     }
   }
 }
