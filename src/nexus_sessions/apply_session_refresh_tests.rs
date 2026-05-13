@@ -5,7 +5,7 @@ use crate::nexus_sessions::new_nexus_chat_session::new_nexus_chat_session;
 use crate::nexus_sessions::session_info::NexusSession;
 use crate::terminal::session_terminal::SessionTerminal;
 
-/// Verifies refreshed metadata updates a session by stable id.
+/// Verifies specific refreshed metadata updates a session by stable id.
 #[test]
 fn updates_existing_session_title_by_id() {
     let mut entries = vec![SessionTerminal::dormant(NexusSession::new(
@@ -27,7 +27,32 @@ fn updates_existing_session_title_by_id() {
 
     assert!(changed);
     assert_eq!(entries[0].session.title, "Current title");
-    assert_eq!(entries[0].session.date, "new-date");
+    assert_eq!(entries[0].session.date, "old-date");
+}
+
+/// Verifies placeholder registry titles do not replace stable Nexus titles.
+#[test]
+fn keeps_existing_title_for_placeholder_registry_title() {
+    let mut entries = vec![SessionTerminal::dormant(NexusSession::new(
+        "old-date",
+        "Real title",
+        "session-1",
+        "/tmp/project",
+    ))];
+
+    let changed = apply_session_refresh(
+        &mut entries,
+        vec![NexusSession::new(
+            "new-date",
+            "New Session",
+            "session-1",
+            "/tmp/project",
+        )],
+    );
+
+    assert!(!changed);
+    assert_eq!(entries[0].session.title, "Real title");
+    assert_eq!(entries[0].session.date, "old-date");
 }
 
 /// Verifies a locally spawned new chat adopts its real Nexus id and title.
@@ -88,9 +113,9 @@ fn clears_running_status_when_session_leaves_registry() {
     assert!(!entries[0].session.is_running);
 }
 
-/// Verifies unseen refreshed sessions are appended without disturbing existing indexes.
+/// Verifies registry-only sessions are ignored instead of appended as phantom rows.
 #[test]
-fn appends_unseen_refreshed_session() {
+fn ignores_unseen_refreshed_session() {
     let mut entries = vec![SessionTerminal::dormant(NexusSession::new(
         "date-1",
         "Existing",
@@ -108,8 +133,7 @@ fn appends_unseen_refreshed_session() {
         )],
     );
 
-    assert!(changed);
-    assert_eq!(entries.len(), 2);
+    assert!(!changed);
+    assert_eq!(entries.len(), 1);
     assert_eq!(entries[0].session.id, "session-1");
-    assert_eq!(entries[1].session.id, "session-2");
 }

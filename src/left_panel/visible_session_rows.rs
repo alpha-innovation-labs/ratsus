@@ -1,10 +1,8 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::path::PathBuf;
 
-use std::cmp::Reverse;
-
 use crate::left_panel::session_list_row::SessionListRow;
-use crate::left_panel::session_modified_timestamp::session_modified_timestamp;
+use crate::terminal::is_normal_terminal_session::is_normal_terminal_session;
 use crate::terminal::session_terminal::SessionTerminal;
 
 const RECENT_SESSION_LIMIT: usize = 10;
@@ -14,30 +12,30 @@ pub fn visible_session_rows(
     session_terminals: &[SessionTerminal],
     collapsed_folders: &BTreeSet<PathBuf>,
     folder_order: &[PathBuf],
+    pinned_session_index: Option<usize>,
 ) -> Vec<SessionListRow> {
+    let sessions_by_folder = session_indexes_by_folder(session_terminals);
     let mut rows = Vec::new();
     for folder in folder_order {
-        let indexes =
-            limited_session_indexes(session_indexes_for_folder(session_terminals, folder));
-        let total_session_count = total_session_count_for_folder(session_terminals, folder);
-        if indexes.is_empty() {
+        let Some(indexes) = sessions_by_folder.get(folder) else {
             continue;
-        }
+        };
+        let visible_indexes =
+            visible_folder_session_indexes(session_terminals, indexes, pinned_session_index);
         rows.push(SessionListRow::Folder {
             path: folder.clone(),
-            current_session_count: indexes.len(),
-            total_session_count,
+            current_session_count: visible_indexes.len(),
+            total_session_count: indexes.len(),
         });
         if collapsed_folders.contains(folder) {
             continue;
         }
-        let recent_session_count = indexes.len();
         rows.extend(
-            indexes
-                .into_iter()
-                .map(|index| SessionListRow::Session { index }),
+            visible_indexes
+                .iter()
+                .map(|index| SessionListRow::Session { index: *index }),
         );
-        if total_session_count > recent_session_count {
+        if indexes.len() > visible_indexes.len() {
             rows.push(SessionListRow::FolderMore {
                 path: folder.clone(),
             });
@@ -46,36 +44,71 @@ pub fn visible_session_rows(
     rows
 }
 
-/// Returns at most the number of recent sessions shown directly in one folder.
-fn limited_session_indexes(indexes: Vec<usize>) -> Vec<usize> {
-    indexes.into_iter().take(RECENT_SESSION_LIMIT).collect()
-}
-
-/// Returns the total number of sessions that belong to a folder.
-fn total_session_count_for_folder(
+/// Returns visible session indexes, always including the pinned active session when present.
+fn visible_folder_session_indexes(
     session_terminals: &[SessionTerminal],
-    folder: &PathBuf,
-) -> usize {
-    session_terminals
-        .iter()
-        .filter(|entry| entry.session.working_dir == *folder)
-        .count()
-}
-
-/// Returns folder session indexes sorted from newest to oldest activity.
-fn session_indexes_for_folder(
-    session_terminals: &[SessionTerminal],
-    folder: &PathBuf,
+    indexes: &[usize],
+    pinned_session_index: Option<usize>,
 ) -> Vec<usize> {
-    let mut indexes = session_terminals
+    let mut visible = indexes
         .iter()
-        .enumerate()
-        .filter_map(|(index, entry)| (entry.session.working_dir == *folder).then_some(index))
+        .take(RECENT_SESSION_LIMIT)
+        .copied()
         .collect::<Vec<_>>();
-    indexes.sort_by_key(|index| {
-        Reverse(session_modified_timestamp(
-            &session_terminals[*index].session,
-        ))
-    });
-    indexes
+    push_normal_terminal_after_limit(session_terminals, indexes, &mut visible);
+    push_pinned_session(indexes, pinned_session_index, &mut visible);
+    visible.sort_by_key(|index| indexes.iter().position(|candidate| candidate == index));
+    visible
+}
+
+/// Adds a terminal immediately after the visible limit so Ctrl+T remains visible there.
+fn push_normal_terminal_after_limit(
+    session_terminals: &[SessionTerminal],
+    indexes: &[usize],
+    visible: &mut Vec<usize>,
+) {
+    let Some(extra_index) = indexes.get(RECENT_SESSION_LIMIT).copied() else {
+        return;
+    };
+    if session_terminals
+        .get(extra_index)
+        .is_some_and(|entry| is_normal_terminal_session(&entry.session))
+    {
+        push_unique(visible, extra_index);
+    }
+}
+
+/// Adds the active session when it belongs to this folder but is outside the visible limit.
+fn push_pinned_session(
+    indexes: &[usize],
+    pinned_session_index: Option<usize>,
+    visible: &mut Vec<usize>,
+) {
+    let Some(pinned_index) = pinned_session_index else {
+        return;
+    };
+    if indexes.contains(&pinned_index) {
+        push_unique(visible, pinned_index);
+    }
+}
+
+/// Pushes one index only when it is not already visible.
+fn push_unique(visible: &mut Vec<usize>, index: usize) {
+    if !visible.contains(&index) {
+        visible.push(index);
+    }
+}
+
+/// Groups session indexes by folder while preserving the current session vector order.
+fn session_indexes_by_folder(
+    session_terminals: &[SessionTerminal],
+) -> HashMap<PathBuf, Vec<usize>> {
+    let mut sessions_by_folder = HashMap::new();
+    for (index, entry) in session_terminals.iter().enumerate() {
+        sessions_by_folder
+            .entry(entry.session.working_dir.clone())
+            .or_insert_with(Vec::new)
+            .push(index);
+    }
+    sessions_by_folder
 }

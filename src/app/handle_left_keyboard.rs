@@ -1,58 +1,44 @@
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::nexus_demo_state::NexusDemo;
-use crate::conversation_picker::open_conversation_picker::open_conversation_picker;
-use crate::left_panel::activate_focused_left_row::activate_focused_left_row;
-use crate::left_panel::collapse_focused_project::collapse_focused_project;
-use crate::left_panel::focus_left_panel_end::focus_left_panel_end;
-use crate::left_panel::focus_left_panel_start::focus_left_panel_start;
-use crate::left_panel::open_focused_project::open_focused_project;
+use crate::keyboard::list_key_behavior::ListKeyBehavior;
+use crate::keyboard::list_key_outcome::ListKeyOutcome;
+use crate::left_panel::focus_adjacent_folder::focus_adjacent_folder;
+use crate::left_panel::left_panel_key_behavior::LeftPanelKeyBehavior;
 
 /// Handles keyboard input while the left session pane is focused.
 pub fn handle_left_keyboard(
     app: &mut NexusDemo,
     keyboard: KeyboardEvent,
 ) -> ratkit::LayoutResult<CoordinatorAction> {
-    let handled = match keyboard.key_code {
-        KeyCode::Char('j') | KeyCode::Down => {
-            handle_left_action(app, |app| app.select_relative_session(1))
-        }
-        KeyCode::Char('k') | KeyCode::Up => {
-            handle_left_action(app, |app| app.select_relative_session(-1))
-        }
-        KeyCode::Char('h') | KeyCode::Left => handle_left_action(app, collapse_focused_project),
-        KeyCode::Char('l') | KeyCode::Right => handle_left_action(app, open_focused_project),
-        KeyCode::Char('/') if keyboard.modifiers.is_empty() => {
-            handle_left_action(app, open_conversation_picker)
-        }
-        KeyCode::Char('g') if keyboard.modifiers.is_empty() => handle_left_g(app),
-        KeyCode::Char('G') => handle_left_action(app, focus_left_panel_end),
-        KeyCode::Enter => handle_left_action(app, activate_focused_left_row),
-        KeyCode::Char('q') if keyboard.modifiers.is_empty() => return Ok(CoordinatorAction::Quit),
-        _ => false,
-    };
-    if handled {
+    if let Some(direction) = folder_jump_direction(&keyboard) {
+        focus_adjacent_folder(app, direction);
         return Ok(CoordinatorAction::Redraw);
     }
-    app.pending_left_g = false;
-    Ok(CoordinatorAction::Continue)
+
+    let mut behavior = LeftPanelKeyBehavior::new(app);
+    Ok(coordinator_action_for_list_outcome(
+        behavior.handle_list_keyboard(keyboard),
+    ))
 }
 
-/// Runs a left-panel action and clears any pending multi-key sequence.
-fn handle_left_action(app: &mut NexusDemo, action: impl FnOnce(&mut NexusDemo)) -> bool {
-    app.pending_left_g = false;
-    action(app);
-    true
-}
-
-/// Handles the `gg` sequence for moving to the start of the left pane.
-fn handle_left_g(app: &mut NexusDemo) -> bool {
-    if app.pending_left_g {
-        app.pending_left_g = false;
-        focus_left_panel_start(app);
-        return true;
+/// Returns folder-jump direction for Shift+J and Shift+K shortcuts.
+fn folder_jump_direction(keyboard: &KeyboardEvent) -> Option<isize> {
+    match keyboard.key_code {
+        KeyCode::Char('J') => Some(1),
+        KeyCode::Char('K') => Some(-1),
+        KeyCode::Char('j') if keyboard.modifiers.contains(KeyModifiers::SHIFT) => Some(1),
+        KeyCode::Char('k') if keyboard.modifiers.contains(KeyModifiers::SHIFT) => Some(-1),
+        _ => None,
     }
-    app.pending_left_g = true;
-    true
+}
+
+/// Converts shared list-key outcomes into coordinator actions.
+fn coordinator_action_for_list_outcome(outcome: ListKeyOutcome) -> CoordinatorAction {
+    match outcome {
+        ListKeyOutcome::Handled => CoordinatorAction::Redraw,
+        ListKeyOutcome::Continue => CoordinatorAction::Continue,
+        ListKeyOutcome::Quit => CoordinatorAction::Quit,
+    }
 }

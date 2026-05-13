@@ -2,6 +2,8 @@ use anyhow::Result;
 
 use crate::copy_mode::terminal_copy_selection::TerminalCopySelection;
 use crate::nexus_sessions::session_info::NexusSession;
+use crate::terminal::default_shell_command::default_shell_command;
+use crate::terminal::is_normal_terminal_session::is_normal_terminal_session;
 use crate::terminal::nexus_terminal::NexusTerminal;
 
 /// A Nexus session paired with its lazily spawned terminal process.
@@ -24,15 +26,34 @@ impl SessionTerminal {
     /// Starts the backing PTY when it has not been started yet.
     pub fn ensure_terminal(&mut self, rows: u16, cols: u16) -> Result<&mut NexusTerminal> {
         if self.terminal.is_none() {
-            let working_dir = self.session.working_dir.clone();
-            self.terminal = Some(NexusTerminal::spawn_with_command_in_dir(
-                "nexus",
-                &["--resume", self.session.id.as_str()],
-                &working_dir,
-                rows.max(1),
-                cols.max(1),
-            )?);
+            self.terminal = Some(spawn_terminal_for_session(&self.session, rows, cols)?);
         }
         Ok(self.terminal.as_mut().expect("terminal is initialized"))
     }
+}
+
+/// Spawns the correct PTY command for a chat or normal terminal session.
+fn spawn_terminal_for_session(
+    session: &NexusSession,
+    rows: u16,
+    cols: u16,
+) -> Result<NexusTerminal> {
+    let working_dir = session.working_dir.clone();
+    if is_normal_terminal_session(session) {
+        let shell = default_shell_command();
+        return NexusTerminal::spawn_with_command_in_dir(
+            &shell,
+            &[],
+            &working_dir,
+            rows.max(1),
+            cols.max(1),
+        );
+    }
+    NexusTerminal::spawn_with_command_in_dir(
+        "nexus",
+        &["--resume", session.id.as_str()],
+        &working_dir,
+        rows.max(1),
+        cols.max(1),
+    )
 }

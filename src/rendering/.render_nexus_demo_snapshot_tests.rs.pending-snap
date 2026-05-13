@@ -1,0 +1,66 @@
+{"run_id":"1778669190-510796000","line":69,"new":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","snapshot_name":"snapshots_bundled_session_left_panel_markers","metadata":{"source":"src/rendering/render_nexus_demo_snapshot_tests.rs","assertion_line":69,"expression":"output"},"snapshot":"╭ nexus session╮\n│ project (2/2│\n│  ┌─ 󰀘 Alp… 0m│\n│  └─ 󰀘 Beta 0m│\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │"},"old":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","metadata":{},"snapshot":""}}
+{"run_id":"1778669190-510796000","line":51,"new":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","snapshot_name":"snapshots_right_and_bottom_split_layout","metadata":{"source":"src/rendering/render_nexus_demo_snapshot_tests.rs","assertion_line":51,"expression":"output"},"snapshot":"╭Chat──────────────────────────────────────────────────────────╮\n│╭ Session A ──────────────────╮╭ Session B ──────────────────╮│\n││Starting Nexus session…      ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             │╰─────────────────────────────╯│\n││                             │╭ Session C ──────────────────╮│\n││                             ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n│╰─────────────────────────────╯╰─────────────────────────────╯│\n╰──────────────────────────────────────────────────────────────╯"},"old":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","metadata":{},"snapshot":""}}
+{"run_id":"1778669200-751861000","line":51,"new":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","snapshot_name":"snapshots_right_and_bottom_split_layout","metadata":{"source":"src/rendering/render_nexus_demo_snapshot_tests.rs","assertion_line":51,"expression":"output"},"snapshot":"╭Chat──────────────────────────────────────────────────────────╮\n│╭ Session A ──────────────────╮╭ Session B ──────────────────╮│\n││Starting Nexus session…      ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             │╰─────────────────────────────╯│\n││                             │╭ Session C ──────────────────╮│\n││                             ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n│╰─────────────────────────────╯╰─────────────────────────────╯│\n╰──────────────────────────────────────────────────────────────╯"},"old":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","metadata":{},"snapshot":""}}
+{"run_id":"1778669205-761393000","line":69,"new":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","snapshot_name":"snapshots_bundled_session_left_panel_markers","metadata":{"source":"src/rendering/render_nexus_demo_snapshot_tests.rs","assertion_line":69,"expression":"output"},"snapshot":"╭ nexus session╮\n│ project (2/2│\n│  ┌─ 󰀘 Alp… 0m│\n│  └─ 󰀘 Beta 0m│\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │\n│              │"},"old":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","metadata":{},"snapshot":""}}
+{"run_id":"1778669473-765293000","line":98,"new":null,"old":null}
+{"run_id":"1778669473-765293000","line":61,"new":null,"old":null}
+{"run_id":"1778669479-387667000","line":61,"new":null,"old":null}
+{"run_id":"1778669479-387667000","line":98,"new":null,"old":null}
+{"run_id":"1778669495-833698000","line":98,"new":null,"old":null}
+{"run_id":"1778669495-833698000","line":61,"new":null,"old":null}
+{"run_id":"1778669522-558162000","line":98,"new":null,"old":null}
+{"run_id":"1778669522-558162000","line":61,"new":null,"old":null}
+{"run_id":"1778669541-972596000","line":98,"new":null,"old":null}
+{"run_id":"1778669541-972596000","line":61,"new":null,"old":null}
+{"run_id":"1778669601-890393000","line":97,"new":null,"old":null}
+{"run_id":"1778669601-890393000","line":61,"new":null,"old":null}
+{"run_id":"1778669635-53062000","line":61,"new":null,"old":null}
+{"run_id":"1778669635-53062000","line":97,"new":null,"old":null}
+{"run_id":"1778669945-493205000","line":97,"new":null,"old":null}
+{"run_id":"1778669945-493205000","line":61,"new":null,"old":null}
+{"run_id":"1778669980-287435000","line":97,"new":null,"old":null}
+{"run_id":"1778669980-287435000","line":61,"new":null,"old":null}
+{"run_id":"1778670057-224847000","line":97,"new":null,"old":null}
+{"run_id":"1778670057-224847000","line":61,"new":null,"old":null}
+{"run_id":"1778670139-694652000","line":97,"new":null,"old":null}
+{"run_id":"1778670139-694652000","line":61,"new":null,"old":null}
+{"run_id":"1778670634-545220000","line":97,"new":null,"old":null}
+{"run_id":"1778670634-545220000","line":61,"new":null,"old":null}
+{"run_id":"1778670760-278363000","line":97,"new":null,"old":null}
+{"run_id":"1778670760-278363000","line":61,"new":null,"old":null}
+{"run_id":"1778670770-151486000","line":97,"new":null,"old":null}
+{"run_id":"1778670770-151486000","line":61,"new":null,"old":null}
+{"run_id":"1778671156-69920000","line":61,"new":null,"old":null}
+{"run_id":"1778671156-69920000","line":97,"new":null,"old":null}
+{"run_id":"1778671163-961940000","line":61,"new":null,"old":null}
+{"run_id":"1778671163-961940000","line":97,"new":null,"old":null}
+{"run_id":"1778671282-488396000","line":97,"new":null,"old":null}
+{"run_id":"1778671282-488396000","line":61,"new":null,"old":null}
+{"run_id":"1778671320-201907000","line":97,"new":null,"old":null}
+{"run_id":"1778671320-201907000","line":61,"new":null,"old":null}
+{"run_id":"1778671435-588141000","line":97,"new":null,"old":null}
+{"run_id":"1778671435-588141000","line":61,"new":null,"old":null}
+{"run_id":"1778671563-201676000","line":97,"new":null,"old":null}
+{"run_id":"1778671563-201676000","line":61,"new":null,"old":null}
+{"run_id":"1778671571-875585000","line":97,"new":null,"old":null}
+{"run_id":"1778671571-875585000","line":61,"new":null,"old":null}
+{"run_id":"1778671813-554353000","line":97,"new":null,"old":null}
+{"run_id":"1778671813-554353000","line":61,"new":null,"old":null}
+{"run_id":"1778671820-102698000","line":97,"new":null,"old":null}
+{"run_id":"1778671820-102698000","line":61,"new":null,"old":null}
+{"run_id":"1778671897-543499000","line":97,"new":null,"old":null}
+{"run_id":"1778671897-543499000","line":61,"new":null,"old":null}
+{"run_id":"1778671923-480878000","line":61,"new":null,"old":null}
+{"run_id":"1778671923-480878000","line":97,"new":null,"old":null}
+{"run_id":"1778672108-118131000","line":97,"new":null,"old":null}
+{"run_id":"1778672108-118131000","line":61,"new":null,"old":null}
+{"run_id":"1778672295-88044000","line":97,"new":null,"old":null}
+{"run_id":"1778672295-88044000","line":61,"new":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","snapshot_name":"snapshots_right_and_bottom_split_layout","metadata":{"source":"src/rendering/render_nexus_demo_snapshot_tests.rs","assertion_line":61,"expression":"output"},"snapshot":"╭Chat──────────────────────────────────────────────────────────╮\n│╭ Session A ─────────────── x ╮╭ Session B ─────────────── x ╮│\n││Starting Nexus session…      ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             │╰─────────────────────────────╯│\n││                             │╭ Session C ─────────────── x ╮│\n││                             ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n│╰─────────────────────────────╯╰─────────────────────────────╯│"},"old":{"module_name":"ratsus__rendering__render_nexus_demo_snapshot_tests","metadata":{},"snapshot":"╭Chat──────────────────────────────────────────────────────────╮\n│╭ Session A ──────────────────╮╭ Session B ──────────────────╮│\n││Starting Nexus session…      ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             │╰─────────────────────────────╯│\n││                             │╭ Session C ──────────────────╮│\n││                             ││Starting Nexus session…      ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n││                             ││                             ││\n│╰─────────────────────────────╯╰─────────────────────────────╯│"}}
+{"run_id":"1778672546-279824000","line":97,"new":null,"old":null}
+{"run_id":"1778672546-279824000","line":61,"new":null,"old":null}
+{"run_id":"1778672594-236726000","line":97,"new":null,"old":null}
+{"run_id":"1778672594-236726000","line":61,"new":null,"old":null}
+{"run_id":"1778672629-687528000","line":97,"new":null,"old":null}
+{"run_id":"1778672629-687528000","line":61,"new":null,"old":null}
+{"run_id":"1778674740-616005000","line":97,"new":null,"old":null}
+{"run_id":"1778674740-616005000","line":61,"new":null,"old":null}

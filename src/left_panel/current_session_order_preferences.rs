@@ -15,5 +15,6 @@ pub fn current_session_order_preferences(app: &NexusDemo) -> SessionOrderPrefere
             .collect(),
         folder_paths: app.folder_order.clone(),
         collapsed_folder_paths: app.collapsed_folders.iter().cloned().collect(),
+        expo_card_width: app.expo_card_width,
     }
 }

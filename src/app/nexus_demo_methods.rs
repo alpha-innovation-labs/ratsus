@@ -2,16 +2,20 @@ use std::path::PathBuf;
 
 use ratatui::layout::Rect;
 
+use crate::app::activate_expo_folder::activate_expo_folder;
 use crate::app::nexus_demo_state::NexusDemo;
+use crate::app::reorder_session_to_index::reorder_session_to_index;
 use crate::layout::should_resize_active_terminal::should_resize_active_terminal;
 use crate::left_panel::clamp_visible_offset::clamp_visible_offset;
 use crate::left_panel::move_folder_order::move_folder_order;
 use crate::left_panel::persist_session_order_preferences::persist_session_order_preferences;
-use crate::left_panel::reordered_index_after_move::reordered_index_after_move;
 use crate::left_panel::session_drag_state::SessionDragState;
 use crate::left_panel::session_list_row::SessionListRow;
 use crate::left_panel::session_visible_row_index::session_visible_row_index;
-use crate::left_panel::visible_session_rows::visible_session_rows;
+use crate::main_pane::main_pane_tab::MainPaneTab;
+use crate::session_panes::pane_id_for_session::pane_id_for_session;
+use crate::session_panes::set_active_terminal_pane_bundle_session::set_active_terminal_pane_bundle_session;
+use crate::session_panes::set_active_terminal_pane_session::set_active_terminal_pane_session;
 use crate::terminal::nexus_terminal::NexusTerminal;
 use crate::terminal::session_terminal::SessionTerminal;
 
@@ -35,6 +39,7 @@ impl NexusDemo {
 
     /// Moves focus through visible folder/session rows.
     pub fn move_focused_left_row(&mut self, direction: isize) {
+        self.suppress_left_focus_scroll = false;
         let rows = self.visible_rows();
         if rows.is_empty() {
             return;
@@ -43,9 +48,13 @@ impl NexusDemo {
             .focused_row
             .saturating_add_signed(direction)
             .min(rows.len() - 1);
-        if let Some(SessionListRow::Session { index }) = rows.get(self.focused_row) {
-            self.focused_index = *index;
-            self.activate_focused_session();
+        match rows.get(self.focused_row) {
+            Some(SessionListRow::Folder { path, .. }) => activate_expo_folder(self, path.clone()),
+            Some(SessionListRow::Session { index }) => {
+                self.focused_index = *index;
+                self.activate_focused_session();
+            }
+            Some(SessionListRow::FolderMore { .. }) | None => {}
         }
         self.keep_focused_row_visible();
     }
@@ -57,13 +66,30 @@ impl NexusDemo {
 
     /// Activates the focused session and displays its terminal.
     pub fn activate_focused_session(&mut self) {
+        self.suppress_left_focus_scroll = false;
         if self.focused_index >= self.session_terminals.len() {
             return;
         }
         self.active_index = self.focused_index;
+        self.active_main_pane_tab = MainPaneTab::Chat;
         self.sync_focused_row_to_session();
         persist_session_order_preferences(self);
-        let area = self.last_terminal_area;
+        let session_id = self
+            .session_terminals
+            .get(self.active_index)
+            .map(|entry| entry.session.id.clone());
+        if let Some(session_id) = session_id {
+            if let Some(pane_id) = pane_id_for_session(self, &session_id) {
+                set_active_terminal_pane_bundle_session(self, pane_id, session_id);
+            } else {
+                set_active_terminal_pane_session(self, session_id);
+            }
+        }
+        let area = self
+            .terminal_pane_areas
+            .get(&self.active_terminal_pane_id)
+            .copied()
+            .unwrap_or(self.last_terminal_area);
         if let Some(entry) = self.session_terminals.get_mut(self.active_index) {
             let _ = entry.ensure_terminal(area.height, area.width);
         }
@@ -90,17 +116,14 @@ impl NexusDemo {
         if target_index >= self.session_terminals.len() || target_index == from_index {
             return;
         }
-        let entry = self.session_terminals.remove(from_index);
-        self.session_terminals.insert(target_index, entry);
-        self.active_index = reordered_index_after_move(self.active_index, from_index, target_index);
-        self.focused_index =
-            reordered_index_after_move(self.focused_index, from_index, target_index);
+        if !reorder_session_to_index(self, from_index, target_index) {
+            return;
+        }
         self.session_drag = Some(SessionDragState {
             source_index: drag.source_index,
             current_index: target_index,
         });
         self.keep_focused_session_visible();
-        persist_session_order_preferences(self);
     }
 
     /// Starts dragging a folder row.
@@ -141,20 +164,14 @@ impl NexusDemo {
 
     /// Keeps the focused visible row in the left pane viewport.
     pub fn keep_focused_row_visible(&mut self) {
+        if self.suppress_left_focus_scroll {
+            return;
+        }
         self.session_scroll = clamp_visible_offset(
             self.focused_row,
             self.session_scroll,
             usize::from(self.last_session_list_area.height),
         );
-    }
-
-    /// Returns the currently visible left-panel tree rows.
-    pub fn visible_rows(&self) -> Vec<SessionListRow> {
-        visible_session_rows(
-            &self.session_terminals,
-            &self.collapsed_folders,
-            &self.folder_order,
-        )
     }
 
     /// Moves visible-row focus to the currently focused session when visible.

@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
 use std::sync::mpsc;
 
@@ -6,22 +6,25 @@ use crossterm::event::{KeyModifiers, MouseEventKind};
 use ratatui::layout::Rect;
 use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
+use ratkit::CoordinatorAction;
 
 use crate::app::handle_nexus_demo_mouse::handle_nexus_demo_mouse;
+use crate::app::handle_tick_event::handle_tick_event;
 use crate::app::nexus_demo_state::NexusDemo;
 use crate::conversation_picker::conversation_picker_state::ConversationPickerState;
 use crate::layout::focused_pane::FocusedPane;
-use crate::layout::pane_ids::LEFT_PANE_ID;
+use crate::layout::pane_ids::{LEFT_PANE_ID, TERMINAL_PANE_ID};
 use crate::main_pane::file_system_tree_view::FileSystemTreeView;
 use crate::main_pane::main_pane_tab::MainPaneTab;
+use crate::menu_bar::nexus_menu_bar::nexus_menu_bar;
 use crate::nexus_sessions::session_info::NexusSession;
 use crate::nexus_sessions::spawn_session_refresh_worker::SessionRefreshResult;
+use crate::rendering::render_nexus_demo::render_nexus_demo;
 use crate::terminal::session_terminal::SessionTerminal;
 
-/// Reproduces the render-time clamp that makes wheel scrolling appear delayed.
+/// Verifies focus clamping stays suppressed after manual left-panel wheel scrolling.
 #[test]
-#[ignore = "reproduces current left-pane scroll lag caused by render-time focus clamping"]
-fn render_focus_clamp_overrides_manual_left_panel_scroll() -> anyhow::Result<()> {
+fn focus_clamp_stays_suppressed_after_manual_left_panel_scroll() -> anyhow::Result<()> {
     let mut app = scroll_test_app()?;
     app.focused_row = 1;
 
@@ -31,6 +34,37 @@ fn render_focus_clamp_overrides_manual_left_panel_scroll() -> anyhow::Result<()>
     app.keep_focused_row_visible();
 
     assert_eq!(app.session_scroll, manual_scroll);
+    Ok(())
+}
+
+/// Verifies rendering does not clamp away manual left-panel wheel scrolling.
+#[test]
+fn render_does_not_override_manual_left_panel_scroll() -> anyhow::Result<()> {
+    let mut app = scroll_test_app()?;
+    app.focused_row = 1;
+
+    send_left_panel_scroll_down_events(&mut app, 6);
+    let manual_scroll = app.session_scroll;
+
+    let backend = ratatui::backend::TestBackend::new(120, 40);
+    let mut terminal = ratatui::Terminal::new(backend)?;
+    terminal.draw(|frame| render_nexus_demo(&mut app, frame))?;
+
+    assert_eq!(app.session_scroll, manual_scroll);
+    Ok(())
+}
+
+/// Verifies wheel events update state without forcing one render per event.
+#[test]
+fn wheel_events_are_coalesced_until_tick_redraw() -> anyhow::Result<()> {
+    let mut app = scroll_test_app()?;
+
+    let action = handle_nexus_demo_mouse(&mut app, left_panel_scroll_down_event());
+
+    assert_eq!(action, CoordinatorAction::Continue);
+    assert!(app.pending_left_scroll_redraw);
+    assert_eq!(handle_tick_event(&mut app, 1), CoordinatorAction::Redraw);
+    assert!(!app.pending_left_scroll_redraw);
     Ok(())
 }
 
@@ -71,10 +105,25 @@ fn scroll_test_app() -> anyhow::Result<NexusDemo> {
     Ok(NexusDemo {
         layout,
         layout_widget_state: ResizableGridWidgetState::default(),
+        terminal_layout: ResizableGrid::new(TERMINAL_PANE_ID),
+        terminal_layout_widget_state: ResizableGridWidgetState::default(),
+        terminal_pane_sessions: BTreeMap::new(),
+        terminal_pane_session_bundles: BTreeMap::new(),
+        terminal_pane_areas: BTreeMap::new(),
+        terminal_pane_close_buttons: BTreeMap::new(),
+        active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
+        menu_bar: nexus_menu_bar(MainPaneTab::Chat),
         conversation_picker: ConversationPickerState::new(),
+        delete_confirmation:
+            crate::app::delete_session_confirmation_state::DeleteSessionConfirmationState::default(),
+        delete_session_receiver: None,
         session_terminals: scroll_test_sessions(),
+        visible_rows_cache: std::cell::RefCell::new(
+            crate::left_panel::visible_session_rows_cache::VisibleSessionRowsCache::new(),
+        ),
         closed_chat_session_ids: BTreeSet::new(),
+        selected_conversation_ids: BTreeSet::new(),
         active_index: 0,
         focused_index: 0,
         session_scroll: 0,
@@ -85,6 +134,8 @@ fn scroll_test_app() -> anyhow::Result<NexusDemo> {
         folder_order: vec![scroll_test_folder()],
         focused_row: 1,
         pending_left_g: false,
+        pending_left_scroll_redraw: false,
+        suppress_left_focus_scroll: false,
         last_layout_area: Rect::new(0, 0, 120, 40),
         last_terminal_area: Rect::new(20, 0, 100, 40),
         active_terminal_area: Rect::new(20, 0, 100, 40),
@@ -93,6 +144,15 @@ fn scroll_test_app() -> anyhow::Result<NexusDemo> {
         left_pane_visible: true,
         focused_pane: FocusedPane::Left,
         active_main_pane_tab: MainPaneTab::Chat,
+        selected_expo_folder: None,
+        expo_scroll: 0,
+        expo_card_width: crate::expo::default_expo_card_width::default_expo_card_width(),
+        expo_filter_query: String::new(),
+        expo_filtering: false,
+        expo_card_areas: Vec::new(),
+        observation_previews: HashMap::new(),
+        observation_cache_receiver: None,
+        observation_watcher: None,
         last_main_pane_area: Rect::new(20, 0, 100, 40),
         file_system_tree_view: FileSystemTreeView::new()?,
         loader_tick: 0,

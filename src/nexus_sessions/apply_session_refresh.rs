@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
 use crate::nexus_sessions::is_new_nexus_chat_session::is_new_nexus_chat_session;
+use crate::nexus_sessions::merge_registry_session_metadata::merge_registry_session_metadata;
 use crate::nexus_sessions::session_info::NexusSession;
 use crate::terminal::session_terminal::SessionTerminal;
 
 /// Applies refreshed Nexus session metadata while preserving live terminal processes.
 pub fn apply_session_refresh(
-    session_terminals: &mut Vec<SessionTerminal>,
+    session_terminals: &mut [SessionTerminal],
     refreshed_sessions: Vec<NexusSession>,
 ) -> bool {
     let running_by_id = running_status_by_id(&refreshed_sessions);
@@ -44,19 +45,20 @@ fn apply_running_status(
     changed
 }
 
-/// Applies one refreshed session by id, placeholder match, or append.
+/// Applies one refreshed registry session by id or local new-chat placeholder match.
 fn apply_refreshed_session(
-    session_terminals: &mut Vec<SessionTerminal>,
+    session_terminals: &mut [SessionTerminal],
     refreshed_session: NexusSession,
 ) -> bool {
     if let Some(index) = session_index_by_id(session_terminals, &refreshed_session.id) {
-        return replace_session_metadata(session_terminals, index, refreshed_session);
+        let merged =
+            merge_registry_session_metadata(&session_terminals[index].session, refreshed_session);
+        return replace_session_metadata(session_terminals, index, merged);
     }
     if let Some(index) = new_chat_placeholder_index(session_terminals, &refreshed_session) {
         return replace_session_metadata(session_terminals, index, refreshed_session);
     }
-    session_terminals.push(SessionTerminal::dormant(refreshed_session));
-    true
+    false
 }
 
 /// Finds an existing session entry by stable Nexus session id.

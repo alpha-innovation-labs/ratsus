@@ -26,5 +26,9 @@ pub fn handle_main_pane_tab_click(
             app.active_main_pane_tab = MainPaneTab::Diff;
             Some(CoordinatorAction::Redraw)
         }
+        MainPaneTab::Expo => {
+            app.active_main_pane_tab = MainPaneTab::Expo;
+            Some(CoordinatorAction::Redraw)
+        }
     }
 }

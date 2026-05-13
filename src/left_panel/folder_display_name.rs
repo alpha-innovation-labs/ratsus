@@ -1,12 +1,28 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-/// Formats a folder path for compact display in the session tree.
+/// Formats a folder path for display, replacing the home directory with `~`.
 pub fn folder_display_name(path: &Path) -> String {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .filter(|name| !name.is_empty())
-        .map(str::to_owned)
-        .unwrap_or_else(|| path.display().to_string())
+    let path_text = path.display().to_string();
+    let Some(home) = home_path() else {
+        return path_text;
+    };
+    if path == home {
+        return "~".to_string();
+    }
+    path.strip_prefix(&home)
+        .ok()
+        .map(home_relative_path)
+        .unwrap_or(path_text)
+}
+
+/// Returns the current user's home path when available.
+fn home_path() -> Option<PathBuf> {
+    std::env::var_os("HOME").map(PathBuf::from)
+}
+
+/// Formats a home-relative path with a leading tilde.
+fn home_relative_path(relative: &Path) -> String {
+    format!("~/{}", relative.display())
 }
 
 #[cfg(test)]
@@ -15,9 +31,18 @@ mod tests {
 
     use super::folder_display_name;
 
-    /// Verifies that the last path component is used as the visible folder label.
+    /// Verifies non-home paths are shown as full paths.
     #[test]
-    fn uses_last_component() {
-        assert_eq!(folder_display_name(Path::new("/tmp/ratsus")), "ratsus");
+    fn uses_full_path() {
+        assert_eq!(folder_display_name(Path::new("/tmp/ratsus")), "/tmp/ratsus");
+    }
+
+    /// Verifies paths under HOME use a leading tilde.
+    #[test]
+    fn uses_tilde_for_home_path() {
+        let home = std::env::var("HOME").expect("HOME is set for tests");
+        let path = Path::new(&home).join("workspace/ratsus");
+
+        assert_eq!(folder_display_name(&path), "~/workspace/ratsus");
     }
 }

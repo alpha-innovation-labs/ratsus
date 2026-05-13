@@ -4,6 +4,7 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NexusSession {
     pub date: String,
+    pub created_at: String,
     pub title: String,
     pub id: String,
     pub working_dir: PathBuf,
@@ -18,8 +19,28 @@ impl NexusSession {
         id: impl Into<String>,
         working_dir: impl Into<PathBuf>,
     ) -> Self {
+        let date = date.into();
+        Self {
+            created_at: date.clone(),
+            date,
+            title: title.into(),
+            id: id.into(),
+            working_dir: working_dir.into(),
+            is_running: false,
+        }
+    }
+
+    /// Builds a session metadata value with distinct modified and created timestamps.
+    pub fn new_with_created(
+        date: impl Into<String>,
+        created_at: impl Into<String>,
+        title: impl Into<String>,
+        id: impl Into<String>,
+        working_dir: impl Into<PathBuf>,
+    ) -> Self {
         Self {
             date: date.into(),
+            created_at: created_at.into(),
             title: title.into(),
             id: id.into(),
             working_dir: working_dir.into(),

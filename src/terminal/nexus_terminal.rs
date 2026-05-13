@@ -79,6 +79,11 @@ impl NexusTerminal {
         self.child.try_wait().ok().flatten().is_some()
     }
 
+    /// Terminates the backing child process.
+    pub fn kill(&mut self) {
+        let _ = self.child.kill();
+    }
+
     /// Resizes both the parser and backing PTY.
     pub fn resize(&mut self, rows: u16, cols: u16) {
         if rows == 0 || cols == 0 {

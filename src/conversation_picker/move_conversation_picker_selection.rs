@@ -28,8 +28,14 @@ mod tests {
         let mut state = ConversationPickerState {
             is_open: true,
             query: String::new(),
+            is_filtering: false,
             selected_position: 1,
+            pending_g: false,
             folder_filter: None,
+            mode:
+                crate::conversation_picker::conversation_picker_mode::ConversationPickerMode::Open,
+            mouse_down_position: None,
+            mouse_drag_moved: false,
         };
         move_conversation_picker_selection(&mut state, 10, 3);
         assert_eq!(state.selected_position, 2);
@@ -41,8 +47,14 @@ mod tests {
         let mut state = ConversationPickerState {
             is_open: true,
             query: String::new(),
+            is_filtering: false,
             selected_position: 1,
+            pending_g: false,
             folder_filter: None,
+            mode:
+                crate::conversation_picker::conversation_picker_mode::ConversationPickerMode::Open,
+            mouse_down_position: None,
+            mouse_drag_moved: false,
         };
         move_conversation_picker_selection(&mut state, -10, 3);
         assert_eq!(state.selected_position, 0);
@@ -54,8 +66,14 @@ mod tests {
         let mut state = ConversationPickerState {
             is_open: true,
             query: String::new(),
+            is_filtering: false,
             selected_position: 4,
+            pending_g: false,
             folder_filter: None,
+            mode:
+                crate::conversation_picker::conversation_picker_mode::ConversationPickerMode::Open,
+            mouse_down_position: None,
+            mouse_drag_moved: false,
         };
         move_conversation_picker_selection(&mut state, 1, 0);
         assert_eq!(state.selected_position, 0);

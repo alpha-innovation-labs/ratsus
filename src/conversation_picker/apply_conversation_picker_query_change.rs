@@ -9,7 +9,9 @@ pub fn apply_conversation_picker_query_change(app: &mut NexusDemo) {
         &app.folder_order,
         &app.conversation_picker.query,
         app.active_index,
+        &app.selected_conversation_ids,
         app.conversation_picker.folder_filter.as_deref(),
+        &app.collapsed_folders,
     )
     .len();
     clamp_conversation_picker_selection(&mut app.conversation_picker, item_count);

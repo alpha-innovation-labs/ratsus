@@ -4,4 +4,5 @@ pub enum MainPaneTab {
     Chat,
     Files,
     Diff,
+    Expo,
 }

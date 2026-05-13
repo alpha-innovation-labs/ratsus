@@ -6,18 +6,41 @@ use crate::app::next_chat_index::next_chat_index;
 use crate::app::nexus_demo_state::NexusDemo;
 use crate::app::remove_exited_sessions::RemovedExitedSessions;
 use crate::nexus_sessions::start_new_nexus_chat_in_dir::start_new_nexus_chat_in_dir;
+use crate::session_panes::prune_terminal_pane_session_bundles::prune_terminal_pane_session_bundles;
+use crate::session_panes::session_index_for_pane::session_index_for_pane;
 
 /// Restores a valid active/focused session after exited entries were removed.
 pub fn restore_focus_after_removals(
     app: &mut NexusDemo,
     exited_indices: &[usize],
     removed: RemovedExitedSessions,
+    closed_exited_pane: bool,
 ) -> Result<()> {
+    prune_terminal_pane_session_bundles(app);
+    if closed_exited_pane {
+        restore_focus_after_closed_exited_pane(app, exited_indices, removed.removed_active);
+        return Ok(());
+    }
     if removed.removed_active_chat {
         return focus_next_chat_or_create(app, removed, preferred_index(exited_indices));
     }
     restore_existing_focus(app, exited_indices, removed.removed_active);
     Ok(())
+}
+
+/// Restores focus after a split pane closed because its displayed session exited.
+fn restore_focus_after_closed_exited_pane(
+    app: &mut NexusDemo,
+    exited_indices: &[usize],
+    removed_active: bool,
+) {
+    if let Some(index) = session_index_for_pane(app, app.active_terminal_pane_id) {
+        app.active_index = index;
+        app.focused_index = index;
+        app.keep_focused_session_visible();
+        return;
+    }
+    restore_existing_focus(app, exited_indices, removed_active);
 }
 
 /// Focuses the next chat or starts a replacement chat when none remain.

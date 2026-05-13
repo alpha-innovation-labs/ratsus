@@ -18,7 +18,7 @@ pub fn handle_terminal_copy_mouse(
     mouse: MouseEvent,
     scroll_lines_per_tick: usize,
 ) -> bool {
-    let area = app.last_terminal_area;
+    let area = app.active_terminal_area;
     let Some(entry) = app.active_session_terminal_mut() else {
         return false;
     };

@@ -19,8 +19,13 @@ mod tests {
         let state = ConversationPickerState {
             is_open: true,
             query: String::new(),
+            is_filtering: false,
             selected_position: 1,
+            pending_g: false,
             folder_filter: None,
+            mode:
+                crate::conversation_picker::conversation_picker_mode::ConversationPickerMode::Open,
+            ..Default::default()
         };
         assert_eq!(selected_conversation_index(&state, &[4, 9]), Some(9));
     }
@@ -31,8 +36,13 @@ mod tests {
         let state = ConversationPickerState {
             is_open: true,
             query: String::new(),
+            is_filtering: false,
             selected_position: 2,
+            pending_g: false,
             folder_filter: None,
+            mode:
+                crate::conversation_picker::conversation_picker_mode::ConversationPickerMode::Open,
+            ..Default::default()
         };
         assert_eq!(selected_conversation_index(&state, &[4, 9]), None);
     }

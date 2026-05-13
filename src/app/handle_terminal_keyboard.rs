@@ -2,6 +2,7 @@ use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::nexus_demo_state::NexusDemo;
 use crate::copy_mode::handle_terminal_copy_keyboard::handle_terminal_copy_keyboard;
+use crate::expo::handle_expo_keyboard::handle_expo_keyboard;
 use crate::main_pane::handle_file_system_tree_key::handle_file_system_tree_key;
 use crate::main_pane::main_pane_tab::MainPaneTab;
 use crate::terminal::encode_key_event::encode_key_event;
@@ -18,6 +19,7 @@ pub fn handle_terminal_keyboard(
                 &keyboard,
             ));
         }
+        MainPaneTab::Expo => return Ok(handle_expo_keyboard(app, &keyboard)),
         MainPaneTab::Diff => return Ok(CoordinatorAction::Continue),
         MainPaneTab::Chat => {}
     }

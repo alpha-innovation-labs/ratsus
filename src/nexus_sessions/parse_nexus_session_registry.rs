@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
+use crate::nexus_sessions::sanitize_json_control_characters::sanitize_json_control_characters;
 use crate::nexus_sessions::session_info::NexusSession;
 
 #[derive(Debug, Deserialize)]
@@ -33,7 +34,8 @@ where
     F: Fn(u32) -> bool,
     G: Fn(&std::path::Path) -> bool,
 {
-    let registry: NexusSessionRegistryJson = serde_json::from_str(output)?;
+    let sanitized_output = sanitize_json_control_characters(output);
+    let registry: NexusSessionRegistryJson = serde_json::from_str(&sanitized_output)?;
     Ok(registry
         .entries
         .into_iter()
@@ -102,5 +104,15 @@ mod tests {
         let sessions = parse_nexus_session_registry(output, |pid| pid == 42, |_| false).unwrap();
 
         assert!(!sessions[0].is_running);
+    }
+
+    /// Verifies registry titles with raw newlines are sanitized before parsing.
+    #[test]
+    fn parses_registry_title_with_raw_newline() {
+        let output = "{\"entries\":[{\"sessionId\":\"abc\",\"sessionTitle\":\"hello\nworld\",\"updatedAt\":\"2026-05-12T10:00:00.000Z\",\"cwd\":\"/tmp/project\",\"pid\":42,\"sessionFile\":\"/tmp/session.jsonl\"}]}";
+
+        let sessions = parse_nexus_session_registry(output, |pid| pid == 42, |_| false).unwrap();
+
+        assert_eq!(sessions[0].title, "hello\nworld");
     }
 }

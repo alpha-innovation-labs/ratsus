@@ -8,6 +8,7 @@ pub fn left_panel_hotkey_footer() -> HotkeyFooter {
         HotkeyItem::new("h/l", "fold"),
         HotkeyItem::new("gg/G", "edge"),
         HotkeyItem::new("/", "find"),
+        HotkeyItem::new("Space", "select"),
         HotkeyItem::new("enter", "open"),
     ])
     .key_color(Color::Cyan)
