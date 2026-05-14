@@ -5,7 +5,7 @@ pub fn normal_terminal_registry_path() -> Option<PathBuf> {
     std::env::var_os("HOME").map(PathBuf::from).map(|home| {
         home.join(".local")
             .join("share")
-            .join("ratsus")
+            .join("nexus")
             .join("terminal-sessions.json")
     })
 }
@@ -14,11 +14,11 @@ pub fn normal_terminal_registry_path() -> Option<PathBuf> {
 mod tests {
     use super::normal_terminal_registry_path;
 
-    /// Normal terminal sessions should persist in the Ratsus data directory.
+    /// Normal terminal sessions should persist in the Nexus data directory.
     #[test]
-    fn uses_ratsus_local_share_path() {
+    fn uses_nexus_local_share_path() {
         let path = normal_terminal_registry_path().expect("HOME is set for tests");
 
-        assert!(path.ends_with(".local/share/ratsus/terminal-sessions.json"));
+        assert!(path.ends_with(".local/share/nexus/terminal-sessions.json"));
     }
 }

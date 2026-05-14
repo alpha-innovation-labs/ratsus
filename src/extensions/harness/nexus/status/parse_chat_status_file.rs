@@ -6,12 +6,12 @@ use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::harness::nexus::parsing::sanitize_json_control_characters::sanitize_json_control_characters;
 
 #[derive(Debug, Deserialize)]
-struct ChatSessionRegistryJson {
-    entries: Vec<ChatSessionRegistryEntryJson>,
+struct ChatStatusFileJson {
+    entries: Vec<ChatStatusFileEntryJson>,
 }
 
 #[derive(Debug, Deserialize)]
-struct ChatSessionRegistryEntryJson {
+struct ChatStatusFileEntryJson {
     #[serde(rename = "sessionId")]
     session_id: String,
     #[serde(rename = "sessionTitle")]
@@ -24,8 +24,8 @@ struct ChatSessionRegistryEntryJson {
     session_file: PathBuf,
 }
 
-/// Parses Nexus cmux registry JSON into session metadata values.
-pub fn parse_nexus_session_registry<F, G>(
+/// Parses Nexus chat status JSON into session metadata values.
+pub fn parse_nexus_chat_status_file<F, G>(
     output: &str,
     is_pid_alive: F,
     is_session_active: G,
@@ -35,17 +35,17 @@ where
     G: Fn(&std::path::Path) -> bool,
 {
     let sanitized_output = sanitize_json_control_characters(output);
-    let registry: ChatSessionRegistryJson = serde_json::from_str(&sanitized_output)?;
-    Ok(registry
+    let status: ChatStatusFileJson = serde_json::from_str(&sanitized_output)?;
+    Ok(status
         .entries
         .into_iter()
-        .map(|entry| registry_entry_to_session(entry, &is_pid_alive, &is_session_active))
+        .map(|entry| chat_status_entry_to_session(entry, &is_pid_alive, &is_session_active))
         .collect())
 }
 
-/// Converts one registry entry into session metadata.
-fn registry_entry_to_session<F, G>(
-    entry: ChatSessionRegistryEntryJson,
+/// Converts one chat status entry into session metadata.
+fn chat_status_entry_to_session<F, G>(
+    entry: ChatStatusFileEntryJson,
     is_pid_alive: &F,
     is_session_active: &G,
 ) -> ChatSession
@@ -68,14 +68,14 @@ where
 mod tests {
     use std::path::PathBuf;
 
-    use super::parse_nexus_session_registry;
+    use super::parse_nexus_chat_status_file;
 
-    /// Verifies registry entries provide title, update time, session id, cwd, and active status.
+    /// Verifies chat status entries provide title, update time, session id, cwd, and active status.
     #[test]
-    fn parses_registry_session_fields() {
-        let output = r#"{"entries":[{"sessionId":"abc","sessionTitle":"Live title","updatedAt":"2026-05-12T10:00:00.000Z","cwd":"/tmp/project","pid":42,"sessionFile":"/tmp/session.jsonl"}]}"#;
+    fn parses_chat_status_session_fields() {
+        let output = r#"{"version":1,"entries":[{"id":"42:abc","sessionId":"abc","sessionTitle":"Live title","updatedAt":"2026-05-12T10:00:00.000Z","startedAt":"2026-05-12T09:00:00.000Z","cwd":"/tmp/project","pid":42,"sessionFile":"/tmp/session.jsonl"}]}"#;
 
-        let sessions = parse_nexus_session_registry(output, |pid| pid == 42, |_| true).unwrap();
+        let sessions = parse_nexus_chat_status_file(output, |pid| pid == 42, |_| true).unwrap();
 
         assert_eq!(sessions.len(), 1);
         assert_eq!(sessions[0].id, "abc");
@@ -90,7 +90,7 @@ mod tests {
     fn falls_back_for_missing_title_and_marks_dead_pid_inactive() {
         let output = r#"{"entries":[{"sessionId":"abc","updatedAt":"2026-05-12T10:00:00.000Z","cwd":"/tmp/project","pid":99,"sessionFile":"/tmp/session.jsonl"}]}"#;
 
-        let sessions = parse_nexus_session_registry(output, |_| false, |_| true).unwrap();
+        let sessions = parse_nexus_chat_status_file(output, |_| false, |_| true).unwrap();
 
         assert_eq!(sessions[0].title, "New Session");
         assert!(!sessions[0].is_running);
@@ -101,17 +101,17 @@ mod tests {
     fn marks_alive_but_idle_session_inactive() {
         let output = r#"{"entries":[{"sessionId":"abc","updatedAt":"2026-05-12T10:00:00.000Z","cwd":"/tmp/project","pid":42,"sessionFile":"/tmp/session.jsonl"}]}"#;
 
-        let sessions = parse_nexus_session_registry(output, |pid| pid == 42, |_| false).unwrap();
+        let sessions = parse_nexus_chat_status_file(output, |pid| pid == 42, |_| false).unwrap();
 
         assert!(!sessions[0].is_running);
     }
 
-    /// Verifies registry titles with raw newlines are sanitized before parsing.
+    /// Verifies chat status titles with raw newlines are sanitized before parsing.
     #[test]
-    fn parses_registry_title_with_raw_newline() {
+    fn parses_chat_status_title_with_raw_newline() {
         let output = "{\"entries\":[{\"sessionId\":\"abc\",\"sessionTitle\":\"hello\nworld\",\"updatedAt\":\"2026-05-12T10:00:00.000Z\",\"cwd\":\"/tmp/project\",\"pid\":42,\"sessionFile\":\"/tmp/session.jsonl\"}]}";
 
-        let sessions = parse_nexus_session_registry(output, |pid| pid == 42, |_| false).unwrap();
+        let sessions = parse_nexus_chat_status_file(output, |pid| pid == 42, |_| false).unwrap();
 
         assert_eq!(sessions[0].title, "hello\nworld");
     }

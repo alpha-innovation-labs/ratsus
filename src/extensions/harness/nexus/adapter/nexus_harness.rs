@@ -8,11 +8,13 @@ use crate::extensions::expo::observations::conversation_preview::ConversationObs
 use crate::extensions::expo::observations::preview_request::ObservationPreviewRequest;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::core::chat_session::ChatSession;
+use crate::extensions::harness::nexus::config::path_is_chat_status_file::path_is_chat_status_file;
+use crate::extensions::harness::nexus::config::start_chat_status_file_watcher::start_chat_status_file_watcher;
 use crate::extensions::harness::nexus::refresh::apply_session_refresh::apply_session_refresh;
-use crate::extensions::harness::nexus::registry::load_session_registry::load_nexus_session_registry;
 use crate::extensions::harness::nexus::sessions::delete_session::delete_nexus_session;
 use crate::extensions::harness::nexus::sessions::load_chat_sessions::load_chat_sessions;
 use crate::extensions::harness::nexus::sessions::spawn_new_session_terminal::spawn_new_nexus_session_terminal;
+use crate::extensions::harness::nexus::status::load_chat_status_file::load_nexus_chat_status_file;
 use crate::extensions::harness::observations::load_observation_previews::load_observation_previews;
 use crate::extensions::harness::observations::path_is_observation_state::path_is_observation_state;
 use crate::extensions::harness::observations::start_observation_watcher::start_observation_watcher;
@@ -33,9 +35,19 @@ impl ChatHarness for NexusHarness {
         Ok(load_chat_sessions()?)
     }
 
-    /// Loads Nexus registry metadata used for periodic refreshes.
+    /// Loads Nexus chat status metadata used for watcher-driven refreshes.
     fn refresh_sessions(&self) -> Result<Vec<ChatSession>> {
-        Ok(load_nexus_session_registry()?)
+        Ok(load_nexus_chat_status_file()?)
+    }
+
+    /// Starts the Nexus chat status file watcher.
+    fn start_session_watcher(&self) -> Option<FileWatcher> {
+        start_chat_status_file_watcher()
+    }
+
+    /// Detects Nexus chat status changes from watcher paths.
+    fn is_session_update_path(&self, path: &Path) -> bool {
+        path_is_chat_status_file(path)
     }
 
     /// Spawns a fresh Nexus CLI chat in a PTY.
@@ -64,7 +76,7 @@ impl ChatHarness for NexusHarness {
         Ok(delete_nexus_session(session_id)?)
     }
 
-    /// Applies Nexus registry refresh semantics.
+    /// Applies Nexus chat status refresh semantics.
     fn merge_session_refresh(
         &self,
         session_terminals: &mut [SessionTerminal],

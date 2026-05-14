@@ -1,8 +1,9 @@
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, BorderType, Borders, Paragraph};
+use ratatui::widgets::{BorderType, Paragraph};
 use ratatui::Frame;
+use ratkit::primitives::pane::Pane;
 
 use crate::app::state::app_state::AppState;
 use crate::core::rendering::style::apply_cursor_style::apply_cursor_style;
@@ -52,14 +53,11 @@ fn render_split_chrome(
         } else {
             Style::default().fg(default_border_color())
         };
-    let block = Block::default()
-        .title(split_title(app, pane_id))
-        .title(close_title())
-        .borders(Borders::ALL)
+    let pane = Pane::new(split_title(app, pane_id))
         .border_type(BorderType::Rounded)
         .border_style(border_style);
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
+    let (inner, _) = pane.render_block(frame, area);
+    render_close_title(frame, area);
     inner
 }
 
@@ -70,13 +68,21 @@ fn register_close_button(app: &mut AppState, pane_id: u32, area: Rect) {
     }
 }
 
-/// Returns the right-aligned close button title for split pane chrome.
+/// Renders the right-aligned close affordance over Ratkit pane chrome.
+fn render_close_title(frame: &mut Frame, area: Rect) {
+    let Some(button_area) = terminal_pane_close_button_area(area) else {
+        return;
+    };
+    let title_area = Rect::new(button_area.x.saturating_sub(1), button_area.y, 3, 1);
+    frame.render_widget(Paragraph::new(close_title()), title_area);
+}
+
+/// Returns the close button title for split pane chrome.
 fn close_title() -> Line<'static> {
     Line::from(Span::styled(
         " x ",
         Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
     ))
-    .right_aligned()
 }
 
 /// Returns a compact title for a split terminal pane.
@@ -86,12 +92,12 @@ fn split_title(app: &AppState, pane_id: u32) -> String {
         .map(|entry| {
             let bundle_count = terminal_pane_session_ids(app, pane_id).len();
             if bundle_count > 1 {
-                format!(" {} ({bundle_count}) ", entry.session.title)
+                format!("{} ({bundle_count})", entry.session.title)
             } else {
-                format!(" {} ", entry.session.title)
+                entry.session.title.clone()
             }
         })
-        .unwrap_or_else(|| " session ".to_string())
+        .unwrap_or_else(|| "session".to_string())
 }
 
 /// Renders the terminal or placeholder assigned to a split pane.

@@ -1,4 +1,5 @@
 use ratatui::layout::Alignment;
+use ratatui::style::{Color, Style};
 use ratatui::Frame;
 use ratkit::primitives::dialog::{Dialog, DialogModalMode, DialogWidget};
 
@@ -7,6 +8,7 @@ use crate::core::rendering::style::default_border_color::default_border_color;
 use crate::extensions::harness::conversation_picker::data::items::conversation_picker_items;
 use crate::extensions::harness::conversation_picker::data::mode::ConversationPickerMode;
 use crate::extensions::harness::conversation_picker::layout::body::ConversationPickerBody;
+use crate::extensions::harness::conversation_picker::layout::footer_text::conversation_picker_footer_text;
 
 /// Renders the centered conversation picker modal dialog when it is open.
 pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
@@ -41,6 +43,9 @@ pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
         .buttons(vec![])
         .content_padding(2, 1)
         .message_alignment(Alignment::Left)
+        .footer(conversation_picker_footer_text())
+        .footer_alignment(Alignment::Center)
+        .footer_style(Style::default().fg(Color::DarkGray))
         .no_backdrop()
         .modal_mode(DialogModalMode::Blocking)
         .border_color(default_border_color())

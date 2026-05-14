@@ -5,7 +5,7 @@ pub mod config;
 pub mod parsing;
 pub mod process;
 pub mod refresh;
-pub mod registry;
 pub mod sessions;
+pub mod status;
 
 pub use adapter::nexus_harness::NexusHarness;

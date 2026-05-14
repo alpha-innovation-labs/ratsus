@@ -7,6 +7,7 @@ pub mod is_active_chat_row;
 pub mod is_recent;
 pub mod list_row;
 pub mod running_indicator;
+pub mod running_indicator_frame_changed;
 pub mod sort_by_creation_date;
 pub mod title_color;
 pub mod visible_rows;

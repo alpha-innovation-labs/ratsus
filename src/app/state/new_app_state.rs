@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
-use std::time::Duration;
 
 use anyhow::Result;
 use ratatui::layout::Rect;
@@ -9,6 +8,7 @@ use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState
 use ratkit::primitives::toast::ToastManager;
 
 use crate::app::deletion::delete_session_confirmation_state::DeleteSessionConfirmationState;
+use crate::app::input::hotkeys::app_hotkey_registry::app_hotkey_registry;
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::card::clamp_width::clamp_expo_card_width;
 use crate::extensions::expo::observations::preview_requests::observation_preview_requests;
@@ -17,7 +17,6 @@ use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
-use crate::extensions::harness::sessions::refresh::spawn_refresh_worker::spawn_session_refresh_worker;
 use crate::extensions::terminal::persistence::load_normal_terminal_sessions::load_normal_terminal_sessions;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
@@ -30,8 +29,6 @@ use crate::ui::left_panel::session::sort_by_creation_date::sort_sessions_by_crea
 use crate::ui::left_panel::session::visible_rows::visible_session_rows;
 use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
-
-const SESSION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 impl AppState {
     /// Builds the app state with an injected chat harness.
@@ -77,6 +74,7 @@ impl AppState {
             observation_preview_requests(&session_terminals),
         ));
         let observation_watcher = chat_harness.start_observation_watcher();
+        let session_watcher = chat_harness.start_session_watcher();
         let (terminal_pane_sessions, terminal_pane_session_bundles) =
             initial_terminal_panes(&session_terminals, active_index);
         Ok(Self {
@@ -91,6 +89,7 @@ impl AppState {
             active_terminal_pane_id: TERMINAL_PANE_ID,
             toast_manager: ToastManager::new(),
             menu_bar: app_menu_bar(MainPaneTab::Chat),
+            hotkey_registry: app_hotkey_registry(),
             conversation_picker: ConversationPickerState::new(),
             delete_confirmation: DeleteSessionConfirmationState::default(),
             delete_session_receiver: None,
@@ -127,13 +126,10 @@ impl AppState {
             observation_previews: HashMap::new(),
             observation_cache_receiver,
             observation_watcher,
+            session_watcher,
             last_main_pane_area: Rect::default(),
             file_system_tree_view,
             loader_tick: 0,
-            session_refresh_receiver: spawn_session_refresh_worker(
-                chat_harness.clone(),
-                SESSION_REFRESH_INTERVAL,
-            ),
             chat_harness,
         })
     }

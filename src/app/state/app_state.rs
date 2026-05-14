@@ -9,6 +9,7 @@ use ratkit::primitives::menu_bar::MenuBar;
 use ratkit::primitives::resizable_grid::{PaneId, ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
 use ratkit::services::file_watcher::FileWatcher;
+use ratkit::services::hotkey_service::HotkeyRegistry;
 
 use crate::app::deletion::delete_session_confirmation_state::DeleteSessionConfirmationState;
 use crate::app::deletion::delete_sessions_result::DeleteSessionsResult;
@@ -18,7 +19,6 @@ use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
-use crate::extensions::harness::sessions::refresh::spawn_refresh_worker::SessionRefreshResult;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::input::session_drag_state::SessionDragState;
@@ -37,6 +37,7 @@ pub struct AppState {
     pub active_terminal_pane_id: PaneId,
     pub toast_manager: ToastManager,
     pub menu_bar: MenuBar,
+    pub hotkey_registry: HotkeyRegistry,
     pub conversation_picker: ConversationPickerState,
     pub delete_confirmation: DeleteSessionConfirmationState,
     pub delete_session_receiver: Option<Receiver<DeleteSessionsResult>>,
@@ -74,9 +75,9 @@ pub struct AppState {
     pub observation_cache_receiver:
         Option<Receiver<HashMap<String, ConversationObservationPreview>>>,
     pub observation_watcher: Option<FileWatcher>,
+    pub session_watcher: Option<FileWatcher>,
     pub last_main_pane_area: Rect,
     pub file_system_tree_view: FileSystemTreeView,
     pub loader_tick: u64,
-    pub session_refresh_receiver: Receiver<SessionRefreshResult>,
     pub chat_harness: Arc<dyn ChatHarness>,
 }

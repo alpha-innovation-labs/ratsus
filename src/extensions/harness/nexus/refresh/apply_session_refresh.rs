@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::extensions::harness::core::chat_session::ChatSession;
-use crate::extensions::harness::nexus::registry::merge_session_metadata::merge_registry_session_metadata;
 use crate::extensions::harness::nexus::sessions::is_new_chat_session::is_new_nexus_chat_session;
+use crate::extensions::harness::nexus::status::merge_session_metadata::merge_status_session_metadata;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 
 /// Applies refreshed Nexus session metadata while preserving live terminal processes.
@@ -18,7 +18,7 @@ pub fn apply_session_refresh(
     changed
 }
 
-/// Builds running status lookup values from refreshed registry metadata.
+/// Builds running status lookup values from refreshed chat status metadata.
 fn running_status_by_id(refreshed_sessions: &[ChatSession]) -> HashMap<String, bool> {
     refreshed_sessions
         .iter()
@@ -26,7 +26,7 @@ fn running_status_by_id(refreshed_sessions: &[ChatSession]) -> HashMap<String, b
         .collect()
 }
 
-/// Applies active process state from the registry to every known session.
+/// Applies active process state from chat status metadata to every known session.
 fn apply_running_status(
     session_terminals: &mut [SessionTerminal],
     running_by_id: &HashMap<String, bool>,
@@ -45,14 +45,14 @@ fn apply_running_status(
     changed
 }
 
-/// Applies one refreshed registry session by id or local new-chat placeholder match.
+/// Applies one refreshed status session by id or local new-chat placeholder match.
 fn apply_refreshed_session(
     session_terminals: &mut [SessionTerminal],
     refreshed_session: ChatSession,
 ) -> bool {
     if let Some(index) = session_index_by_id(session_terminals, &refreshed_session.id) {
         let merged =
-            merge_registry_session_metadata(&session_terminals[index].session, refreshed_session);
+            merge_status_session_metadata(&session_terminals[index].session, refreshed_session);
         return replace_session_metadata(session_terminals, index, merged);
     }
     if let Some(index) = new_chat_placeholder_index(session_terminals, &refreshed_session) {

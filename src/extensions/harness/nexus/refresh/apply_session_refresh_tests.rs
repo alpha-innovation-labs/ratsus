@@ -30,9 +30,9 @@ fn updates_existing_session_title_by_id() {
     assert_eq!(entries[0].session.date, "old-date");
 }
 
-/// Verifies placeholder registry titles do not replace stable Nexus titles.
+/// Verifies placeholder status titles do not replace stable Nexus titles.
 #[test]
-fn keeps_existing_title_for_placeholder_registry_title() {
+fn keeps_existing_title_for_placeholder_status_title() {
     let mut entries = vec![SessionTerminal::dormant(ChatSession::new(
         "old-date",
         "Real title",
@@ -79,7 +79,7 @@ fn replaces_new_chat_placeholder_by_working_dir() {
     assert_eq!(entries[0].session.title, "Generated title");
 }
 
-/// Verifies registry running status is applied to matching sessions.
+/// Verifies chat status running state is applied to matching sessions.
 #[test]
 fn updates_running_status_by_id() {
     let mut entries = vec![SessionTerminal::dormant(ChatSession::new(
@@ -100,9 +100,9 @@ fn updates_running_status_by_id() {
     assert!(entries[0].session.is_running);
 }
 
-/// Verifies sessions missing from a registry refresh are marked inactive.
+/// Verifies sessions missing from a chat status refresh are marked inactive.
 #[test]
-fn clears_running_status_when_session_leaves_registry() {
+fn clears_running_status_when_session_leaves_status() {
     let mut entries = vec![SessionTerminal::dormant(
         ChatSession::new("date-1", "Existing", "session-1", "/tmp/project").with_running(true),
     )];
@@ -113,7 +113,7 @@ fn clears_running_status_when_session_leaves_registry() {
     assert!(!entries[0].session.is_running);
 }
 
-/// Verifies registry-only sessions are ignored instead of appended as phantom rows.
+/// Verifies status-only sessions are ignored instead of appended as phantom rows.
 #[test]
 fn ignores_unseen_refreshed_session() {
     let mut entries = vec![SessionTerminal::dormant(ChatSession::new(

@@ -7,3 +7,4 @@ pub mod handle_left_keyboard;
 #[cfg(test)]
 mod handle_left_keyboard_tests;
 pub mod handle_terminal_keyboard;
+pub mod hotkeys;

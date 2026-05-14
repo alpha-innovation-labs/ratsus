@@ -27,12 +27,8 @@ pub fn conversation_picker_lines(config: ConversationPickerLinesConfig<'_>) -> V
     if config.height == 0 {
         return Vec::new();
     }
-    if config.height == 1 {
-        return vec![picker_footer_line()];
-    }
-
     let mut lines = picker_header_lines(config.query, config.is_filtering);
-    let list_height = usize::from(config.height).saturating_sub(lines.len() + 1);
+    let list_height = usize::from(config.height).saturating_sub(lines.len());
     lines.extend(picker_result_lines(
         config.items,
         config.selected_position,
@@ -41,10 +37,9 @@ pub fn conversation_picker_lines(config: ConversationPickerLinesConfig<'_>) -> V
         config.loader_tick,
         config.dragging_session_index,
     ));
-    while lines.len() + 1 < usize::from(config.height) {
+    while lines.len() < usize::from(config.height) {
         lines.push(Line::from(""));
     }
-    lines.push(picker_footer_line());
     lines
 }
 
@@ -64,14 +59,6 @@ fn picker_header_lines(query: &str, is_filtering: bool) -> Vec<Line<'static>> {
         ),
         Line::from(""),
     ]
-}
-
-/// Builds the bottom-aligned keyboard help line for the picker body.
-fn picker_footer_line() -> Line<'static> {
-    Line::styled(
-        "/ filter · ↑/↓ scroll · Shift+↑/↓ reorder · Space select · Enter open · Esc close",
-        Style::default().fg(Color::DarkGray),
-    )
 }
 
 /// Builds the visible result lines between the header and bottom hotkeys.

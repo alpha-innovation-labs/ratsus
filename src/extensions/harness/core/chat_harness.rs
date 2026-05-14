@@ -21,6 +21,16 @@ pub trait ChatHarness: Send + Sync {
     /// Refreshes lightweight session metadata such as running status.
     fn refresh_sessions(&self) -> Result<Vec<ChatSession>>;
 
+    /// Starts an optional session metadata watcher for the backend.
+    fn start_session_watcher(&self) -> Option<FileWatcher> {
+        None
+    }
+
+    /// Returns whether a watched changed path should refresh session metadata.
+    fn is_session_update_path(&self, _path: &Path) -> bool {
+        false
+    }
+
     /// Spawns a new chat runtime in the requested working directory.
     fn spawn_new_chat(&self, working_dir: &Path, rows: u16, cols: u16) -> Result<SessionTerminal>;
 

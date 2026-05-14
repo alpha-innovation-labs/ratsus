@@ -3,19 +3,27 @@ use std::path::PathBuf;
 
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use ratkit::services::file_watcher::FileWatcher;
 use ratkit::widgets::file_system_tree::{FileSystemTree, FileSystemTreeState};
 
 use crate::extensions::file_viewer::preview::file_preview_state::FilePreviewState;
 use crate::extensions::file_viewer::preview::preview_state_for_path::preview_state_for_path;
+use crate::extensions::file_viewer::tree::start_root_watcher::start_root_watcher;
+use crate::extensions::file_viewer::tree::start_selected_file_watcher::start_selected_file_watcher;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 
 /// File-system tree state copied from the Ratkit file system tree demo.
 pub struct FileSystemTreeView {
     pub(super) tree: FileSystemTree<'static>,
     pub(super) state: FileSystemTreeState,
+    pub(super) root_path: PathBuf,
     last_selection: String,
     pub(super) last_tree_area: Rect,
     pub(super) preview_state: FilePreviewState,
+    pub(super) selected_preview_path: Option<PathBuf>,
+    pub(super) selected_preview_is_dir: bool,
+    pub(super) selected_file_watcher: Option<FileWatcher>,
+    pub(super) root_watcher: Option<FileWatcher>,
     pending_g: bool,
 }
 
@@ -37,9 +45,14 @@ impl FileSystemTreeView {
         Ok(Self {
             tree,
             state,
+            root_path: root.clone(),
             last_selection: root.display().to_string(),
             last_tree_area: Rect::default(),
             preview_state,
+            selected_preview_path: Some(root.clone()),
+            selected_preview_is_dir: true,
+            selected_file_watcher: None,
+            root_watcher: start_root_watcher(&root),
             pending_g: false,
         })
     }
@@ -178,6 +191,9 @@ impl FileSystemTreeView {
         let is_dir = entry.is_dir;
         self.last_selection = path.display().to_string();
         self.preview_state = preview_state_for_path(&path, is_dir);
+        self.selected_preview_path = Some(path.clone());
+        self.selected_preview_is_dir = is_dir;
+        self.selected_file_watcher = start_selected_file_watcher(&path, is_dir);
         outcome
     }
 }

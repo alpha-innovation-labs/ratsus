@@ -1,3 +1,5 @@
 //! Nexus adapter configuration paths.
 
-pub mod cmux_session_registry_path;
+pub mod chat_status_file_path;
+pub mod path_is_chat_status_file;
+pub mod start_chat_status_file_watcher;

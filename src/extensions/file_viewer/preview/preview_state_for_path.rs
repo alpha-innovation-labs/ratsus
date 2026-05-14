@@ -10,7 +10,7 @@ pub fn preview_state_for_path(path: &Path, is_dir: bool) -> FilePreviewState {
     if !is_dir && is_markdown_path(path) {
         return FilePreviewState::Markdown(Box::new(markdown_widget_for_path(path)));
     }
-    FilePreviewState::Code(code_state_for_path(path, is_dir))
+    FilePreviewState::Code(Box::new(code_state_for_path(path, is_dir)))
 }
 
 #[cfg(test)]

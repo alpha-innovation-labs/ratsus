@@ -40,7 +40,7 @@ impl ConversationPickerBody {
 }
 
 impl DialogBodyRenderer for ConversationPickerBody {
-    /// Renders the filter query, keyboard help, and visible conversation rows.
+    /// Renders the filter query and visible conversation rows.
     fn render_body(&mut self, area: Rect, buf: &mut Buffer) {
         let lines = conversation_picker_lines(ConversationPickerLinesConfig {
             query: &self.query,

@@ -1253,6 +1253,7 @@ dependencies = [
  "chrono",
  "crossterm",
  "insta",
+ "libc",
  "portable-pty",
  "ratatui",
  "ratkit",

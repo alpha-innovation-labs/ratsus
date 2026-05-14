@@ -1,17 +1,17 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::sync::{mpsc, Arc};
+use std::sync::Arc;
 
 use ratatui::layout::Rect;
 use ratkit::primitives::resizable_grid::{ResizableGrid, ResizableGridWidgetState};
 use ratkit::primitives::toast::ToastManager;
 
 use crate::app::deletion::delete_session_confirmation_state::DeleteSessionConfirmationState;
+use crate::app::input::hotkeys::app_hotkey_registry::app_hotkey_registry;
 use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
-use crate::extensions::harness::sessions::refresh::spawn_refresh_worker::SessionRefreshResult;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
@@ -21,7 +21,6 @@ use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 
 /// Builds a minimal AppState fixture without spawning terminal processes.
 pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppState> {
-    let (_sender, receiver) = mpsc::channel::<SessionRefreshResult>();
     let mut layout = ResizableGrid::new(LEFT_PANE_ID);
     let _ = layout.split_pane_vertically(LEFT_PANE_ID);
     layout.set_split_percent(20);
@@ -37,6 +36,7 @@ pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<Ap
         active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
         menu_bar: app_menu_bar(MainPaneTab::Chat),
+        hotkey_registry: app_hotkey_registry(),
         conversation_picker: ConversationPickerState::new(),
         delete_confirmation: DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
@@ -73,10 +73,10 @@ pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<Ap
         observation_previews: HashMap::new(),
         observation_cache_receiver: None,
         observation_watcher: None,
+        session_watcher: None,
         last_main_pane_area: Rect::default(),
         file_system_tree_view: FileSystemTreeView::new()?,
         loader_tick: 0,
-        session_refresh_receiver: receiver,
         chat_harness: Arc::new(StubHarness::new()),
     })
 }
