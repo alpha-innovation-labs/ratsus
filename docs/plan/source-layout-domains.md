@@ -36,7 +36,7 @@ src/
 
 ### `app/`
 
-`app/` is the orchestration layer. It owns startup wiring, top-level event routing, lifecycle handling, extension registration, and cross-domain coordination.
+`app/` is the orchestration layer. It owns startup wiring, top-level event routing, lifecycle handling, extension registration, and cross-domain coordination. It is not a primitive UI or backend domain; it connects the app shell to extensions without owning their internals.
 
 It may contain:
 
@@ -55,11 +55,11 @@ It should not contain:
 
 ### `core/`
 
-`core/` contains app-level mechanics that other domains build on top of. These modules are not standalone features; they provide shared application foundations.
+`core/` contains app-level primitive mechanics that other domains build on top of. These modules are not standalone features and are not reusable visible UI widgets; they provide behind-the-scenes application foundations.
 
 #### `core/rendering/`
 
-`core/rendering/` owns root screen composition and global drawing behavior.
+`core/rendering/` owns root screen composition and global drawing plumbing. It composes visible regions, overlays, dialogs, cursor style, and shared shell styling without becoming the owner of reusable UI widgets.
 
 It may contain:
 
@@ -91,22 +91,22 @@ This folder should only be created when state has been clearly separated from `a
 
 ### `ui/`
 
-`ui/` contains general interface building blocks and reusable UI behavior. These modules are part of the shell and can be used by multiple extensions.
+`ui/` contains visible interface building blocks and reusable UI behavior. These modules are part of the shell, can be used by multiple extensions, and should not own backend or product-specific feature behavior.
 
 #### `ui/grid_layout/`
 
-`ui/grid_layout/` replaces the current `session_panes/` name. Its responsibility is organizing panes in a grid, independent of any single feature.
+`ui/grid_layout/` replaces the current `session_panes/` name. Its responsibility is organizing visible panes in a grid, independent of any single feature. Any extension may place content in those panes; grid layout owns pane mechanics, not the feature rendered inside them.
 
 It may contain:
 
 - Pane splitting.
 - Active pane tracking.
 - Pane close button hit-testing.
-- Pane-to-session placement helpers.
+- Pane-to-content placement helpers, including session placement when the content is harness-backed.
 - Pane resize behavior.
 - Grid area lookup.
 
-It should avoid terminal process details. Terminal-specific runtime behavior belongs in `extensions/terminal/`.
+It should avoid terminal process details and extension-specific content behavior. Terminal-specific runtime behavior belongs in `extensions/terminal/`, while future feature content such as git diffs belongs in its own extension.
 
 #### `ui/keyboard/`
 
@@ -175,7 +175,7 @@ It should not perform the work that caused the notification. It should only pres
 
 ### `extensions/`
 
-`extensions/` contains product capabilities built on top of the app shell. Each extension should own its state, input handling, rendering, and integration hooks where practical.
+`extensions/` contains product capabilities unique to this app and built on top of the app shell. Each extension should own its state, input handling, rendering, backend integration points, and tests where practical.
 
 Extensions should depend on `app`, `core`, `ui`, and `shared` contracts, but the shell should avoid depending on extension internals except through explicit integration points.
 
@@ -220,7 +220,7 @@ This folder should be created when the feature exists.
 
 #### `extensions/harness/`
 
-`extensions/harness/` combines the harness contract, concrete harness adapters, and session metadata lifecycle because these concerns share a backend/session boundary.
+`extensions/harness/` combines the harness contract, concrete harness adapters, and session metadata lifecycle because these concerns share a backend/session boundary. Harness-specific operations, including session deletion, belong in the concrete harness adapter such as `extensions/harness/nexus/` or a future `extensions/harness/<harness_name>/`.
 
 It may contain:
 
@@ -228,7 +228,7 @@ It may contain:
 - Nexus adapter.
 - Stub adapter.
 - Session loading and refresh.
-- Session deletion through the backend.
+- Session deletion through the active concrete backend.
 - New chat/session creation.
 - Observation support used by harness-backed sessions.
 
@@ -263,7 +263,7 @@ It should not own grid splitting. Pane organization belongs in `ui/grid_layout/`
 
 ### `shared/`
 
-`shared/` is for tiny dependency-light utilities used by multiple domains.
+`shared/` is for dependency-light primitives used by multiple domains. It may remain empty when no real shared primitive exists; the goal is correct ownership, not filling the folder.
 
 It may contain:
 
@@ -281,6 +281,10 @@ It should not contain:
 - UI widgets.
 
 If a helper grows meaningful domain behavior, it should move into the relevant domain instead of staying in `shared/`.
+
+## Documentation rule
+
+Before committing code, review whether the work changed architecture, behavior, scenarios, or source layout. Update the relevant `docs/` files and this plan when those changes affect project understanding.
 
 ## Migration Notes
 
