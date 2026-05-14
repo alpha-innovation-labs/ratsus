@@ -1,6 +1,6 @@
-# Run the Nexus TUI wrapper.
+# Run the Nexus TUI wrapper with sccache-backed builds.
 # Usage: just dev
 # Example: just dev
 
-dev:
-    cargo run
+dev: _require-sccache
+    RUSTC_WRAPPER=sccache CARGO_INCREMENTAL=0 cargo run

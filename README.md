@@ -9,6 +9,16 @@ just dev       # real Nexus harness
 just dev-stub  # deterministic stub harness; no Nexus CLI or Nexus data paths
 ```
 
+## Verification
+
+Install the local tooling once:
+
+```bash
+just install-tools
+```
+
+`just check` runs formatting verification, Cargo check, Clippy, and tests. Cargo build/test recipes use `RUSTC_WRAPPER=sccache CARGO_INCREMENTAL=0`; `just test` uses `cargo-nextest` for parallel test-binary scheduling.
+
 ## Repository organization
 
 - `src/main.rs` selects the requested harness and starts the Ratkit app.
