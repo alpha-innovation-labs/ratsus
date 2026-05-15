@@ -18,7 +18,7 @@ pub fn conversation_picker_dialog_body_area(frame_area: Rect) -> Rect {
 }
 
 /// Returns the full dialog area used by Ratkit's centered percentage layout.
-fn conversation_picker_dialog_area(area: Rect) -> Rect {
+pub fn conversation_picker_dialog_area(area: Rect) -> Rect {
     let width = (area.width as f32 * CONVERSATION_PICKER_WIDTH_PERCENT) as u16;
     let height = (area.height as f32 * CONVERSATION_PICKER_HEIGHT_PERCENT) as u16;
     Rect::new(

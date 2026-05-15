@@ -21,10 +21,7 @@ fn previous_session_before(rows: &[SessionListRow], preferred_row: usize) -> Opt
 
 /// Extracts a session index from a visible row.
 fn session_index(row: &SessionListRow) -> Option<usize> {
-    match row {
-        SessionListRow::Session { index } => Some(*index),
-        SessionListRow::Folder { .. } | SessionListRow::FolderMore { .. } => None,
-    }
+    row.session_index()
 }
 
 #[cfg(test)]

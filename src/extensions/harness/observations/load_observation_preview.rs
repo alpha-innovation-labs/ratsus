@@ -5,7 +5,7 @@ use crate::extensions::expo::observations::conversation_preview::ConversationObs
 use crate::extensions::harness::observations::observation_state_path::observation_state_path;
 use crate::extensions::harness::observations::parse_observation_preview::parse_observation_preview;
 
-/// Loads the latest observation preview for a Nexus conversation id and title.
+/// Loads the latest observation JSON preview for a Nexus conversation id and title.
 pub fn load_observation_preview(
     conversation_id: &str,
     session_title: &str,

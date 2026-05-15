@@ -15,5 +15,10 @@ pub fn assertions_for(domain: &str, name: &str) -> Vec<String> {
     if name == "refresh_nexus_registry_watcher" {
         assertions.push("Nexus registry watcher was installed".to_string());
     }
+    if name == "picker_workspace_scope_toggle" {
+        assertions.push("conversation picker was scoped to the selected workspace".to_string());
+    } else if domain.contains("workspace") || name.contains("workspace") {
+        assertions.push("workspace pane has an active selected folder".to_string());
+    }
     assertions
 }

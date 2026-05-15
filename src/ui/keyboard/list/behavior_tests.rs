@@ -11,6 +11,7 @@ struct FakeList {
     filtering: bool,
     filter: String,
     deleted: bool,
+    toggled_count: usize,
 }
 
 impl ListKeyBehavior for FakeList {
@@ -35,6 +36,11 @@ impl ListKeyBehavior for FakeList {
     /// Records delete flow for the fake selection.
     fn delete_selection(&mut self) {
         self.deleted = true;
+    }
+
+    /// Records bulk-selection toggles for the fake selection.
+    fn toggle_selection(&mut self) {
+        self.toggled_count += 1;
     }
 
     /// Returns whether fake filtering is active.
@@ -108,11 +114,32 @@ fn delete_and_quit_are_shared() {
     assert_eq!(outcome, ListKeyOutcome::Quit);
 }
 
+/// Verifies held space does not repeatedly toggle the same selection.
+#[test]
+fn repeated_space_is_ignored_for_toggle_selection() {
+    let mut list = FakeList::default();
+    let _ = handle_list_keyboard(&mut list, key(KeyCode::Char(' ')));
+    let outcome = handle_list_keyboard(&mut list, repeated_key(KeyCode::Char(' ')));
+
+    assert_eq!(list.toggled_count, 1);
+    assert_eq!(outcome, ListKeyOutcome::Continue);
+}
+
 /// Builds a key press event without modifiers.
 fn key(key_code: KeyCode) -> KeyboardEvent {
+    keyboard_event(key_code, KeyEventKind::Press)
+}
+
+/// Builds a key repeat event without modifiers.
+fn repeated_key(key_code: KeyCode) -> KeyboardEvent {
+    keyboard_event(key_code, KeyEventKind::Repeat)
+}
+
+/// Builds a keyboard event without modifiers.
+fn keyboard_event(key_code: KeyCode, kind: KeyEventKind) -> KeyboardEvent {
     KeyboardEvent {
         key_code,
         modifiers: KeyModifiers::empty(),
-        kind: KeyEventKind::Press,
+        kind,
     }
 }

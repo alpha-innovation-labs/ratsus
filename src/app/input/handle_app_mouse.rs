@@ -5,6 +5,9 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::expo::input::handle_mouse::handle_expo_mouse;
 use crate::extensions::harness::conversation_picker::actions::open_folder::open_folder_conversation_picker;
 use crate::extensions::harness::conversation_picker::input::handle_mouse::handle_conversation_picker_mouse;
+use crate::extensions::plans::input::handle_plan_drag_mouse::handle_plan_drag_mouse;
+use crate::extensions::plans::input::handle_plan_left_mouse::handle_plan_left_mouse;
+use crate::extensions::plans::preview::handle_plan_preview_mouse::handle_plan_preview_mouse;
 use crate::extensions::terminal::copy_mode::input::handle_mouse::handle_terminal_copy_mouse;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::resizable_grid::handle_mouse::handle_resizable_grid_mouse;
@@ -13,8 +16,12 @@ use crate::ui::left_panel::folder::toggle_session_folder::toggle_session_folder;
 use crate::ui::left_panel::input::handle_session_drag_mouse::handle_session_drag_mouse;
 use crate::ui::left_panel::input::session_row_for_rendered_click::session_row_for_rendered_click;
 use crate::ui::left_panel::input::should_focus_for_mouse::should_focus_left_pane_for_mouse;
+use crate::ui::left_panel::mode::clicked_left_pane_mode::clicked_left_pane_mode;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 use crate::ui::left_panel::render::rendered_rows::rendered_left_panel_rows;
 use crate::ui::left_panel::scroll::scroll_view::scroll_left_panel_view;
+use crate::ui::left_panel::session::activation::activate_split_group_child::activate_split_group_child;
+use crate::ui::left_panel::session::activation::activate_split_group_parent::activate_split_group_parent;
 use crate::ui::left_panel::session::list_row::SessionListRow;
 
 use crate::extensions::file_viewer::preview::handle_mouse::handle_file_preview_mouse;
@@ -29,6 +36,7 @@ use crate::ui::grid_layout::pane::close_button_at_position::terminal_pane_close_
 use crate::ui::grid_layout::pane::id_at_position::terminal_pane_id_at_position;
 use crate::ui::grid_layout::split::close_terminal_pane::close_terminal_pane;
 use crate::ui::menu_bar::input::handle_mouse::handle_menu_bar_mouse;
+use crate::ui::workspace_pane::handle_workspace_mouse::handle_workspace_mouse;
 
 const MOUSE_SCROLL_LINES_PER_TICK: usize = 3;
 
@@ -49,10 +57,19 @@ pub fn handle_app_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> Coordi
     if handle_resizable_grid_mouse(app, mouse) {
         return CoordinatorAction::Redraw;
     }
+    if app.workspace_view_enabled && app.workspace_drag.is_some() {
+        return handle_workspace_mouse(app, mouse);
+    }
+    if app.plan_list.drag.is_some() && handle_plan_drag_mouse(&mut app.plan_list, mouse) {
+        return CoordinatorAction::Redraw;
+    }
     if (app.session_drag.is_some() || app.folder_drag.is_some())
         && handle_session_drag_mouse(app, mouse)
     {
         return CoordinatorAction::Redraw;
+    }
+    if app.workspace_view_enabled && mouse.is_inside(app.last_workspace_area) {
+        return handle_workspace_mouse(app, mouse);
     }
     if mouse.is_inside(app.last_left_area) {
         return handle_left_mouse(app, mouse);
@@ -65,11 +82,19 @@ pub fn handle_app_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> Coordi
 
 /// Handles mouse input routed to the left session pane.
 fn handle_left_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> CoordinatorAction {
+    if let Some(mode) = clicked_left_pane_mode(app, mouse) {
+        app.left_pane_mode = mode;
+        app.focused_pane = FocusedPane::Left;
+        return CoordinatorAction::Redraw;
+    }
     if should_focus_left_pane_for_mouse(mouse.kind) {
         app.focused_pane = FocusedPane::Left;
     }
     if app.active_main_pane_tab == MainPaneTab::Files {
         return handle_file_system_tree_mouse(&mut app.file_system_tree_view, mouse);
+    }
+    if app.left_pane_mode == LeftPaneMode::Plans {
+        return handle_plan_left_mouse(app, mouse);
     }
     if handle_session_drag_mouse(app, mouse) {
         return CoordinatorAction::Redraw;
@@ -109,9 +134,14 @@ fn handle_left_click(app: &mut AppState, mouse: ratkit::MouseEvent) {
             }
         }
         SessionListRow::FolderMore { path } => open_folder_conversation_picker(app, path),
+        SessionListRow::SplitGroup { group_id, .. } => activate_split_group_parent(app, group_id),
+        SessionListRow::SplitGroupChild { pane_id, index, .. } => {
+            activate_split_group_child(app, pane_id, index);
+        }
         SessionListRow::Session { index } => {
             app.focused_index = index;
             app.activate_focused_session();
+            app.focused_pane = FocusedPane::Terminal;
         }
     }
 }
@@ -121,6 +151,9 @@ fn handle_terminal_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> Coord
     app.focused_pane = FocusedPane::Terminal;
     if app.active_main_pane_tab == MainPaneTab::Expo {
         return handle_expo_mouse(app, mouse);
+    }
+    if app.active_main_pane_tab == MainPaneTab::Chat && app.left_pane_mode == LeftPaneMode::Plans {
+        return handle_plan_preview_mouse(&mut app.plan_list, mouse, app.last_terminal_area);
     }
     if app.active_main_pane_tab == MainPaneTab::Files {
         return handle_file_preview_mouse(

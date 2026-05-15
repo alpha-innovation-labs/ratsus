@@ -6,10 +6,11 @@
 
 - Store shell layout, terminal pane maps, menu bar, toasts, and dialogs.
 - Store session terminals, active/focused indexes, selected ids, and closed ids.
-- Store left-panel ordering, scrolling, focus, drag, and collapse state.
+- Store left-panel ordering, scrolling, focus, drag, collapse state, and per-workspace remembered focused sessions.
 - Store active main-pane tab and extension state for Expo and file viewer.
 - Store observation preview cache state and watcher handles.
 - Store async receivers for session refresh and deletion work.
+- Store app diagnostics counters for FPS and redraws.
 - Build initial state with an injected `ChatHarness`.
 
 ## Startup construction
@@ -18,6 +19,7 @@
 
 ## Key files
 
+- `src/app/diagnostics/`
 - `src/app/state/app_state.rs`
 - `src/app/state/new_app_state.rs`
 - `src/app/state/app_state_methods.rs`

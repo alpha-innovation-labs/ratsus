@@ -3,6 +3,7 @@ use ratkit::CoordinatorAction;
 use crate::app::events::drain_delete_session_receiver::drain_delete_session_receiver;
 use crate::app::events::redraw_action::redraw_action;
 use crate::app::sessions::close_exited_sessions::close_exited_sessions;
+use crate::app::sessions::drain_initial_sessions_receiver::drain_initial_sessions_receiver;
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::observations::drain_cache_receiver::drain_observation_cache_receiver;
 use crate::extensions::expo::observations::poll_watcher::poll_observation_watcher;
@@ -16,6 +17,13 @@ use crate::ui::notifications::toast::show_failed_to_replace_chat::show_failed_to
 pub fn handle_tick_event(app: &mut AppState, tick_count: u64) -> CoordinatorAction {
     let previous_loader_tick = app.loader_tick;
     app.loader_tick = tick_count;
+    let initial_sessions_changed = match drain_initial_sessions_receiver(app) {
+        Ok(changed) => changed,
+        Err(error) => {
+            show_failed_to_replace_chat_toast(&mut app.toast_manager, &error);
+            true
+        }
+    };
     poll_observation_watcher(app);
     let observations_changed = drain_observation_cache_receiver(app);
     let delete_changed = drain_delete_session_receiver(app);
@@ -48,6 +56,7 @@ pub fn handle_tick_event(app: &mut AppState, tick_count: u64) -> CoordinatorActi
         has_active_loader && running_indicator_frame_changed(previous_loader_tick, tick_count);
     redraw_action(
         sessions_changed
+            || initial_sessions_changed
             || observations_changed
             || file_viewer_changed
             || delete_changed

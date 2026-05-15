@@ -2,7 +2,7 @@ use ratatui::{layout::Rect, widgets::Paragraph, Frame};
 
 use crate::app::deletion::open_delete_session_confirmation::open_delete_session_confirmation;
 use crate::app::state::app_state::AppState;
-use crate::extensions::harness::conversation_picker::actions::open::open_conversation_picker;
+use crate::extensions::harness::conversation_picker::actions::open_in_filter_mode::open_conversation_picker_in_filter_mode;
 use crate::ui::left_panel::action::LeftPaneAction;
 use crate::ui::left_panel::content::LeftPaneContent;
 use crate::ui::left_panel::focus::focus_adjacent_folder::focus_adjacent_folder;
@@ -44,7 +44,7 @@ impl LeftPaneContent for LeftPanelKeyBehavior<'_> {
             LeftPaneAction::Expand => open_focused_project(self.app),
             LeftPaneAction::Delete => open_delete_session_confirmation(self.app),
             LeftPaneAction::ToggleSelection => toggle_focused_left_conversation_selection(self.app),
-            LeftPaneAction::StartFilter => open_conversation_picker(self.app),
+            LeftPaneAction::StartFilter => open_conversation_picker_in_filter_mode(self.app),
             LeftPaneAction::Quit => return LeftPaneActionOutcome::Quit,
             LeftPaneAction::ReorderBy(_)
             | LeftPaneAction::InsertFilterCharacter(_)
@@ -55,10 +55,7 @@ impl LeftPaneContent for LeftPanelKeyBehavior<'_> {
 
     /// Returns the chat/session title for the shared left-pane shell.
     fn title(&self) -> String {
-        format!(
-            " {} sessions ",
-            self.app.chat_harness.display_name().to_lowercase()
-        )
+        " Sessions ".to_string()
     }
 
     /// Records the chat/session body area for scrolling and hit testing.
@@ -92,5 +89,27 @@ impl LeftPaneContent for LeftPanelKeyBehavior<'_> {
     /// Updates whether the left session pane is waiting for a second `g`.
     fn set_pending_g(&mut self, pending: bool) {
         self.app.pending_left_g = pending;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LeftPanelKeyBehavior;
+    use crate::app::test_support::app_fixture::app_fixture;
+    use crate::app::test_support::dormant_session::dormant_session;
+    use crate::ui::left_panel::action::LeftPaneAction;
+    use crate::ui::left_panel::content::LeftPaneContent;
+
+    /// Verifies session-pane slash opens the conversation picker already filtering.
+    #[test]
+    fn start_filter_opens_picker_in_filter_mode() -> anyhow::Result<()> {
+        let mut app = app_fixture(vec![dormant_session("Alpha", "a", "/workspace/alpha")])?;
+        let mut behavior = LeftPanelKeyBehavior::new(&mut app);
+
+        behavior.handle_left_pane_action(LeftPaneAction::StartFilter);
+
+        assert!(behavior.app.conversation_picker.is_open);
+        assert!(behavior.app.conversation_picker.is_filtering);
+        Ok(())
     }
 }

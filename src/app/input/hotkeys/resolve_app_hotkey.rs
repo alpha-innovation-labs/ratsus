@@ -2,8 +2,8 @@ use crossterm::event::KeyModifiers;
 use ratkit::services::hotkey_service::{HotkeyRegistry, HotkeyScope};
 use ratkit::KeyboardEvent;
 
-use crate::app::input::chat_cycle_direction_for_keyboard::chat_cycle_direction_for_keyboard;
 use crate::app::input::hotkeys::app_hotkey::AppHotkey;
+use crate::app::input::session_cycle_direction_for_keyboard::session_cycle_direction_for_keyboard;
 use crate::ui::grid_layout::bundle::terminal_bundle_for_keyboard::terminal_bundle_for_keyboard;
 use crate::ui::grid_layout::split::split_direction_for_keyboard::terminal_split_direction_for_keyboard;
 
@@ -13,18 +13,21 @@ pub fn resolve_app_hotkey(
     keyboard: &KeyboardEvent,
     scope: &HotkeyScope,
 ) -> Option<AppHotkey> {
-    let _ = registry.lookup(&keyboard.key_code, scope)?;
-    if let Some(direction) = chat_cycle_direction_for_keyboard(keyboard) {
-        return Some(AppHotkey::CycleChat(direction));
+    if let Some(direction) = session_cycle_direction_for_keyboard(keyboard) {
+        return Some(AppHotkey::CycleSession(direction));
     }
+    let _ = registry.lookup(&keyboard.key_code, scope)?;
     if control_char(keyboard, 'k') {
+        return Some(AppHotkey::OpenCommandBar);
+    }
+    if control_char(keyboard, 'h') {
         return Some(AppHotkey::OpenConversationPicker);
     }
     if control_char(keyboard, 'e') {
         return Some(AppHotkey::OpenFocusedConversationExpo);
     }
-    if terminal_bundle_for_keyboard(keyboard) {
-        return Some(AppHotkey::PlaceConversationInActiveSplit);
+    if let Some(direction) = terminal_bundle_for_keyboard(keyboard) {
+        return Some(AppHotkey::PlaceConversationInActiveSplit(direction));
     }
     if let Some(direction) = terminal_split_direction_for_keyboard(keyboard) {
         return Some(AppHotkey::SplitTerminal(direction));
@@ -62,7 +65,7 @@ mod tests {
     use crate::app::input::hotkeys::app_hotkey_registry::app_hotkey_registry;
     use crate::app::input::hotkeys::scopes::TERMINAL_SCOPE;
 
-    /// Ctrl+K should resolve through the Ratkit registry into the picker command.
+    /// Ctrl+K should resolve through the Ratkit registry into the command bar command.
     #[test]
     fn resolves_control_k_from_ratkit_registry() {
         let registry = app_hotkey_registry();
@@ -73,7 +76,52 @@ mod tests {
             &TERMINAL_SCOPE,
         );
 
+        assert_eq!(hotkey, Some(AppHotkey::OpenCommandBar));
+    }
+
+    /// Ctrl+H should resolve through the Ratkit registry into the picker command.
+    #[test]
+    fn resolves_control_h_from_ratkit_registry() {
+        let registry = app_hotkey_registry();
+
+        let hotkey = resolve_app_hotkey(
+            &registry,
+            &key(KeyCode::Char('h'), KeyModifiers::CONTROL),
+            &TERMINAL_SCOPE,
+        );
+
         assert_eq!(hotkey, Some(AppHotkey::OpenConversationPicker));
+    }
+
+    /// Ctrl+Tab should resolve into next-session cycling.
+    #[test]
+    fn resolves_control_tab_to_next_session() {
+        let registry = app_hotkey_registry();
+
+        let hotkey = resolve_app_hotkey(
+            &registry,
+            &key(KeyCode::Tab, KeyModifiers::CONTROL),
+            &TERMINAL_SCOPE,
+        );
+
+        assert_eq!(hotkey, Some(AppHotkey::CycleSession(1)));
+    }
+
+    /// Ctrl+Shift+Tab should resolve into previous-session cycling.
+    #[test]
+    fn resolves_control_shift_tab_to_previous_session() {
+        let registry = app_hotkey_registry();
+
+        let hotkey = resolve_app_hotkey(
+            &registry,
+            &key(
+                KeyCode::BackTab,
+                KeyModifiers::CONTROL | KeyModifiers::SHIFT,
+            ),
+            &TERMINAL_SCOPE,
+        );
+
+        assert_eq!(hotkey, Some(AppHotkey::CycleSession(-1)));
     }
 
     /// Unregistered character shortcuts should not resolve even with Ctrl held.

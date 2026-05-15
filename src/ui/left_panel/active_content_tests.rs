@@ -18,6 +18,17 @@ fn chat_footer_contract_has_shortcuts_without_status() {
     assert_eq!(content.footer_status(), None);
 }
 
+/// Verifies chat content uses the generic Sessions pane title.
+#[test]
+fn chat_title_is_generic_sessions() {
+    let mut app =
+        app_fixture(vec![dormant_session("one", "one", "/tmp/project-one")]).expect("app fixture");
+    app.active_main_pane_tab = MainPaneTab::Chat;
+    let content = ActiveLeftPaneContent::for_app(&mut app);
+
+    assert_eq!(content.title(), " Sessions ");
+}
+
 /// Verifies files content exposes footer shortcuts with selected-path status.
 #[test]
 fn files_footer_contract_has_shortcuts_and_selected_status() {

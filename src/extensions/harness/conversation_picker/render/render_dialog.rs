@@ -9,6 +9,7 @@ use crate::extensions::harness::conversation_picker::data::items::conversation_p
 use crate::extensions::harness::conversation_picker::data::mode::ConversationPickerMode;
 use crate::extensions::harness::conversation_picker::layout::body::ConversationPickerBody;
 use crate::extensions::harness::conversation_picker::layout::footer_text::conversation_picker_footer_text;
+use crate::extensions::harness::conversation_picker::render::render_scope_header::render_conversation_picker_scope_header;
 
 /// Renders the centered conversation picker modal dialog when it is open.
 pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
@@ -35,7 +36,7 @@ pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
     );
     let title = match app.conversation_picker.mode {
         ConversationPickerMode::Open => " conversations ",
-        ConversationPickerMode::PlaceInActiveSplit => " place conversation in split ",
+        ConversationPickerMode::PlaceInActiveSplit(_) => " place conversation in split ",
     };
     let mut dialog = Dialog::new(title, "")
         .width_percent(0.72)
@@ -52,4 +53,5 @@ pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
         .body_renderer(Box::new(body));
 
     frame.render_widget(DialogWidget::new(&mut dialog), frame.area());
+    render_conversation_picker_scope_header(app, frame);
 }

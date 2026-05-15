@@ -6,12 +6,12 @@ fn picker_place_in_split() -> anyhow::Result<()> {
     let report = crate::support::run_case(
         "conversation_picker",
         "picker_place_in_split",
-        "Split-placement mode places the selected session in the active pane.",
+        "Split-placement mode places the selected session in a new grouped split pane.",
     )?;
     assert_snapshot!(report.to_snapshot(), @r###"
 domain: conversation_picker
 test: picker_place_in_split
-description: Split-placement mode places the selected session in the active pane.
+description: Split-placement mode places the selected session in a new grouped split pane.
 backend: nexus
 workflow: real Nexus full-app workflow
 assertions:

@@ -1,6 +1,11 @@
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use ratkit::primitives::resizable_grid::PaneId;
+
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
+use crate::ui::grid_layout::group::split_pane_session_group::SplitPaneSessionGroup;
+use crate::ui::grid_layout::group::split_pane_session_group_state::SplitPaneSessionGroupState;
 use crate::ui::left_panel::session::list_row::SessionListRow;
 use crate::ui::left_panel::session::visible_rows::visible_session_rows;
 
@@ -25,12 +30,16 @@ impl VisibleSessionRowsCache {
         collapsed_folders: &std::collections::BTreeSet<PathBuf>,
         folder_order: &[PathBuf],
         pinned_session_index: Option<usize>,
+        split_groups: &SplitPaneSessionGroupState,
+        pane_session_bundles: &BTreeMap<PaneId, Vec<String>>,
     ) -> &[SessionListRow] {
         let signature = VisibleSessionRowsSignature::new(
             session_terminals,
             collapsed_folders,
             folder_order,
             pinned_session_index,
+            split_groups,
+            pane_session_bundles,
         );
         if self.signature.as_ref() != Some(&signature) {
             self.rows = visible_session_rows(
@@ -38,6 +47,8 @@ impl VisibleSessionRowsCache {
                 collapsed_folders,
                 folder_order,
                 pinned_session_index,
+                split_groups,
+                pane_session_bundles,
             );
             self.signature = Some(signature);
             self.rebuild_count += 1;
@@ -52,12 +63,16 @@ impl VisibleSessionRowsCache {
         collapsed_folders: &std::collections::BTreeSet<PathBuf>,
         folder_order: &[PathBuf],
         pinned_session_index: Option<usize>,
+        split_groups: &SplitPaneSessionGroupState,
+        pane_session_bundles: &BTreeMap<PaneId, Vec<String>>,
     ) -> usize {
         self.rows(
             session_terminals,
             collapsed_folders,
             folder_order,
             pinned_session_index,
+            split_groups,
+            pane_session_bundles,
         )
         .len()
     }
@@ -76,6 +91,8 @@ struct VisibleSessionRowsSignature {
     collapsed_folders: Vec<PathBuf>,
     folder_order: Vec<PathBuf>,
     pinned_session_index: Option<usize>,
+    split_groups: Vec<SplitGroupSignature>,
+    pane_session_bundles: Vec<(PaneId, Vec<String>)>,
 }
 
 impl VisibleSessionRowsSignature {
@@ -85,6 +102,8 @@ impl VisibleSessionRowsSignature {
         collapsed_folders: &std::collections::BTreeSet<PathBuf>,
         folder_order: &[PathBuf],
         pinned_session_index: Option<usize>,
+        split_groups: &SplitPaneSessionGroupState,
+        pane_session_bundles: &BTreeMap<PaneId, Vec<String>>,
     ) -> Self {
         Self {
             sessions: session_terminals
@@ -94,6 +113,15 @@ impl VisibleSessionRowsSignature {
             collapsed_folders: collapsed_folders.iter().cloned().collect(),
             folder_order: folder_order.to_vec(),
             pinned_session_index,
+            split_groups: split_groups
+                .groups
+                .values()
+                .map(SplitGroupSignature::new)
+                .collect(),
+            pane_session_bundles: pane_session_bundles
+                .iter()
+                .map(|(pane_id, session_ids)| (*pane_id, session_ids.clone()))
+                .collect(),
         }
     }
 }
@@ -103,6 +131,7 @@ impl VisibleSessionRowsSignature {
 struct VisibleSessionSignature {
     id: String,
     working_dir: PathBuf,
+    is_running: bool,
 }
 
 impl VisibleSessionSignature {
@@ -111,6 +140,26 @@ impl VisibleSessionSignature {
         Self {
             id: entry.session.id.clone(),
             working_dir: entry.session.working_dir.clone(),
+            is_running: entry.session.is_running,
+        }
+    }
+}
+
+/// Identifies one split group's row-affecting identity, label, and pane order.
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct SplitGroupSignature {
+    id: u64,
+    name: String,
+    panes: Vec<PaneId>,
+}
+
+impl SplitGroupSignature {
+    /// Builds a row cache signature for one split-pane session group.
+    fn new(group: &SplitPaneSessionGroup) -> Self {
+        Self {
+            id: group.id,
+            name: group.name.clone(),
+            panes: group.panes.clone(),
         }
     }
 }

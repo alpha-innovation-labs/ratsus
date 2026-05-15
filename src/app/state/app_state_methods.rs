@@ -9,15 +9,23 @@ use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::terminal::session::chat_terminal::ChatTerminal;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::grid_layout::bundle::set_active_bundle_session::set_active_terminal_pane_bundle_session;
+use crate::ui::grid_layout::pane::pane_exists_in_terminal_layout::pane_exists_in_terminal_layout;
 use crate::ui::grid_layout::pane::pane_id_for_session::pane_id_for_session;
-use crate::ui::grid_layout::split::set_active_session::set_active_terminal_pane_session;
+use crate::ui::grid_layout::persistence::pane_id_for_session_in_available_multiplexer_state::pane_id_for_session_in_available_multiplexer_state;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
+use crate::ui::grid_layout::persistence::restore_available_multiplexer_state_into_app::restore_available_multiplexer_state_into_app;
+use crate::ui::grid_layout::single::show_session_as_single_pane::show_session_as_single_pane;
+use crate::ui::keyboard::list::wrapped_position::wrapped_list_position;
 use crate::ui::layout::resizable_grid::should_resize_active_terminal::should_resize_active_terminal;
 use crate::ui::left_panel::focus::session_visible_row_index::session_visible_row_index;
 use crate::ui::left_panel::input::session_drag_state::SessionDragState;
 use crate::ui::left_panel::order::move_folder_order::move_folder_order;
 use crate::ui::left_panel::order::persist_preferences::persist_session_order_preferences;
 use crate::ui::left_panel::scroll::clamp_visible_offset::clamp_visible_offset;
+use crate::ui::left_panel::session::activation::activate_split_group_child::activate_split_group_child;
+use crate::ui::left_panel::session::activation::activate_split_group_parent::activate_split_group_parent;
 use crate::ui::left_panel::session::list_row::SessionListRow;
+use crate::ui::workspace_pane::remember_active_workspace_session::remember_active_workspace_session;
 
 impl AppState {
     /// Returns the active terminal for immutable operations.
@@ -44,12 +52,15 @@ impl AppState {
         if rows.is_empty() {
             return;
         }
-        self.focused_row = self
-            .focused_row
-            .saturating_add_signed(direction)
-            .min(rows.len() - 1);
+        self.focused_row = wrapped_list_position(self.focused_row, direction, rows.len());
         match rows.get(self.focused_row) {
             Some(SessionListRow::Folder { path, .. }) => activate_expo_folder(self, path.clone()),
+            Some(SessionListRow::SplitGroup { group_id, .. }) => {
+                activate_split_group_parent(self, *group_id);
+            }
+            Some(SessionListRow::SplitGroupChild { pane_id, index, .. }) => {
+                activate_split_group_child(self, *pane_id, *index);
+            }
             Some(SessionListRow::Session { index }) => {
                 self.focused_index = *index;
                 self.activate_focused_session();
@@ -71,6 +82,7 @@ impl AppState {
             return;
         }
         self.active_index = self.focused_index;
+        remember_active_workspace_session(self);
         self.active_main_pane_tab = MainPaneTab::Chat;
         self.sync_focused_row_to_session();
         persist_session_order_preferences(self);
@@ -79,10 +91,16 @@ impl AppState {
             .get(self.active_index)
             .map(|entry| entry.session.id.clone());
         if let Some(session_id) = session_id {
+            self.completed_unseen_session_ids.remove(&session_id);
             if let Some(pane_id) = pane_id_for_session(self, &session_id) {
-                set_active_terminal_pane_bundle_session(self, pane_id, session_id);
+                activate_session_in_pane(self, pane_id, session_id);
+            } else if let Some(pane_id) =
+                pane_id_for_session_in_available_multiplexer_state(self, &session_id)
+            {
+                restore_available_multiplexer_state_into_app(self);
+                activate_session_in_pane(self, pane_id, session_id);
             } else {
-                set_active_terminal_pane_session(self, session_id);
+                show_session_as_single_pane(self, session_id);
             }
         }
         let area = self
@@ -149,6 +167,36 @@ impl AppState {
         }
     }
 
+    /// Starts dragging a workspace row.
+    pub fn start_workspace_drag(&mut self, path: PathBuf) {
+        self.workspace_drag = Some(path);
+        self.workspace_drag_moved = false;
+    }
+
+    /// Marks the active workspace drag as having moved beyond the initial click.
+    pub fn mark_workspace_drag_moved(&mut self) {
+        if self.workspace_drag.is_some() {
+            self.workspace_drag_moved = true;
+        }
+    }
+
+    /// Moves the active dragged workspace before the target workspace row.
+    pub fn move_dragged_workspace(&mut self, target: PathBuf) {
+        let Some(source) = self.workspace_drag.clone() else {
+            return;
+        };
+        if move_folder_order(&mut self.folder_order, &source, &target) {
+            persist_session_order_preferences(self);
+            persist_multiplexer_state(self);
+        }
+    }
+
+    /// Ends any active workspace drag operation.
+    pub fn finish_workspace_drag(&mut self) {
+        self.workspace_drag = None;
+        self.workspace_drag_moved = false;
+    }
+
     /// Ends any active left-pane drag operation.
     pub fn finish_left_panel_drag(&mut self) {
         self.session_drag = None;
@@ -198,5 +246,25 @@ impl AppState {
             }
         }
         self.active_terminal_area = area;
+    }
+}
+
+/// Activates a session inside an existing pane, or falls back to standalone display.
+fn activate_session_in_pane(app: &mut AppState, pane_id: u32, session_id: String) {
+    if !pane_exists_in_terminal_layout(app, pane_id) {
+        restore_available_multiplexer_state_into_app(app);
+    }
+    if pane_exists_in_terminal_layout(app, pane_id) {
+        set_active_terminal_pane_bundle_session(app, pane_id, session_id.clone());
+        if let Some(index) = app
+            .session_terminals
+            .iter()
+            .position(|entry| entry.session.id == session_id)
+        {
+            app.active_index = index;
+            app.focused_index = index;
+        }
+    } else {
+        show_session_as_single_pane(app, session_id);
     }
 }

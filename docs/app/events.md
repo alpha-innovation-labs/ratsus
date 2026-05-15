@@ -7,7 +7,7 @@
 - Route keyboard, mouse, resize, and tick events from Ratkit.
 - Convert handled events into `CoordinatorAction` values.
 - Drain async deletion results.
-- Poll session refresh results.
+- Start and drain async session refresh results without blocking the tick loop.
 - Poll observation watchers and preview caches.
 - Request redraws when visible state changes.
 

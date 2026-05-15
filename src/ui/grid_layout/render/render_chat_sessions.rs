@@ -1,22 +1,13 @@
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{BorderType, Paragraph};
 use ratatui::Frame;
-use ratkit::primitives::pane::Pane;
 
 use crate::app::state::app_state::AppState;
-use crate::core::rendering::style::apply_cursor_style::apply_cursor_style;
-use crate::core::rendering::style::default_border_color::default_border_color;
-use crate::extensions::terminal::copy_mode::render::render_screen_with_selection::render_screen_with_selection;
-use crate::extensions::terminal::copy_mode::selection::is_selection_active::is_terminal_copy_selection_active;
-use crate::extensions::terminal::session::chat_terminal::ChatTerminal;
-use crate::ui::grid_layout::bundle::pane_session_ids::terminal_pane_session_ids;
-use crate::ui::grid_layout::pane::close_button_area::terminal_pane_close_button_area;
-use crate::ui::grid_layout::pane::session_index_for_pane::session_index_for_pane;
+use crate::ui::grid_layout::render::render_pane_session::render_pane_session;
+use crate::ui::grid_layout::render::render_split_chrome::{
+    content_area, render_split_chrome, visible_close_button_area,
+};
 use crate::ui::grid_layout::split::ensure_active_session::ensure_active_terminal_pane_session;
 use crate::ui::grid_layout::split::resize_session::resize_terminal_pane_session;
-use crate::ui::layout::focus::focused_pane::FocusedPane;
 
 /// Renders every visible chat split and updates terminal sizes to match pane areas.
 pub fn render_chat_sessions(app: &mut AppState, frame: &mut Frame, area: Rect) {
@@ -27,118 +18,28 @@ pub fn render_chat_sessions(app: &mut AppState, frame: &mut Frame, area: Rect) {
     for pane in panes {
         let pane_id = pane.pane_id();
         let pane_area = pane.area();
-        let content_area = render_split_chrome(app, frame, pane_id, pane_area, use_inner_borders);
+        let content_area = content_area_for_pane(pane_area, use_inner_borders);
+        resize_terminal_pane_session(app, pane_id, content_area);
         if use_inner_borders {
             register_close_button(app, pane_id, pane_area);
+            render_split_chrome(app, frame, pane_id, pane_area);
         }
-        resize_terminal_pane_session(app, pane_id, content_area);
         render_pane_session(app, frame, pane_id, content_area);
     }
 }
 
-/// Renders optional chrome around split panes and returns the pane content area.
-fn render_split_chrome(
-    app: &AppState,
-    frame: &mut Frame,
-    pane_id: u32,
-    area: Rect,
-    use_inner_borders: bool,
-) -> Rect {
-    if !use_inner_borders {
-        return area;
-    }
-    let border_style =
-        if pane_id == app.active_terminal_pane_id && app.focused_pane == FocusedPane::Terminal {
-            Style::default().fg(ratatui::style::Color::Cyan)
-        } else {
-            Style::default().fg(default_border_color())
-        };
-    let pane = Pane::new(split_title(app, pane_id))
-        .border_type(BorderType::Rounded)
-        .border_style(border_style);
-    let (inner, _) = pane.render_block(frame, area);
-    render_close_title(frame, area);
-    inner
-}
-
-/// Stores the close-button hit target for one rendered split pane.
-fn register_close_button(app: &mut AppState, pane_id: u32, area: Rect) {
-    if let Some(button_area) = terminal_pane_close_button_area(area) {
-        app.terminal_pane_close_buttons.insert(pane_id, button_area);
-    }
-}
-
-/// Renders the right-aligned close affordance over Ratkit pane chrome.
-fn render_close_title(frame: &mut Frame, area: Rect) {
-    let Some(button_area) = terminal_pane_close_button_area(area) else {
-        return;
-    };
-    let title_area = Rect::new(button_area.x.saturating_sub(1), button_area.y, 3, 1);
-    frame.render_widget(Paragraph::new(close_title()), title_area);
-}
-
-/// Returns the close button title for split pane chrome.
-fn close_title() -> Line<'static> {
-    Line::from(Span::styled(
-        " x ",
-        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-    ))
-}
-
-/// Returns a compact title for a split terminal pane.
-fn split_title(app: &AppState, pane_id: u32) -> String {
-    session_index_for_pane(app, pane_id)
-        .and_then(|index| app.session_terminals.get(index))
-        .map(|entry| {
-            let bundle_count = terminal_pane_session_ids(app, pane_id).len();
-            if bundle_count > 1 {
-                format!("{} ({bundle_count})", entry.session.title)
-            } else {
-                entry.session.title.clone()
-            }
-        })
-        .unwrap_or_else(|| "session".to_string())
-}
-
-/// Renders the terminal or placeholder assigned to a split pane.
-fn render_pane_session(app: &AppState, frame: &mut Frame, pane_id: u32, area: Rect) {
-    let Some(index) = session_index_for_pane(app, pane_id) else {
-        frame.render_widget(Paragraph::new("No session assigned"), area);
-        return;
-    };
-    let Some(entry) = app.session_terminals.get(index) else {
-        frame.render_widget(Paragraph::new("Session unavailable"), area);
-        return;
-    };
-    if is_terminal_copy_selection_active(&entry.copy_selection) {
-        if let Some(snapshot) = entry.copy_selection.snapshot.as_ref() {
-            render_screen_with_selection(snapshot, &entry.copy_selection, area, frame.buffer_mut());
-        }
-    } else if let Some(terminal) = entry.terminal.as_ref() {
-        terminal.render(frame, area);
-        render_terminal_cursor(app, pane_id, terminal, frame, area);
+/// Returns the content area for a pane according to chrome visibility.
+fn content_area_for_pane(area: Rect, use_inner_borders: bool) -> Rect {
+    if use_inner_borders {
+        content_area(area)
     } else {
-        frame.render_widget(Paragraph::new("Starting chat session…"), area);
+        area
     }
 }
 
-/// Renders the cursor for the active terminal split when it is visible.
-fn render_terminal_cursor(
-    app: &AppState,
-    pane_id: u32,
-    terminal: &ChatTerminal,
-    frame: &mut Frame,
-    area: Rect,
-) {
-    if app.focused_pane != FocusedPane::Terminal || pane_id != app.active_terminal_pane_id {
-        return;
-    }
-    if let Some(cursor) = terminal.cursor_state() {
-        let x = area.x.saturating_add(cursor.col);
-        let y = area.y.saturating_add(cursor.row);
-        if x < area.x + area.width && y < area.y + area.height {
-            frame.set_cursor_position((x, y));
-            apply_cursor_style(cursor.style);
-        }
+/// Stores the close-button hit target for one split pane.
+fn register_close_button(app: &mut AppState, pane_id: u32, pane_area: Rect) {
+    if let Some(button_area) = visible_close_button_area(pane_area) {
+        app.terminal_pane_close_buttons.insert(pane_id, button_area);
     }
 }

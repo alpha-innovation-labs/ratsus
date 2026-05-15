@@ -4,7 +4,7 @@
 
 ## Responsibilities
 
-- Find adjacent chat sessions in left-panel order.
+- Find adjacent chat sessions in left-panel order for chat-only fallback flows.
 - Cycle between sessions shown in the left panel.
 - Build ordered session indexes from visible left-panel rows.
 - Reorder sessions by target index.
@@ -17,9 +17,9 @@ This module works with app-level session order and active selection. Row renderi
 
 ## Key files
 
-- `src/app/navigation/adjacent_chat_index_in_left_pane_order.rs`
-- `src/app/navigation/cycle_chat_in_left_pane_order.rs`
-- `src/app/navigation/ordered_chat_indices_from_left_rows.rs`
+- `src/app/navigation/adjacent_session_index_in_left_pane_order.rs`
+- `src/app/navigation/cycle_session_in_left_pane_order.rs`
+- `src/app/navigation/ordered_session_indices_from_left_rows.rs`
 - `src/app/navigation/reorder_session_to_index.rs`
 - `src/app/navigation/toggle_conversation_selection_by_index.rs`
 - `src/app/navigation/next_chat_index.rs`

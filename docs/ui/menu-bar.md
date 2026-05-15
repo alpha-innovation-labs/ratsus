@@ -6,6 +6,7 @@
 
 - Build menu bar state for the active main-pane tab.
 - Render the menu bar and split its area from the rest of the screen.
+- Render right-aligned app diagnostics on the menu-bar bottom row.
 - Handle menu mouse input and tab selection.
 - Map menu state to file viewer tabs and app actions.
 
@@ -24,4 +25,5 @@ Menu bar rendering and input stay here. The behavior behind each tab belongs to 
 - `src/ui/menu_bar/state/app_menu_bar.rs`
 - `src/ui/menu_bar/input/handle_mouse.rs`
 - `src/ui/menu_bar/render/render_app_menu_bar.rs`
+- `src/ui/menu_bar/render/render_menu_bar_bottom_status.rs`
 - `src/ui/menu_bar/render/split_area.rs`

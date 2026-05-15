@@ -8,6 +8,7 @@ pub fn should_focus_left_pane_for_mouse(kind: MouseEventKind) -> bool {
             | MouseEventKind::Down(MouseButton::Right)
             | MouseEventKind::Down(MouseButton::Middle)
             | MouseEventKind::Drag(MouseButton::Left)
+            | MouseEventKind::Moved
             | MouseEventKind::ScrollUp
             | MouseEventKind::ScrollDown
             | MouseEventKind::ScrollLeft
@@ -21,10 +22,10 @@ mod tests {
 
     use super::should_focus_left_pane_for_mouse;
 
-    /// Verifies plain hover movement does not change left-pane focus.
+    /// Verifies plain hover movement moves keyboard focus to the left pane.
     #[test]
-    fn hover_does_not_focus_left_pane() {
-        assert!(!should_focus_left_pane_for_mouse(MouseEventKind::Moved));
+    fn hover_focuses_left_pane() {
+        assert!(should_focus_left_pane_for_mouse(MouseEventKind::Moved));
     }
 
     /// Verifies scroll input can focus the left pane.

@@ -21,9 +21,9 @@ fn chat_filter_shortcut_uses_shared_left_pane_dispatcher() {
     assert!(app.conversation_picker.is_open);
 }
 
-/// Verifies chat folder jumps are routed as semantic left-pane actions.
+/// Verifies chat group jumps are handled without folder headers in the session list.
 #[test]
-fn chat_folder_jump_uses_shared_left_pane_dispatcher() {
+fn chat_group_jump_keeps_chat_tab_without_folder_headers() {
     let mut app = app_fixture(vec![
         dormant_session("one", "one", "/tmp/project-one"),
         dormant_session("two", "two", "/tmp/project-two"),
@@ -39,8 +39,8 @@ fn chat_folder_jump_uses_shared_left_pane_dispatcher() {
     let outcome = handle_left_keyboard(&mut app, key(KeyCode::Char('J'))).expect("left keyboard");
 
     assert_eq!(outcome, CoordinatorAction::Redraw);
-    assert_eq!(app.active_main_pane_tab, MainPaneTab::Expo);
-    assert!(app.selected_expo_folder.is_some());
+    assert_eq!(app.active_main_pane_tab, MainPaneTab::Chat);
+    assert!(app.selected_expo_folder.is_none());
 }
 
 /// Builds a key press event without modifiers.

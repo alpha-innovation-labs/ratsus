@@ -5,6 +5,8 @@
 ## Responsibilities
 
 - Maintain the file-system tree view state.
+- Show the selected workspace folder as the file-tree root.
+- Persist expanded file-tree folders in the multiplexer state file.
 - Render the file tree as left-pane content when the Files tab is active.
 - Update selected paths from keyboard and mouse input.
 - Render file preview content in the main pane.
@@ -23,12 +25,16 @@ Code previews use configured code state so line-focused navigation remains visib
 
 `FileSystemTreeView` owns tree state and selection. It exposes left-pane content for rendering and methods for updating preview state when selection changes.
 
+The Files tab follows `AppState::selected_workspace_path`. When the selected workspace changes, the tree root is rebuilt for that workspace and its expanded folders are restored. Expanded folder paths are saved in the same Nexus multiplexer state JSON as split-pane layout state.
+
 ## Key files
 
 - `src/extensions/file_viewer/tree/view.rs`
 - `src/extensions/file_viewer/tree/render_view.rs`
 - `src/extensions/file_viewer/tree/update_selection.rs`
 - `src/extensions/file_viewer/tree/left_pane_content.rs`
+- `src/extensions/file_viewer/tree/sync_workspace_root.rs`
+- `src/extensions/file_viewer/tree/persisted_file_system_tree_state.rs`
 - `src/extensions/file_viewer/preview/file_preview_state.rs`
 - `src/extensions/file_viewer/preview/preview_state_for_path.rs`
 - `src/extensions/file_viewer/preview/is_markdown_path.rs`

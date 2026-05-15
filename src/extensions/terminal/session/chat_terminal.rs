@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use anyhow::Result;
-use ratatui::{layout::Rect, Frame};
+use ratatui::{buffer::Buffer, layout::Rect, Frame};
 use ratkit::primitives::termtui::{CursorStyle, Screen};
 
 use crate::extensions::terminal::process::pty_terminal::PtyTerminal;
@@ -73,6 +73,17 @@ impl ChatTerminal {
         match self {
             Self::Pty(terminal) => terminal.render(frame, area),
             Self::Stub(terminal) => terminal.render(frame, area),
+        }
+    }
+
+    /// Renders the terminal into a target buffer when supported.
+    pub fn render_to_buffer(&self, area: Rect, buffer: &mut Buffer) -> bool {
+        match self {
+            Self::Pty(terminal) => {
+                terminal.render_to_buffer(area, buffer);
+                true
+            }
+            Self::Stub(_) => false,
         }
     }
 

@@ -18,7 +18,7 @@ pub fn session_row_for_rendered_click(
             source_row_index,
             row,
         } => Some((*source_row_index, row.clone())),
-        RenderedLeftPanelRow::Separator => None,
+        RenderedLeftPanelRow::Separator { .. } => None,
     }
 }
 
@@ -47,7 +47,7 @@ mod tests {
     /// Verifies separator rows are non-interactive.
     #[test]
     fn ignores_separator_rows() {
-        let rendered = vec![RenderedLeftPanelRow::Separator];
+        let rendered = vec![RenderedLeftPanelRow::Separator { label: None }];
 
         assert_eq!(
             session_row_for_rendered_click(2, Rect::new(0, 2, 20, 5), &rendered),

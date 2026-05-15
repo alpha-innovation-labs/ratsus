@@ -15,7 +15,9 @@ pub fn open_delete_session_confirmation(app: &mut AppState) {
 
 /// Opens delete confirmation for the focused left-pane session row.
 fn open_focused_session_delete_confirmation(app: &mut AppState) {
-    let Some(SessionListRow::Session { index }) = focused_left_row(app) else {
+    let Some(SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. }) =
+        focused_left_row(app)
+    else {
         return;
     };
     let Some(entry) = app.session_terminals.get(index) else {

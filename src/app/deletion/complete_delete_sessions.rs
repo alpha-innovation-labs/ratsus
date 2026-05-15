@@ -30,5 +30,6 @@ fn remove_session_at_index(app: &mut AppState, index: usize) {
         terminal.kill();
     }
     app.selected_conversation_ids.remove(&session_id);
+    app.completed_unseen_session_ids.remove(&session_id);
     app.session_terminals.remove(index);
 }

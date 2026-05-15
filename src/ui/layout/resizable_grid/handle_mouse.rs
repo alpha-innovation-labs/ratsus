@@ -2,12 +2,16 @@ use crossterm::event::{MouseButton, MouseEventKind};
 use ratkit::primitives::resizable_grid::ResizableGridWidget;
 
 use crate::app::state::app_state::AppState;
+use crate::ui::layout::resizable_grid::visible_layout_widget_state::visible_layout_widget_state;
+use crate::ui::left_panel::order::persist_preferences::persist_session_order_preferences;
 
 /// Updates the resizable grid from mouse input and reports whether it consumed the event.
 pub fn handle_resizable_grid_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> bool {
     if !app.left_pane_visible {
         return false;
     }
+    app.layout_widget_state =
+        visible_layout_widget_state(app.layout_widget_state, app.workspace_view_enabled);
     let was_dragging = app.layout_widget_state.dragging_divider.is_some();
     let crossterm_mouse = crossterm::event::MouseEvent {
         kind: mouse.kind,
@@ -20,14 +24,24 @@ pub fn handle_resizable_grid_mouse(app: &mut AppState, mouse: ratkit::MouseEvent
         .with_state(app.layout_widget_state)
         .with_pane_borders(false);
     widget.handle_mouse(crossterm_mouse, app.last_layout_area);
-    app.layout_widget_state = widget.state();
+    app.layout_widget_state =
+        visible_layout_widget_state(widget.state(), app.workspace_view_enabled);
     app.layout = widget.layout().clone();
+    let is_dragging = app.layout_widget_state.dragging_divider.is_some();
+    if should_persist_resizable_grid_mouse_event(was_dragging, is_dragging, mouse.kind) {
+        persist_session_order_preferences(app);
+    }
 
-    consumed_resizable_grid_mouse_event(
-        was_dragging,
-        app.layout_widget_state.dragging_divider.is_some(),
-        mouse.kind,
-    )
+    consumed_resizable_grid_mouse_event(was_dragging, is_dragging, mouse.kind)
+}
+
+/// Determines whether a mouse event should persist resize preferences.
+fn should_persist_resizable_grid_mouse_event(
+    was_dragging: bool,
+    is_dragging: bool,
+    kind: MouseEventKind,
+) -> bool {
+    matches!(kind, MouseEventKind::Up(MouseButton::Left)) && was_dragging && !is_dragging
 }
 
 /// Determines whether a mouse event belongs to divider resizing.

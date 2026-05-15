@@ -34,5 +34,17 @@ pub fn verify_real_case(
             "Nexus session registry watcher must be installed"
         );
     }
+    if name == "picker_workspace_scope_toggle" {
+        ensure!(
+            app.conversation_picker.folder_filter.as_deref()
+                == app.selected_workspace_path.as_deref(),
+            "conversation picker must be scoped to the selected workspace"
+        );
+    } else if domain.contains("workspace") || name.contains("workspace") {
+        ensure!(
+            app.selected_workspace_path.is_some(),
+            "workspace pane must have a selected folder"
+        );
+    }
     Ok(())
 }

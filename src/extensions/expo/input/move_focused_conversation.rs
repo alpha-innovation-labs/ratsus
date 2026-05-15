@@ -1,6 +1,7 @@
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::filter::filtered_session_indices::filtered_expo_session_indices;
 use crate::extensions::expo::input::keep_focused_card_visible::keep_focused_expo_card_visible;
+use crate::ui::keyboard::list::wrapped_position::wrapped_list_position;
 
 /// Moves Expo focus through filtered conversation cards.
 pub fn move_focused_expo_conversation(app: &mut AppState, delta: isize) {
@@ -12,7 +13,7 @@ pub fn move_focused_expo_conversation(app: &mut AppState, delta: isize) {
         .iter()
         .position(|index| *index == app.focused_index)
         .unwrap_or(0);
-    let next = current.saturating_add_signed(delta).min(indices.len() - 1);
+    let next = wrapped_list_position(current, delta, indices.len());
     app.focused_index = indices[next];
     keep_focused_expo_card_visible(app);
 }

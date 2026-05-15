@@ -12,10 +12,11 @@
 - Render resize overlays and placeholders.
 - Apply shared cursor and border styling.
 - Render toast notifications after primary content.
+- Render right-aligned app diagnostics on the menu-bar bottom row.
 
 ## Render flow
 
-`AppState::on_draw` delegates to `render_app`. The renderer draws the menu bar, computes visible shell panes, renders active left-pane content, draws the selected main tab, then renders overlays, toasts, and dialogs.
+`AppState::on_draw` delegates to `render_app`. The renderer records a redraw, draws the menu bar with bottom-row diagnostics, computes visible shell panes, renders active left-pane content, draws the selected main tab, then renders overlays, toasts, and dialogs.
 
 ## Boundary
 

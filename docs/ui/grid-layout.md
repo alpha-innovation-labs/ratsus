@@ -8,6 +8,7 @@
 - Place existing sessions or extension content into active panes.
 - Bundle multiple sessions per pane when needed.
 - Split the active pane horizontally or vertically.
+- Maintain stable split-pane session group identities for left-panel hierarchy.
 - Resize pane-owned terminal views when pane sizes change.
 - Activate panes and update active pane session state.
 - Hit-test pane close buttons.
@@ -16,6 +17,7 @@
 ## Child modules
 
 - `bundle/` manages pane session bundles.
+- `group/` tracks split-pane session groups by stable group id and pane ids.
 - `pane/` maps panes, close buttons, and session ids.
 - `render/` renders chat sessions.
 - `split/` manages split direction, active pane assignment, pane closing, and resizing.

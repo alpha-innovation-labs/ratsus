@@ -6,12 +6,13 @@
 
 - Define `ListKeyBehavior` for consistent list navigation.
 - Define shared list key outcomes.
+- Provide wrapped list-position movement for list-like controls.
 - Provide filter key acceptance helpers.
 - Test common keyboard behavior once and reuse it across UI surfaces.
 
 ## List contract
 
-List-like panes, panels, and modals must use `ListKeyBehavior` so these controls stay consistent: `j/k`, arrow keys, `gg/G`, Enter, `/`, `d`, space when selection applies, and `q`.
+List-like panes, panels, and modals must use `ListKeyBehavior` so these controls stay consistent: `j/k`, arrow keys, `gg/G`, Enter, `/`, `d`, space when selection applies, and `q`. Row movement should wrap at list edges through `wrapped_list_position`.
 
 Filter mode must treat typed characters as query text instead of navigation commands.
 
@@ -24,4 +25,5 @@ Filter mode must treat typed characters as query text instead of navigation comm
 
 - `src/ui/keyboard/list/behavior.rs`
 - `src/ui/keyboard/list/outcome.rs`
+- `src/ui/keyboard/list/wrapped_position.rs`
 - `src/ui/keyboard/filter/key_accepted.rs`

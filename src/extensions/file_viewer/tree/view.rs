@@ -1,5 +1,6 @@
 use std::io;
 use std::path::PathBuf;
+use std::sync::mpsc::Receiver;
 
 use ratatui::layout::Rect;
 use ratatui::Frame;
@@ -7,23 +8,30 @@ use ratkit::services::file_watcher::FileWatcher;
 use ratkit::widgets::file_system_tree::{FileSystemTree, FileSystemTreeState};
 
 use crate::extensions::file_viewer::preview::file_preview_state::FilePreviewState;
+use crate::extensions::file_viewer::preview::loading_preview_state_for_path::loading_preview_state_for_path;
 use crate::extensions::file_viewer::preview::preview_state_for_path::preview_state_for_path;
+use crate::extensions::file_viewer::tree::preview_load_result::PreviewLoadResult;
+use crate::extensions::file_viewer::tree::spawn_preview_load_worker::spawn_preview_load_worker;
 use crate::extensions::file_viewer::tree::start_root_watcher::start_root_watcher;
 use crate::extensions::file_viewer::tree::start_selected_file_watcher::start_selected_file_watcher;
+use crate::extensions::file_viewer::tree::tree_load_result::TreeLoadResult;
+use crate::ui::keyboard::list::wrapped_position::wrapped_list_position;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 
 /// File-system tree state copied from the Ratkit file system tree demo.
 pub struct FileSystemTreeView {
-    pub(super) tree: FileSystemTree<'static>,
-    pub(super) state: FileSystemTreeState,
-    pub(super) root_path: PathBuf,
-    last_selection: String,
-    pub(super) last_tree_area: Rect,
-    pub(super) preview_state: FilePreviewState,
-    pub(super) selected_preview_path: Option<PathBuf>,
-    pub(super) selected_preview_is_dir: bool,
-    pub(super) selected_file_watcher: Option<FileWatcher>,
-    pub(super) root_watcher: Option<FileWatcher>,
+    pub(crate) tree: FileSystemTree<'static>,
+    pub(crate) state: FileSystemTreeState,
+    pub(crate) root_path: PathBuf,
+    pub(crate) last_selection: String,
+    pub(crate) last_tree_area: Rect,
+    pub(crate) preview_state: FilePreviewState,
+    pub(crate) selected_preview_path: Option<PathBuf>,
+    pub(crate) selected_preview_is_dir: bool,
+    pub(crate) selected_file_watcher: Option<FileWatcher>,
+    pub(crate) root_watcher: Option<FileWatcher>,
+    pub(crate) preview_load_receiver: Option<Receiver<PreviewLoadResult>>,
+    pub(crate) tree_load_receiver: Option<Receiver<TreeLoadResult>>,
     pending_g: bool,
 }
 
@@ -53,6 +61,8 @@ impl FileSystemTreeView {
             selected_preview_is_dir: true,
             selected_file_watcher: None,
             root_watcher: start_root_watcher(&root),
+            preview_load_receiver: None,
+            tree_load_receiver: None,
             pending_g: false,
         })
     }
@@ -121,15 +131,20 @@ impl FileSystemTreeView {
         self.state.pop_filter();
     }
 
-    /// Moves tree selection by repeatedly applying one-step movement.
+    /// Moves tree selection by a signed visible-row delta, wrapping at list edges.
     pub(crate) fn move_by(&mut self, direction: isize) {
-        for _ in 0..direction.unsigned_abs() {
-            if direction.is_positive() {
-                self.tree.select_next(&mut self.state);
-            } else {
-                self.tree.select_previous(&mut self.state);
-            }
+        let visible_paths = self.tree.get_visible_paths(&self.state);
+        if visible_paths.is_empty() {
+            return;
         }
+        let current = self
+            .state
+            .selected_path
+            .as_ref()
+            .and_then(|selected| visible_paths.iter().position(|path| path == selected))
+            .unwrap_or(0);
+        let next = wrapped_list_position(current, direction, visible_paths.len());
+        self.state.select(visible_paths[next].clone());
     }
 
     /// Selects the first visible tree path when one exists.
@@ -190,10 +205,16 @@ impl FileSystemTreeView {
         let path = entry.path.clone();
         let is_dir = entry.is_dir;
         self.last_selection = path.display().to_string();
-        self.preview_state = preview_state_for_path(&path, is_dir);
         self.selected_preview_path = Some(path.clone());
         self.selected_preview_is_dir = is_dir;
         self.selected_file_watcher = start_selected_file_watcher(&path, is_dir);
+        if is_dir {
+            self.preview_state = preview_state_for_path(&path, true);
+            self.preview_load_receiver = None;
+        } else {
+            self.preview_state = loading_preview_state_for_path(&path);
+            self.preview_load_receiver = Some(spawn_preview_load_worker(path));
+        }
         outcome
     }
 }

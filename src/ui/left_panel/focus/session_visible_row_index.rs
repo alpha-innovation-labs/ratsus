@@ -3,7 +3,7 @@ use crate::ui::left_panel::session::list_row::SessionListRow;
 /// Finds the visible row index for a flat session index.
 pub fn session_visible_row_index(rows: &[SessionListRow], session_index: usize) -> Option<usize> {
     rows.iter()
-        .position(|row| matches!(row, SessionListRow::Session { index } if *index == session_index))
+        .position(|row| row.session_index() == Some(session_index))
 }
 
 #[cfg(test)]

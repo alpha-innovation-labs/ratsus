@@ -10,7 +10,7 @@ use crate::ui::left_panel::render::rendered_row::RenderedLeftPanelRow;
 use crate::ui::left_panel::render::rendered_rows::rendered_left_panel_rows_from_rows;
 use crate::ui::left_panel::render::session_row_line::{
     folder_more_row_line, folder_row_line, session_row_line, session_row_separator_line,
-    ChatSessionRowLineConfig, FolderRowLineConfig,
+    split_group_row_line, ChatSessionRowLineConfig, FolderRowLineConfig,
 };
 use crate::ui::left_panel::render::text_width::left_panel_text_width;
 use crate::ui::left_panel::session::format_age::format_session_age;
@@ -47,7 +47,9 @@ fn rendered_session_line(
             source_row_index,
             row,
         } => session_tree_line(app, row, *source_row_index, line_width),
-        RenderedLeftPanelRow::Separator => session_row_separator_line(line_width),
+        RenderedLeftPanelRow::Separator { label } => {
+            session_row_separator_line(line_width, label.as_deref())
+        }
     }
 }
 
@@ -76,6 +78,20 @@ fn session_tree_line(
             is_selected: is_selected(app, row_index),
             is_dragging: app.folder_drag.as_deref() == Some(path.as_path()),
         }),
+        SessionListRow::SplitGroup {
+            group_id,
+            name,
+            child_count,
+        } => split_group_row_line(
+            name,
+            *child_count,
+            line_width,
+            is_selected(app, row_index),
+            split_group_is_active(app, *group_id),
+        ),
+        SessionListRow::SplitGroupChild { index, is_last, .. } => {
+            split_group_child_line(app, *index, *is_last, row_index, line_width)
+        }
         SessionListRow::Session { index } => session_line(app, *index, row_index, line_width),
         SessionListRow::FolderMore { .. } => folder_more_row_line(is_selected(app, row_index)),
     }
@@ -97,11 +113,77 @@ fn session_line(app: &AppState, index: usize, row_index: usize, line_width: u16)
         width: line_width,
         is_selected: is_selected(app, row_index),
         is_active: session_is_active_chat_row(app.active_main_pane_tab, index, app.active_index),
+        is_running: entry.session.is_running,
+        is_completed_unseen: app.completed_unseen_session_ids.contains(&entry.session.id),
         is_dragging: app
             .session_drag
             .is_some_and(|drag| drag.current_index == index),
         is_toggled: app.selected_conversation_ids.contains(&entry.session.id),
         bundle_marker: session_bundle_marker(app, index),
+        tree_prefix: regular_session_tree_prefix(app),
+    })
+}
+
+/// Returns the workspace-scoped session row prefix.
+fn regular_session_tree_prefix(app: &AppState) -> Option<&'static str> {
+    app.workspace_view_enabled
+        .then_some("")
+        .filter(|_| app.selected_workspace_path.is_some())
+}
+
+/// Builds one styled row for a session nested under a split group parent.
+fn split_group_child_line(
+    app: &AppState,
+    index: usize,
+    is_last: bool,
+    row_index: usize,
+    line_width: u16,
+) -> Line<'static> {
+    let entry = &app.session_terminals[index];
+    let age = format_session_age(&entry.session, Utc::now());
+    let icon = if entry.session.is_running {
+        running_session_indicator(app.loader_tick)
+    } else {
+        session_icon(&entry.session)
+    };
+    session_row_line(ChatSessionRowLineConfig {
+        title: &entry.session.title,
+        age: &age,
+        icon,
+        width: line_width,
+        is_selected: is_selected(app, row_index),
+        is_active: session_is_active_chat_row(app.active_main_pane_tab, index, app.active_index),
+        is_running: entry.session.is_running,
+        is_completed_unseen: app.completed_unseen_session_ids.contains(&entry.session.id),
+        is_dragging: app
+            .session_drag
+            .is_some_and(|drag| drag.current_index == index),
+        is_toggled: app.selected_conversation_ids.contains(&entry.session.id),
+        bundle_marker: None,
+        tree_prefix: Some(if is_last { "  └─ " } else { "  ├─ " }),
+    })
+}
+
+/// Returns whether any child of a split group is the active chat row.
+fn split_group_is_active(app: &AppState, group_id: u64) -> bool {
+    let Some(group) = app.split_pane_session_groups.groups.get(&group_id) else {
+        return false;
+    };
+    let Some(active_session_id) = app
+        .session_terminals
+        .get(app.active_index)
+        .map(|entry| entry.session.id.as_str())
+    else {
+        return false;
+    };
+    group.panes.iter().any(|pane_id| {
+        app.terminal_pane_session_bundles
+            .get(pane_id)
+            .is_some_and(|session_ids| {
+                session_ids
+                    .iter()
+                    .any(|candidate| candidate == active_session_id)
+            })
     })
 }
 
@@ -114,4 +196,80 @@ fn is_active_expo_folder(app: &AppState, path: &std::path::Path) -> bool {
 /// Returns whether the row has the left pane keyboard selection highlight.
 fn is_selected(app: &AppState, row_index: usize) -> bool {
     row_index == app.focused_row && app.focused_pane == FocusedPane::Left
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::{Duration, Utc};
+    use ratatui::layout::Rect;
+
+    use super::session_lines;
+    use crate::app::test_support::app_fixture::app_fixture;
+    use crate::app::test_support::dormant_session::dormant_session;
+    use crate::extensions::harness::core::chat_session::ChatSession;
+    use crate::extensions::terminal::session::session_terminal::SessionTerminal;
+
+    /// Verifies workspace-scoped regular session rows are not indented under the folder.
+    #[test]
+    fn workspace_session_rows_are_left_aligned() -> anyhow::Result<()> {
+        let mut app = app_fixture(vec![dormant_session("Alpha", "a", "/tmp/project")])?;
+        app.last_session_list_area = Rect::new(0, 0, 40, 10);
+
+        let lines = session_lines(&app);
+        let session_line = lines
+            .iter()
+            .map(line_text)
+            .find(|text| text.contains("Alpha"))
+            .expect("session row");
+
+        assert!(!session_line.starts_with(' '));
+        Ok(())
+    }
+
+    /// Verifies workspace-scoped session rows are separated by day-group labels.
+    #[test]
+    fn workspace_session_rows_show_day_group_separators() -> anyhow::Result<()> {
+        let now = Utc::now();
+        let mut app = app_fixture(vec![
+            session_with_date("Today", "today", (now - Duration::hours(2)).to_rfc3339()),
+            session_with_date(
+                "Yesterday",
+                "one-day",
+                (now - Duration::days(1)).to_rfc3339(),
+            ),
+            session_with_date("Older", "two-days", (now - Duration::days(2)).to_rfc3339()),
+        ])?;
+        app.last_session_list_area = Rect::new(0, 0, 60, 10);
+        app.folder_order = vec!["/tmp/project".into()];
+        app.selected_workspace_path = Some("/tmp/project".into());
+        app.workspace_view_enabled = true;
+
+        let texts = session_lines(&app)
+            .iter()
+            .map(line_text)
+            .collect::<Vec<_>>();
+        let separators = texts
+            .iter()
+            .filter(|text| text.contains('─'))
+            .collect::<Vec<_>>();
+
+        assert_eq!(separators.len(), 3);
+        assert!(separators.iter().any(|text| text.contains(" today ")));
+        assert!(separators.iter().any(|text| text.contains(" 1d ")));
+        assert!(separators.iter().any(|text| text.contains(" 2d ")));
+        Ok(())
+    }
+
+    /// Builds a dormant session entry with an explicit modified date.
+    fn session_with_date(title: &str, id: &str, date: String) -> SessionTerminal {
+        SessionTerminal::dormant(ChatSession::new(date, title, id, "/tmp/project"))
+    }
+
+    /// Returns the concatenated visible text for a rendered line.
+    fn line_text(line: &ratatui::text::Line<'_>) -> String {
+        line.spans
+            .iter()
+            .map(|span| span.content.as_ref())
+            .collect()
+    }
 }

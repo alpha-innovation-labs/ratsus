@@ -3,16 +3,19 @@ use ratatui::{layout::Rect, Frame};
 use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
+use crate::extensions::plans::data::plan_list_state::PlanListState;
 use crate::ui::left_panel::action::LeftPaneAction;
 use crate::ui::left_panel::content::LeftPaneContent;
 use crate::ui::left_panel::footer_item::LeftPaneFooterItem;
 use crate::ui::left_panel::input::key_behavior::LeftPanelKeyBehavior;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 
 /// Active content currently hosted by the shared left-pane shell.
 pub enum ActiveLeftPaneContent<'a> {
     Chat(LeftPanelKeyBehavior<'a>),
     Files(&'a mut FileSystemTreeView),
+    Plans(&'a mut PlanListState),
 }
 
 impl<'a> ActiveLeftPaneContent<'a> {
@@ -21,6 +24,10 @@ impl<'a> ActiveLeftPaneContent<'a> {
         if app.active_main_pane_tab == MainPaneTab::Files {
             app.last_session_list_area = Rect::default();
             return Self::Files(&mut app.file_system_tree_view);
+        }
+        if app.left_pane_mode == LeftPaneMode::Plans {
+            app.last_session_list_area = Rect::default();
+            return Self::Plans(&mut app.plan_list);
         }
         Self::Chat(LeftPanelKeyBehavior::new(app))
     }
@@ -32,6 +39,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.handle_left_pane_action(action),
             Self::Files(content) => content.handle_left_pane_action(action),
+            Self::Plans(content) => content.handle_left_pane_action(action),
         }
     }
 
@@ -40,6 +48,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.title(),
             Self::Files(content) => content.title(),
+            Self::Plans(content) => content.title(),
         }
     }
 
@@ -48,6 +57,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.prepare_body_area(area),
             Self::Files(content) => content.prepare_body_area(area),
+            Self::Plans(content) => content.prepare_body_area(area),
         }
     }
 
@@ -56,6 +66,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.render_body(frame, area),
             Self::Files(content) => content.render_body(frame, area),
+            Self::Plans(content) => content.render_body(frame, area),
         }
     }
 
@@ -64,6 +75,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.footer_items(),
             Self::Files(content) => content.footer_items(),
+            Self::Plans(content) => content.footer_items(),
         }
     }
 
@@ -72,6 +84,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.footer_status(),
             Self::Files(content) => content.footer_status(),
+            Self::Plans(content) => content.footer_status(),
         }
     }
 
@@ -80,6 +93,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.is_filtering(),
             Self::Files(content) => content.is_filtering(),
+            Self::Plans(content) => content.is_filtering(),
         }
     }
 
@@ -88,6 +102,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.has_pending_g(),
             Self::Files(content) => content.has_pending_g(),
+            Self::Plans(content) => content.has_pending_g(),
         }
     }
 
@@ -96,6 +111,7 @@ impl LeftPaneContent for ActiveLeftPaneContent<'_> {
         match self {
             Self::Chat(content) => content.set_pending_g(pending),
             Self::Files(content) => content.set_pending_g(pending),
+            Self::Plans(content) => content.set_pending_g(pending),
         }
     }
 }

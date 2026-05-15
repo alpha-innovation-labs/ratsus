@@ -8,4 +8,5 @@ pub mod items;
 mod items_tests;
 pub mod matches_query;
 pub mod mode;
+pub mod scope_label;
 pub mod state;

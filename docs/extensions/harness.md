@@ -8,13 +8,13 @@
 - Load and refresh chat session metadata.
 - Spawn new chats and existing chat terminals.
 - Delete backend-owned chat sessions through the active concrete harness adapter.
-- Provide conversation picker state, input, rendering, and selection behavior.
+- Provide conversation picker state, input, rendering, selection behavior, workspace/all scope toggling, and folder-local pinning of active/running chats.
 - Provide observation preview loading and optional file watching.
 - Provide the real Nexus harness and deterministic stub harness.
 
 ## Harness contract
 
-`ChatHarness` exposes the operations the UI needs: display name, initial session load, lightweight refresh, new chat spawn, existing chat spawn, normal terminal policy hooks, deletion, refresh merge semantics, observation preview loading, observation watcher startup, and observation path matching.
+`ChatHarness` exposes the operations the UI needs: display name, initial session load, lightweight refresh, new chat spawn, existing chat spawn, normal terminal policy hooks, deletion, refresh merge semantics, observation preview loading, observation watcher startup, and observation path matching. Watcher-triggered session refreshes are scheduled on a background worker and drained from the tick loop when ready.
 
 `ChatSession` stores display and routing metadata: modified date, created date, title, id, working directory, running state, and session kind.
 
@@ -27,9 +27,10 @@ When behavior needs to change inside Nexus itself, update or suggest updating Ne
 - Initial session loading runs `nexus --sessions-all --json` in `nexus/sessions/load_chat_sessions.rs`.
 - If the JSON CLI output cannot be parsed, loading falls back to the cmux registry.
 - Existing sessions spawn with `nexus --resume <session-id>` in the session working directory.
-- New sessions spawn through `spawn_new_nexus_session_terminal`.
+- New sessions spawn through `spawn_new_nexus_session_terminal` and preserve the existing left-panel folder order.
 - Deletion runs `nexus --delete-session <session-id>`.
-- Refresh reads the cmux session registry and merges running state into existing app sessions.
+- Refresh reads the chat status file and merges running state into existing app sessions from an async worker, so slow Nexus file or process checks do not block the UI tick.
+- The chat status file path is resolved once from `$NEXUS_CHAT_STATUS_FILE`, `nexus --chat-status-file-location`, or the default path, then cached for watcher matching and refreshes.
 
 ## Nexus conversation storage
 
@@ -43,7 +44,11 @@ Process liveness is checked with `kill -0 <pid>`, which sends no signal and does
 
 ## Nexus observations
 
-Observation previews are loaded from Nexus observation state files under `~/.local/share/nexus/agent/observations`. The Nexus harness starts a file watcher and asks Expo to reload previews when a watched observation state path changes.
+Observation previews are loaded from consolidated Nexus observation JSON files under `~/.local/share/nexus/agent/observations`. The Nexus harness starts a file watcher and asks Expo to reload previews when a watched observation JSON path changes.
+
+## Conversation picker
+
+`Ctrl+H` opens the conversation picker scoped to the selected workspace folder. Pressing `Tab` toggles the picker between `Workspace` and `All` scopes, and the active scope is rendered in the top-right dialog header. `All` preserves the previous unfiltered catalog behavior. Pressing `/` inside the session left pane opens this picker with filter entry already active; normal picker opens still require `/` before typed text filters.
 
 ## Stub harness
 

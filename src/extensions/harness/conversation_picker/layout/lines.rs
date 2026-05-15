@@ -145,9 +145,12 @@ fn conversation_picker_line(
                 width,
                 is_selected,
                 is_active: item.is_active,
+                is_running: *is_running,
+                is_completed_unseen: false,
                 is_dragging: dragging_session_index.is_some_and(|drag_index| drag_index == *index),
                 is_toggled: item.is_toggled,
                 bundle_marker: None,
+                tree_prefix: None,
             })
         }
     }

@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEventKind, KeyModifiers};
 use ratkit::KeyboardEvent;
 
 use crate::ui::keyboard::filter::key_accepted::filter_key_accepted;
@@ -101,7 +101,7 @@ pub fn handle_list_keyboard<T: ListKeyBehavior + ?Sized>(
         KeyCode::Left | KeyCode::Char('h') if keyboard.modifiers.is_empty() => collapse(behavior),
         KeyCode::Right | KeyCode::Char('l') if keyboard.modifiers.is_empty() => open(behavior),
         KeyCode::Char('/') if filter_key_accepted(keyboard.modifiers) => start_filtering(behavior),
-        KeyCode::Char(' ') if keyboard.modifiers.is_empty() => toggle_selection(behavior),
+        KeyCode::Char(' ') if toggle_key_accepted(&keyboard) => toggle_selection(behavior),
         KeyCode::Char('d') if keyboard.modifiers.is_empty() => delete_selection(behavior),
         KeyCode::Char('g') if keyboard.modifiers.is_empty() => handle_g(behavior),
         KeyCode::Char('G') => focus_last(behavior),
@@ -170,6 +170,11 @@ fn insert_filter_character<T: ListKeyBehavior + ?Sized>(
 fn delete_filter_character<T: ListKeyBehavior + ?Sized>(behavior: &mut T) -> ListKeyOutcome {
     behavior.delete_filter_character();
     handled(behavior)
+}
+
+/// Returns true when Space should toggle selection instead of repeat-flooding redraws.
+fn toggle_key_accepted(keyboard: &KeyboardEvent) -> bool {
+    keyboard.modifiers.is_empty() && keyboard.kind == KeyEventKind::Press
 }
 
 /// Starts delete flow for the current selection.

@@ -4,6 +4,7 @@ use ratatui::Frame;
 use ratkit::{CoordinatorAction, CoordinatorApp, CoordinatorEvent};
 
 pub mod deletion;
+pub mod diagnostics;
 pub mod events;
 pub mod expo;
 pub mod focus;

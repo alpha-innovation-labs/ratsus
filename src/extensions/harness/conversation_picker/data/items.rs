@@ -60,10 +60,50 @@ fn folder_items(
         total_session_count,
         collapsed_folders.contains(folder),
     )];
-    items.extend(session_indices.into_iter().filter_map(|index| {
-        session_item(sessions, index, active_index, selected_conversation_ids)
-    }));
+    items.extend(
+        pinned_folder_session_indices(sessions, session_indices, active_index)
+            .into_iter()
+            .filter_map(|index| {
+                session_item(sessions, index, active_index, selected_conversation_ids)
+            }),
+    );
     items
+}
+
+/// Pins active and running sessions before other matching sessions in one folder.
+fn pinned_folder_session_indices(
+    sessions: &[SessionTerminal],
+    indices: Vec<usize>,
+    active_index: usize,
+) -> Vec<usize> {
+    let mut pinned = Vec::new();
+    push_index_if_present(&mut pinned, &indices, active_index);
+    for index in &indices {
+        if sessions
+            .get(*index)
+            .is_some_and(|entry| entry.session.is_running)
+        {
+            push_index_if_present(&mut pinned, &indices, *index);
+        }
+    }
+    for index in indices {
+        push_unique_index(&mut pinned, index);
+    }
+    pinned
+}
+
+/// Adds an index when it belongs to the source list and is not already present.
+fn push_index_if_present(target: &mut Vec<usize>, source: &[usize], index: usize) {
+    if source.contains(&index) {
+        push_unique_index(target, index);
+    }
+}
+
+/// Adds an index when it is not already present.
+fn push_unique_index(target: &mut Vec<usize>, index: usize) {
+    if !target.contains(&index) {
+        target.push(index);
+    }
 }
 
 /// Returns matching session indices that belong under one folder.

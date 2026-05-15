@@ -8,6 +8,7 @@
 - Track confirmation dialog state.
 - Determine which selected or focused sessions can be removed.
 - Spawn the deletion worker.
+- Run backend chat deletions one at a time inside that worker so harness CLIs that mutate shared session state do not race.
 - Complete deletion by killing open terminals, removing sessions, restoring focus, and syncing folder order.
 - Handle delete confirmation keyboard input.
 

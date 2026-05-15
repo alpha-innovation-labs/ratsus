@@ -14,8 +14,9 @@ pub fn app_hotkey_registry() -> HotkeyRegistry {
 /// Returns the global hotkeys registered for top-level command resolution.
 fn global_hotkeys() -> Vec<Hotkey> {
     vec![
-        Hotkey::new("tab", "Next chat").scope(GLOBAL_SCOPE),
-        Hotkey::new("k", "Open conversations").scope(GLOBAL_SCOPE),
+        Hotkey::new("tab", "Next session").scope(GLOBAL_SCOPE),
+        Hotkey::new("k", "Open command bar").scope(GLOBAL_SCOPE),
+        Hotkey::new("h", "Open conversations").scope(GLOBAL_SCOPE),
         Hotkey::new("e", "Open Expo").scope(GLOBAL_SCOPE),
         Hotkey::new("[", "Split down or place").scope(GLOBAL_SCOPE),
         Hotkey::new("]", "Split right or place").scope(GLOBAL_SCOPE),

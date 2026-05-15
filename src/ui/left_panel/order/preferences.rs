@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use crate::extensions::expo::card::default_width::default_expo_card_width;
+use crate::ui::layout::resizable_grid::default_shell_split_percent::default_shell_split_percent;
+use crate::ui::layout::resizable_grid::default_workspace_split_percent::default_workspace_split_percent;
 
 /// Persisted left-panel ordering and collapsed-folder state.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -14,6 +16,10 @@ pub struct SessionOrderPreferences {
     pub collapsed_folder_paths: Vec<PathBuf>,
     #[serde(default = "default_expo_card_width")]
     pub expo_card_width: u16,
+    #[serde(default = "default_shell_split_percent")]
+    pub shell_split_percent: u16,
+    #[serde(default = "default_workspace_split_percent")]
+    pub workspace_split_percent: u16,
 }
 
 impl Default for SessionOrderPreferences {
@@ -25,6 +31,8 @@ impl Default for SessionOrderPreferences {
             folder_paths: Vec::new(),
             collapsed_folder_paths: Vec::new(),
             expo_card_width: default_expo_card_width(),
+            shell_split_percent: default_shell_split_percent(),
+            workspace_split_percent: default_workspace_split_percent(),
         }
     }
 }
@@ -33,6 +41,8 @@ impl Default for SessionOrderPreferences {
 mod tests {
     use super::SessionOrderPreferences;
     use crate::extensions::expo::card::default_width::default_expo_card_width;
+    use crate::ui::layout::resizable_grid::default_shell_split_percent::default_shell_split_percent;
+    use crate::ui::layout::resizable_grid::default_workspace_split_percent::default_workspace_split_percent;
 
     /// Verifies older saved preferences restore the default Expo card width.
     #[test]
@@ -43,6 +53,14 @@ mod tests {
         .unwrap();
 
         assert_eq!(preferences.expo_card_width, default_expo_card_width());
+        assert_eq!(
+            preferences.shell_split_percent,
+            default_shell_split_percent()
+        );
+        assert_eq!(
+            preferences.workspace_split_percent,
+            default_workspace_split_percent()
+        );
     }
 
     /// Verifies saved preferences preserve the Expo card width setting.

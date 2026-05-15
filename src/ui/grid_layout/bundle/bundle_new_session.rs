@@ -7,6 +7,7 @@ use crate::ui::grid_layout::bundle::set_active_bundle_session::set_active_termin
 use crate::ui::grid_layout::split::active_spawn_area::active_terminal_spawn_area;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
+use crate::ui::workspace_pane::select_workspace::select_workspace;
 
 /// Opens a new chat and bundles it into the active terminal split pane.
 pub fn bundle_new_session_in_active_terminal_pane(app: &mut AppState) -> Result<()> {
@@ -24,6 +25,7 @@ pub fn bundle_new_session_in_active_terminal_pane(app: &mut AppState) -> Result<
 
     app.session_terminals.insert(insert_index, session_terminal);
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
+    let _ = select_workspace(app, working_dir);
     app.active_index = insert_index;
     app.focused_index = insert_index;
     app.focused_pane = FocusedPane::Terminal;

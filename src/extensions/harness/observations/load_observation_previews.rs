@@ -39,42 +39,61 @@ fn requests_by_id(
         .collect()
 }
 
-/// Returns matching observation state paths keyed by UUID conversation id.
+/// Returns matching observation JSON paths keyed by requested conversation id.
 fn observation_state_paths_by_id(
     wanted: &BTreeSet<String>,
 ) -> io::Result<BTreeMap<String, std::path::PathBuf>> {
     let mut paths = BTreeMap::new();
     for entry in fs::read_dir(nexus_observations_dir())? {
         let path = entry?.path();
-        let Some(conversation_id) = observation_conversation_id(&path) else {
+        let Some(conversation_ids) = observation_conversation_ids(&path) else {
             continue;
         };
-        if wanted.contains(&conversation_id) {
-            paths.insert(conversation_id, path);
+        for conversation_id in conversation_ids {
+            if wanted.contains(&conversation_id) {
+                paths.insert(conversation_id, path.clone());
+            }
         }
     }
     Ok(paths)
 }
 
-/// Extracts the UUID conversation id from a timestamp-prefixed observation state path.
-fn observation_conversation_id(path: &std::path::Path) -> Option<String> {
+/// Extracts possible session ids from a consolidated observation JSON path.
+fn observation_conversation_ids(path: &std::path::Path) -> Option<Vec<String>> {
     let name = path.file_name()?.to_str()?;
-    let id = name.strip_suffix(".state.json")?.rsplit_once('_')?.1;
-    Some(id.to_string())
+    let stem = name.strip_suffix(".json")?;
+    let mut ids = vec![stem.to_string()];
+    if let Some((_, uuid)) = stem.rsplit_once('_') {
+        ids.push(uuid.to_string());
+    }
+    Some(ids)
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
-    use super::observation_conversation_id;
+    use super::observation_conversation_ids;
 
-    /// Verifies timestamp-prefixed observation state names expose the UUID session id.
+    /// Verifies timestamp-prefixed observation JSON names expose the UUID session id.
     #[test]
-    fn extracts_conversation_id_from_state_name() {
+    fn extracts_conversation_id_from_json_name() {
         assert_eq!(
-            observation_conversation_id(Path::new("2026-04-20T15-18-32-751Z_abc.state.json")),
-            Some("abc".to_string())
+            observation_conversation_ids(Path::new("2026-04-20T15-18-32-751Z_abc.json"))
+                .unwrap()
+                .get(1),
+            Some(&"abc".to_string())
+        );
+    }
+
+    /// Verifies timestamp-prefixed observation JSON names expose the full session id.
+    #[test]
+    fn extracts_full_conversation_id_from_json_name() {
+        assert_eq!(
+            observation_conversation_ids(Path::new("2026-04-20T15-18-32-751Z_abc.json"))
+                .unwrap()
+                .first(),
+            Some(&"2026-04-20T15-18-32-751Z_abc".to_string())
         );
     }
 }

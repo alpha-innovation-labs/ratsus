@@ -28,8 +28,10 @@ fn start_drag_from_mouse(app: &mut AppState, row: u16) -> bool {
     };
     match list_row {
         SessionListRow::Folder { path, .. } => app.start_folder_drag(path),
-        SessionListRow::Session { index } => app.start_session_drag(index),
-        SessionListRow::FolderMore { .. } => return false,
+        SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. } => {
+            app.start_session_drag(index);
+        }
+        SessionListRow::FolderMore { .. } | SessionListRow::SplitGroup { .. } => return false,
     }
     true
 }
@@ -81,7 +83,9 @@ fn move_drag_to_mouse_row(app: &mut AppState, row: u16) {
         SessionListRow::Folder { path, .. } if app.folder_drag.is_some() => {
             app.move_dragged_folder(path);
         }
-        SessionListRow::Session { index } if app.session_drag.is_some() => {
+        SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. }
+            if app.session_drag.is_some() =>
+        {
             app.move_dragged_session(index);
         }
         _ => {}

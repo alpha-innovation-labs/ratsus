@@ -6,6 +6,8 @@ mod render_conversation_picker_dialog;
 mod render_delete_confirmation_dialog;
 #[path = "core_rendering/render_full_screen_baseline.rs"]
 mod render_full_screen_baseline;
+#[path = "core_rendering/render_navbar_bottom_diagnostics.rs"]
+mod render_navbar_bottom_diagnostics;
 #[path = "core_rendering/render_resize_overlay.rs"]
 mod render_resize_overlay;
 #[path = "core_rendering/render_small_terminal_layout.rs"]

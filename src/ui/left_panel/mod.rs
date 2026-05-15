@@ -9,6 +9,7 @@ pub mod focus;
 pub mod folder;
 pub mod footer_item;
 pub mod input;
+pub mod mode;
 pub mod order;
 pub mod outcome;
 pub mod render;

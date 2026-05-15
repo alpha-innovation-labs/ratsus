@@ -6,10 +6,12 @@ use crate::ui::grid_layout::bundle::prune_session_bundles::prune_terminal_pane_s
 use crate::ui::left_panel::focus::session_visible_row_index::session_visible_row_index;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
 use crate::ui::left_panel::session::visible_rows::visible_session_rows;
+use crate::ui::workspace_pane::sync_selected_workspace::sync_selected_workspace;
 
 /// Restores active, focused, and folder state after deleting multiple sessions.
 pub fn restore_focus_after_bulk_delete(app: &mut AppState, preferred_row: usize) {
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
+    sync_selected_workspace(app);
     prune_terminal_pane_session_bundles(app);
     if app.session_terminals.is_empty() {
         clear_focus(app);
@@ -20,6 +22,8 @@ pub fn restore_focus_after_bulk_delete(app: &mut AppState, preferred_row: usize)
         &BTreeSet::new(),
         &app.folder_order,
         None,
+        &app.split_pane_session_groups,
+        &app.terminal_pane_session_bundles,
     );
     let Some(next_index) = session_index_after_delete(&expanded_rows, preferred_row) else {
         return;
@@ -49,6 +53,8 @@ fn focus_next_session(app: &mut AppState, next_index: usize) {
         &app.collapsed_folders,
         &app.folder_order,
         Some(next_index),
+        &app.split_pane_session_groups,
+        &app.terminal_pane_session_bundles,
     );
     app.focused_index = next_index;
     app.active_index = next_index;

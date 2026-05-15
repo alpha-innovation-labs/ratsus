@@ -4,8 +4,10 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::expo::input::handle_keyboard::handle_expo_keyboard;
 use crate::extensions::file_viewer::preview::handle_key::handle_file_preview_key;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
+use crate::extensions::plans::preview::handle_plan_preview_key::handle_plan_preview_key;
 use crate::extensions::terminal::copy_mode::input::handle_keyboard::handle_terminal_copy_keyboard;
 use crate::extensions::terminal::input::encode_key_event::encode_key_event;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
 /// Handles keyboard input while the main pane is focused.
 pub fn handle_terminal_keyboard(
@@ -21,6 +23,9 @@ pub fn handle_terminal_keyboard(
         }
         MainPaneTab::Expo => return Ok(handle_expo_keyboard(app, &keyboard)),
         MainPaneTab::Diff => return Ok(CoordinatorAction::Continue),
+        MainPaneTab::Chat if app.left_pane_mode == LeftPaneMode::Plans => {
+            return Ok(handle_plan_preview_key(&mut app.plan_list, &keyboard));
+        }
         MainPaneTab::Chat => {}
     }
     if let Some(action) = handle_terminal_copy_keyboard(app, &keyboard) {

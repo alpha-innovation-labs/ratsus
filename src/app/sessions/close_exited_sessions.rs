@@ -8,6 +8,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::terminal::persistence::persist_normal_terminal_sessions::persist_normal_terminal_sessions;
 use crate::ui::grid_layout::split::close_exited_terminal_panes::close_exited_terminal_panes;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
+use crate::ui::workspace_pane::sync_selected_workspace::sync_selected_workspace;
 
 /// Closes entries whose backing terminal process has exited.
 pub fn close_exited_sessions(app: &mut AppState) -> Result<bool> {
@@ -19,6 +20,7 @@ pub fn close_exited_sessions(app: &mut AppState) -> Result<bool> {
     let pane_ids = exited_session_pane_ids(app, &exited_indices);
     let removed = remove_exited_sessions(app, &exited_indices);
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
+    sync_selected_workspace(app);
     let closed_exited_pane = close_exited_terminal_panes(app, &pane_ids);
     if app.chat_harness.persist_normal_terminals() {
         persist_normal_terminal_sessions(&app.session_terminals);

@@ -32,7 +32,8 @@ Ratsus is a Ratatui/Ratkit TUI for organizing harness-backed coding sessions. Th
 - [Grid layout](docs/ui/grid-layout.md): places, splits, bundles, resizes, and renders reusable grid panes.
 - [Keyboard](docs/ui/keyboard.md): provides shared keyboard contracts and list behavior.
 - [Layout](docs/ui/layout.md): owns shell focus, left-pane visibility, and resizable-grid mouse state.
-- [Left panel](docs/ui/left-panel.md): renders and operates folder/session navigation.
+- [Left panel](docs/ui/left-panel.md): renders and operates selected-workspace folder/session navigation.
+- [Workspace pane](docs/ui/workspace-pane.md): renders and operates folder-level workspace navigation.
 - [Menu bar](docs/ui/menu-bar.md): renders and synchronizes the application menu bar.
 - [Notifications](docs/ui/notifications.md): presents user-facing toast notifications.
 
@@ -40,6 +41,7 @@ Ratsus is a Ratatui/Ratkit TUI for organizing harness-backed coding sessions. Th
 
 `src/extensions/` owns product capabilities built on top of the app shell. Each extension should own its feature state, rendering, input behavior, backend integration points, and tests while using shared app and UI contracts.
 
+- [Command bar](docs/extensions/command-bar.md): renders the command palette, command filtering, and command execution.
 - [Expo](docs/extensions/expo.md): renders folder-level conversation cards, filtering, layout, and observation previews.
 - [File viewer](docs/extensions/file-viewer.md): owns file-tree navigation, tabs, code previews, and Markdown previews.
 - [Harness](docs/extensions/harness.md): defines session backends plus Nexus, stub, conversation picker, refresh, deletion, and observations.

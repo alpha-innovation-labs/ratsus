@@ -7,5 +7,7 @@ pub enum RenderedLeftPanelRow {
         source_row_index: usize,
         row: SessionListRow,
     },
-    Separator,
+    Separator {
+        label: Option<String>,
+    },
 }

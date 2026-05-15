@@ -85,7 +85,7 @@ impl ChatHarness for NexusHarness {
         apply_session_refresh(session_terminals, refreshed_sessions)
     }
 
-    /// Loads Nexus observation previews from Nexus observation state files.
+    /// Loads Nexus observation previews from consolidated observation JSON files.
     fn load_observation_previews(
         &self,
         requests: Vec<ObservationPreviewRequest>,
@@ -98,7 +98,7 @@ impl ChatHarness for NexusHarness {
         start_observation_watcher()
     }
 
-    /// Detects Nexus observation state files from watcher changes.
+    /// Detects consolidated Nexus observation JSON files from watcher changes.
     fn is_observation_state_path(&self, path: &Path) -> bool {
         path_is_observation_state(path)
     }

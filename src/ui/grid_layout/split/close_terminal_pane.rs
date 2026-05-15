@@ -1,8 +1,11 @@
 use ratkit::primitives::resizable_grid::PaneId;
 
 use crate::app::state::app_state::AppState;
+use crate::ui::grid_layout::group::compact_split_pane_session_groups::compact_split_pane_session_groups;
+use crate::ui::grid_layout::group::remove_pane_from_groups::remove_pane_from_groups;
 use crate::ui::grid_layout::pane::activate_terminal_pane::activate_terminal_pane;
 use crate::ui::grid_layout::pane::fallback_terminal_pane_id::fallback_terminal_pane_id;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
 
 /// Removes a split terminal pane from the layout and restores focus to a remaining pane.
 pub fn close_terminal_pane(app: &mut AppState, pane_id: PaneId) -> bool {
@@ -21,12 +24,18 @@ pub fn close_terminal_pane(app: &mut AppState, pane_id: PaneId) -> bool {
     app.terminal_pane_session_bundles.remove(&pane_id);
     app.terminal_pane_areas.remove(&pane_id);
     app.terminal_pane_close_buttons.remove(&pane_id);
+    remove_pane_from_groups(&mut app.split_pane_session_groups, pane_id);
+    compact_split_pane_session_groups(
+        &mut app.split_pane_session_groups,
+        &app.terminal_pane_session_bundles,
+    );
 
     if app.active_terminal_pane_id == pane_id {
         if let Some(fallback_pane_id) = fallback_terminal_pane_id(app) {
             activate_terminal_pane(app, fallback_pane_id);
         }
     }
+    persist_multiplexer_state(app);
     true
 }
 

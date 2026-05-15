@@ -22,9 +22,10 @@ pub fn collapse_focused_project(app: &mut AppState) {
 fn focused_project_path(app: &AppState) -> Option<std::path::PathBuf> {
     match focused_left_row(app)? {
         SessionListRow::Folder { path, .. } | SessionListRow::FolderMore { path } => Some(path),
-        SessionListRow::Session { index } => app
+        SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. } => app
             .session_terminals
             .get(index)
             .map(|entry| entry.session.working_dir.clone()),
+        SessionListRow::SplitGroup { .. } => None,
     }
 }

@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
-use ratatui::{layout::Rect, Frame};
+use ratatui::{buffer::Buffer, layout::Rect, Frame};
 use ratkit::primitives::termtui::{render_screen, Parser, Screen};
 use ratkit::RedrawSignal;
 
@@ -91,8 +91,13 @@ impl PtyTerminal {
 
     /// Renders the terminal screen into the requested frame area.
     pub fn render(&self, frame: &mut Frame, area: Rect) {
+        self.render_to_buffer(area, frame.buffer_mut());
+    }
+
+    /// Renders the terminal screen into a buffer without cloning the screen.
+    pub fn render_to_buffer(&self, area: Rect, buffer: &mut Buffer) {
         if let Ok(parser) = self.parser.lock() {
-            render_screen(parser.screen(), area, frame.buffer_mut());
+            render_screen(parser.screen(), area, buffer);
         }
     }
 

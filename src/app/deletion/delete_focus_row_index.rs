@@ -3,7 +3,10 @@ use crate::ui::left_panel::session::list_row::SessionListRow;
 /// Returns the first visible row occupied by any session scheduled for deletion.
 pub fn delete_focus_row_index(rows: &[SessionListRow], deleted_indices: &[usize]) -> usize {
     rows.iter()
-        .position(|row| matches!(row, SessionListRow::Session { index } if deleted_indices.contains(index)))
+        .position(|row| {
+            row.session_index()
+                .is_some_and(|index| deleted_indices.contains(&index))
+        })
         .unwrap_or(0)
 }
 

@@ -3,16 +3,20 @@ use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
 /// Semantic top-level shortcut resolved from the Ratkit hotkey registry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AppHotkey {
-    /// Move the active chat selection by a signed offset.
-    CycleChat(isize),
+    /// Move the active session selection by a signed offset.
+    CycleSession(isize),
+    /// Open the command bar modal.
+    OpenCommandBar,
     /// Open the conversation picker modal.
     OpenConversationPicker,
     /// Open Expo for the focused conversation.
     OpenFocusedConversationExpo,
-    /// Open the split-placement picker for the active terminal pane.
-    PlaceConversationInActiveSplit,
+    /// Open the split-placement picker with the requested split direction.
+    PlaceConversationInActiveSplit(TerminalSplitDirection),
     /// Split the active terminal pane in one direction.
     SplitTerminal(TerminalSplitDirection),
+    /// Select a workspace by visible zero-based index.
+    SelectWorkspace(usize),
     /// Start a new harness-backed chat session.
     StartChat,
     /// Start a new normal terminal session.
@@ -21,6 +25,8 @@ pub enum AppHotkey {
     ToggleLeftPane,
     /// Toggle keyboard focus between app panes.
     ToggleFocusedPane,
+    /// Toggle between workspace-pane and legacy all-folders left-pane modes.
+    ToggleWorkspaceView,
     /// Quit the application.
     Quit,
 }
