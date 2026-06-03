@@ -14,7 +14,10 @@ impl LeftPaneContent for PlanListState {
             LeftPaneAction::MoveBy(direction) => self.move_by(direction),
             LeftPaneAction::FocusFirst => self.focus_first(),
             LeftPaneAction::FocusLast => self.focus_last(),
-            LeftPaneAction::Activate | LeftPaneAction::Expand => self.activate_focused(),
+            LeftPaneAction::FocusVisibleRow(row_index) => self.focus_visible_row(row_index),
+            LeftPaneAction::Activate => self.activate_focused(),
+            LeftPaneAction::Collapse => self.collapse_focused_folder(),
+            LeftPaneAction::Expand => self.expand_focused_folder(),
             LeftPaneAction::StartFilter => self.start_filtering(),
             LeftPaneAction::InsertFilterCharacter(character) => {
                 self.push_filter_character(character)
@@ -22,8 +25,7 @@ impl LeftPaneContent for PlanListState {
             LeftPaneAction::DeleteFilterCharacter => self.pop_filter_character(),
             LeftPaneAction::ReorderBy(direction) => self.reorder_focused_by(direction),
             LeftPaneAction::Quit => return self.quit_or_close_filter(),
-            LeftPaneAction::Collapse
-            | LeftPaneAction::FocusAdjacentGroup(_)
+            LeftPaneAction::FocusAdjacentGroup(_)
             | LeftPaneAction::Delete
             | LeftPaneAction::ToggleSelection => return LeftPaneActionOutcome::Continue,
         }

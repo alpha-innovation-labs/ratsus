@@ -11,19 +11,44 @@ use crate::extensions::plans::fs::plan_title::plan_title;
 pub fn load_markdown_plans(plans_dir: &Path) -> Result<Vec<PlanEntry>> {
     fs::create_dir_all(plans_dir)
         .with_context(|| format!("failed to create plans directory {}", plans_dir.display()))?;
-    let mut entries = fs::read_dir(plans_dir)
-        .with_context(|| format!("failed to read plans directory {}", plans_dir.display()))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.is_file() && is_markdown_plan_path(path))
-        .map(|path| PlanEntry::new(path.clone(), plan_title(&path)))
-        .collect::<Vec<_>>();
+    let mut entries = Vec::new();
+    collect_markdown_plans(plans_dir, plans_dir, &mut entries)?;
     entries.sort_by(|left, right| {
-        left.title
-            .cmp(&right.title)
+        left.folder
+            .cmp(&right.folder)
+            .then(left.title.cmp(&right.title))
             .then(left.path.cmp(&right.path))
     });
     Ok(entries)
+}
+
+/// Recursively collects Markdown plans and groups them by containing directory.
+fn collect_markdown_plans(root: &Path, dir: &Path, entries: &mut Vec<PlanEntry>) -> Result<()> {
+    for entry in fs::read_dir(dir)
+        .with_context(|| format!("failed to read plans directory {}", dir.display()))?
+    {
+        let path = entry?.path();
+        if path.is_dir() {
+            collect_markdown_plans(root, &path, entries)?;
+            continue;
+        }
+        if !path.is_file() || !is_markdown_plan_path(&path) {
+            continue;
+        }
+        let folder = path
+            .parent()
+            .unwrap_or(root)
+            .strip_prefix(root)
+            .unwrap_or_else(|_| path.parent().unwrap_or(root))
+            .to_path_buf();
+        let folder = if folder.as_os_str().is_empty() {
+            root.to_path_buf()
+        } else {
+            root.join(folder)
+        };
+        entries.push(PlanEntry::new(path.clone(), folder, plan_title(&path)));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -65,6 +90,23 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["alpha", "beta"]
         );
+        let _ = fs::remove_dir_all(root);
+        Ok(())
+    }
+
+    /// Keeps nested plan folder information for grouped left-pane rendering.
+    #[test]
+    fn loads_nested_markdown_files_with_folders() -> anyhow::Result<()> {
+        let root = test_root("nested");
+        let plans_dir = root.join("plans");
+        let nested_dir = plans_dir.join("feature");
+        fs::create_dir_all(&nested_dir)?;
+        fs::write(nested_dir.join("alpha.md"), "# Alpha")?;
+
+        let plans = load_markdown_plans(&plans_dir)?;
+
+        assert_eq!(plans.len(), 1);
+        assert_eq!(plans[0].folder, nested_dir);
         let _ = fs::remove_dir_all(root);
         Ok(())
     }

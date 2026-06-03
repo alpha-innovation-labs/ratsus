@@ -6,3 +6,4 @@ pub mod input;
 pub mod left_pane_content;
 pub mod preview;
 pub mod render;
+pub mod watch;

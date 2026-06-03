@@ -1,24 +1,23 @@
 use crossterm::event::{MouseButton, MouseEventKind};
 
 use crate::app::state::app_state::AppState;
-use crate::extensions::plans::input::plan_row_for_mouse::plan_row_for_mouse;
+use crate::extensions::plans::data::plan_list_row::PlanListRow;
 
-/// Focuses and activates the plan row under a left-click.
+/// Focuses and activates the grouped plan row under a left-click.
 pub fn focus_clicked_plan(app: &mut AppState, mouse: ratkit::MouseEvent) {
     if !matches!(mouse.kind, MouseEventKind::Down(MouseButton::Left)) {
         return;
     }
-    let Some(plan_index) = plan_row_for_mouse(&app.plan_list, mouse.row) else {
+    if mouse.row < app.plan_list.last_area.y {
         return;
-    };
-    let Some(visible_row) = app
-        .plan_list
-        .visible_indices()
-        .iter()
-        .position(|index| *index == plan_index)
-    else {
+    }
+    let visible_row = app.plan_list.scroll + usize::from(mouse.row - app.plan_list.last_area.y);
+    let Some(row) = app.plan_list.visible_rows().get(visible_row).cloned() else {
         return;
     };
     app.plan_list.focused_row = visible_row;
-    app.plan_list.activate_focused();
+    match row {
+        PlanListRow::Folder { path, .. } => app.plan_list.toggle_folder(&path),
+        PlanListRow::Plan { .. } => app.plan_list.activate_focused(),
+    }
 }

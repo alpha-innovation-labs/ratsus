@@ -33,15 +33,15 @@ impl PlanListState {
 
     /// Reorders the focused visible plan by a signed row delta.
     pub fn reorder_focused_by(&mut self, direction: isize) {
-        let visible = self.visible_indices();
-        let Some(source_index) = visible.get(self.focused_row).copied() else {
+        let rows = self.visible_rows();
+        let Some(source_index) = self.focused_plan_index() else {
             return;
         };
         let target_row = self
             .focused_row
             .saturating_add_signed(direction)
-            .min(visible.len().saturating_sub(1));
-        let Some(target_index) = visible.get(target_row).copied() else {
+            .min(rows.len().saturating_sub(1));
+        let Some(target_index) = plan_index_at_or_near_row(&rows, target_row, direction) else {
             return;
         };
         self.drag = Some(PlanDragState::new(source_index));
@@ -52,6 +52,42 @@ impl PlanListState {
     /// Ends any active drag operation.
     pub fn finish_drag(&mut self) {
         self.drag = None;
+    }
+}
+
+/// Returns the nearest plan index to a grouped row for keyboard reordering.
+fn plan_index_at_or_near_row(
+    rows: &[crate::extensions::plans::data::plan_list_row::PlanListRow],
+    row: usize,
+    direction: isize,
+) -> Option<usize> {
+    rows.get(row).and_then(|candidate| match candidate {
+        crate::extensions::plans::data::plan_list_row::PlanListRow::Plan { index } => Some(*index),
+        crate::extensions::plans::data::plan_list_row::PlanListRow::Folder { .. } => {
+            nearest_plan_index(rows, row, direction)
+        }
+    })
+}
+
+/// Searches away from a grouped folder row for the next reorderable plan row.
+fn nearest_plan_index(
+    rows: &[crate::extensions::plans::data::plan_list_row::PlanListRow],
+    row: usize,
+    direction: isize,
+) -> Option<usize> {
+    if direction < 0 {
+        return rows[..row].iter().rev().find_map(plan_index_for_row);
+    }
+    rows.iter().skip(row + 1).find_map(plan_index_for_row)
+}
+
+/// Returns the plan index represented by one grouped row.
+fn plan_index_for_row(
+    row: &crate::extensions::plans::data::plan_list_row::PlanListRow,
+) -> Option<usize> {
+    match row {
+        crate::extensions::plans::data::plan_list_row::PlanListRow::Plan { index } => Some(*index),
+        crate::extensions::plans::data::plan_list_row::PlanListRow::Folder { .. } => None,
     }
 }
 

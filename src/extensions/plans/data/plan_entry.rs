@@ -4,12 +4,17 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlanEntry {
     pub path: PathBuf,
+    pub folder: PathBuf,
     pub title: String,
 }
 
 impl PlanEntry {
-    /// Builds a plan entry from its filesystem path and display title.
-    pub fn new(path: PathBuf, title: String) -> Self {
-        Self { path, title }
+    /// Builds a plan entry from its filesystem path, grouping folder, and display title.
+    pub fn new(path: PathBuf, folder: PathBuf, title: String) -> Self {
+        Self {
+            path,
+            folder,
+            title,
+        }
     }
 }

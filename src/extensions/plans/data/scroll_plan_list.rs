@@ -12,7 +12,7 @@ impl PlanListState {
     pub fn scroll_by(&mut self, delta: isize) -> bool {
         let before = self.scroll;
         let max_scroll = self
-            .visible_indices()
+            .visible_rows()
             .len()
             .saturating_sub(usize::from(self.last_area.height).max(1));
         self.scroll = self.scroll.saturating_add_signed(delta).min(max_scroll);
