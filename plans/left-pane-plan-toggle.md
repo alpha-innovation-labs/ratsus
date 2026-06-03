@@ -1,3 +1,7 @@
+---
+name: plan
+---
+
 # Left pane Plan toggle implementation plan
 
 ## Objective

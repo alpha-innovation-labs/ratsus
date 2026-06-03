@@ -48,7 +48,7 @@ Observation previews are loaded from consolidated Nexus observation JSON files u
 
 ## Conversation picker
 
-`Ctrl+H` opens the conversation picker scoped to the selected workspace folder. Pressing `Tab` toggles the picker between `Workspace` and `All` scopes, and the active scope is rendered in the top-right dialog header. `All` preserves the previous unfiltered catalog behavior. Pressing `/` inside the session left pane opens this picker with filter entry already active; normal picker opens still require `/` before typed text filters.
+`Ctrl+H` opens the conversation picker scoped to the selected workspace folder. Pressing `Tab` toggles the picker between `Workspace` and `All` scopes, and both scopes render in the top-right dialog header with `●` marking the active scope and `○` marking the inactive scope. `All` preserves the previous unfiltered catalog behavior. Pressing `/` inside the session left pane opens this picker with filter entry already active; normal picker opens still require `/` before typed text filters.
 
 ## Stub harness
 

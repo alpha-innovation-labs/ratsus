@@ -11,7 +11,7 @@
 
 ## Behavior
 
-`Ctrl+K` opens the command bar in filter mode. `Ctrl+H` opens chat history directly through the conversation picker. `Next session` and `Previous session` expose `Ctrl+Tab` and `Ctrl+Shift+Tab`. Enter on a command closes the command bar and executes the mapped app action. Escape clears the active filter first, then closes the command bar when filtering is inactive. `Select workspace 1` through `Select workspace 9` expose `Ctrl+1` through `Ctrl+9`; in grouped folder mode they activate the first session in the matching folder. `Toggle workspace view` has no direct hotkey and switches between workspace-pane mode and the legacy all-folders left-pane view.
+`Ctrl+K` opens the command bar in filter mode. `Ctrl+H` opens chat history directly through the conversation picker. `Next session` and `Previous session` expose `Ctrl+Tab` and `Ctrl+Shift+Tab`. `Cycle sessions, plans, files` exposes Ctrl+backtick. Enter on a command closes the command bar and executes the mapped app action. Escape clears the active filter first, then closes the command bar when filtering is inactive. `Select workspace 1` through `Select workspace 9` expose `Ctrl+1` through `Ctrl+9`; in grouped folder mode they activate the first session in the matching folder. `Setup Ghostty hotkeys` writes a managed Ghostty config block that unbinds Ghostty defaults which intercept Ratsus shortcuts. `Toggle workspace view` has no direct hotkey and switches between workspace-pane mode and the legacy all-folders left-pane view.
 
 ## Key files
 

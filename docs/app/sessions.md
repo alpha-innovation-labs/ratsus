@@ -9,7 +9,7 @@
 - Detect exited session entries.
 - Close or remove exited sessions from app state.
 - Restore focus after bulk deletion.
-- Choose normal-terminal insertion points and working directories.
+- Choose normal-terminal insertion points and working directories, preferring the selected workspace for new terminals.
 - Start new normal terminal sessions through the active harness policy.
 
 ## Boundary

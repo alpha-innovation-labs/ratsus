@@ -9,6 +9,8 @@
 - Convert keyboard shortcuts into navigation, tab changes, pane focus changes, deletion prompts, or terminal input.
 - Let normal shell terminals receive reserved terminal editing keys such as Ctrl+E instead of treating them as app shortcuts.
 - Map `Ctrl+Tab` and `Ctrl+Shift+Tab` into session cycling commands.
+- Map Ctrl+backtick into cycling the left pane through Sessions, Plans, and Files.
+- Map `Alt+N` to a vertical split, `Alt+Shift+N` to a horizontal split, and `Cmd+N` to a new chat.
 
 ## Boundary
 

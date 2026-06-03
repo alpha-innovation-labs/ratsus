@@ -4,11 +4,11 @@
 
 ## Responsibilities
 
-- Build menu bar state for the active main-pane tab.
+- Build menu bar state for the active left-pane mode: Sessions, Plans, or Files.
 - Render the menu bar and split its area from the rest of the screen.
 - Render right-aligned app diagnostics on the menu-bar bottom row.
-- Handle menu mouse input and tab selection.
-- Map menu state to file viewer tabs and app actions.
+- Handle menu mouse input and left-pane mode selection.
+- Map menu state to Sessions, Plans, and Files app actions.
 
 ## Child modules
 
@@ -18,7 +18,7 @@
 
 ## Boundary
 
-Menu bar rendering and input stay here. The behavior behind each tab belongs to the owning feature, such as chat grid, file viewer, diff, or Expo.
+Menu bar rendering and input stay here. The behavior behind each mode belongs to the owning feature, such as sessions, plans, or file viewer.
 
 ## Key files
 

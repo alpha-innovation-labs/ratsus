@@ -30,6 +30,12 @@ The normal terminal registry path is owned by Ratsus and is distinct from Nexus 
 
 Copy mode owns selection bounds, mouse hit conversion, keyboard and mouse handling, selected text extraction, clipboard copying, and rendering a selected screen region.
 
+## Ghostty setup
+
+`src/extensions/terminal/ghostty/` writes a Ratsus-managed block to the active Ghostty config. The command bar exposes `Setup Ghostty hotkeys`, which maps `Ctrl+Tab`, `Ctrl+Shift+Tab`, and Ctrl+backtick to CSI-u sequences Ratsus can parse, and unbinds Ghostty defaults that consume `Shift+Tab`, `Cmd/Super+N`, and `Cmd/Super+1` through `Cmd/Super+9` including physical `digit_N` variants.
+
+The setup creates a one-time `config.ratsus.bak` beside the Ghostty config before changing an existing file. Users must restart Ghostty after running setup.
+
 ## Key files
 
 - `src/extensions/terminal/process/pty_terminal.rs`
@@ -43,3 +49,4 @@ Copy mode owns selection bounds, mouse hit conversion, keyboard and mouse handli
 - `src/extensions/terminal/persistence/load_normal_terminal_sessions.rs`
 - `src/extensions/terminal/persistence/save_normal_terminal_sessions.rs`
 - `src/extensions/terminal/copy_mode/`
+- `src/extensions/terminal/ghostty/`

@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -29,6 +30,30 @@ impl PtyTerminal {
         rows: u16,
         cols: u16,
     ) -> Result<Self> {
+        let mut cmd = CommandBuilder::new(command);
+        for arg in args {
+            cmd.arg(arg);
+        }
+        Self::spawn_command_builder_in_dir(cmd, working_dir, rows, cols)
+    }
+
+    /// Spawns a PTY-backed terminal argv in a specific directory.
+    pub fn spawn_argv_in_dir(
+        argv: Vec<OsString>,
+        working_dir: &Path,
+        rows: u16,
+        cols: u16,
+    ) -> Result<Self> {
+        Self::spawn_command_builder_in_dir(CommandBuilder::from_argv(argv), working_dir, rows, cols)
+    }
+
+    /// Spawns a prepared command builder in a PTY sized for the terminal pane.
+    fn spawn_command_builder_in_dir(
+        mut cmd: CommandBuilder,
+        working_dir: &Path,
+        rows: u16,
+        cols: u16,
+    ) -> Result<Self> {
         let pty_system = native_pty_system();
         let pair = pty_system.openpty(PtySize {
             rows,
@@ -36,10 +61,6 @@ impl PtyTerminal {
             pixel_width: 0,
             pixel_height: 0,
         })?;
-        let mut cmd = CommandBuilder::new(command);
-        for arg in args {
-            cmd.arg(arg);
-        }
         cmd.env("TERM", "xterm-256color");
         cmd.cwd(working_dir);
         let child = pair.slave.spawn_command(cmd)?;
