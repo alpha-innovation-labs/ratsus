@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 use ratkit::widgets::file_system_tree::{FileSystemTree, FileSystemTreeNode, FileSystemTreeState};
 
 use crate::extensions::file_viewer::preview::preview_state_for_path::preview_state_for_path;
-use crate::extensions::file_viewer::tree::start_root_watcher::start_root_watcher;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 
 impl FileSystemTreeView {
@@ -44,10 +43,9 @@ impl FileSystemTreeView {
         self.preview_state = preview_state_for_path(&root, true);
         self.selected_preview_path = Some(root.clone());
         self.selected_preview_is_dir = true;
-        self.selected_file_watcher = None;
-        self.root_watcher = start_root_watcher(&root);
         self.preview_load_receiver = None;
         self.tree_load_receiver = None;
+        self.workspace_roots = vec![root.clone()];
         self.apply_expanded_directory_paths(expanded_paths);
         Ok(())
     }

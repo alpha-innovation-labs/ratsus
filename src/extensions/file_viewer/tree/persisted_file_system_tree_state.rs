@@ -10,6 +10,12 @@ use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 pub struct PersistedFileSystemTreeState {
     #[serde(default)]
     pub expanded_paths_by_root: BTreeMap<PathBuf, Vec<PathBuf>>,
+    #[serde(default)]
+    pub workspace_expanded_paths: Vec<PathBuf>,
+    #[serde(default)]
+    pub workspace_collapsed_paths: Vec<PathBuf>,
+    #[serde(default)]
+    pub selected_path: Option<PathBuf>,
 }
 
 /// Captures persisted file-viewer state while merging the active tree view.
@@ -24,5 +30,8 @@ pub fn persisted_file_system_tree_state(
     );
     PersistedFileSystemTreeState {
         expanded_paths_by_root,
+        workspace_expanded_paths: view.workspace_expanded_directory_paths(),
+        workspace_collapsed_paths: view.workspace_collapsed_directory_paths(),
+        selected_path: view.selected_preview_path.clone(),
     }
 }

@@ -14,11 +14,11 @@ fn file_tree_uses_shared_left_pane_dispatcher() {
     let root = create_test_tree_root("file_tree_shared_dispatcher");
     let mut view = FileSystemTreeView::with_root(root.clone()).expect("file tree view");
 
-    let first = view.selected_path();
+    let first = view.workspace_selected_status();
     let _ = dispatch_left_pane_keyboard(&mut view, key(KeyCode::Char('l')));
     let _ = dispatch_left_pane_keyboard(&mut view, key(KeyCode::Char('j')));
 
-    assert_ne!(view.selected_path(), first);
+    assert_ne!(view.workspace_selected_status(), first);
     let _ = fs::remove_dir_all(root);
 }
 
@@ -33,7 +33,7 @@ fn file_tree_filtering_uses_shared_left_pane_dispatcher() {
     let outcome = dispatch_left_pane_keyboard(&mut view, key(KeyCode::Esc));
 
     assert_eq!(outcome, LeftPaneActionOutcome::Handled);
-    assert_eq!(view.filter_text(), None);
+    assert!(!view.workspace_filtering);
     let _ = fs::remove_dir_all(root);
 }
 
