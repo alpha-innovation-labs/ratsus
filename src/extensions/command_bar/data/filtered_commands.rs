@@ -28,6 +28,11 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
             "Ctrl+Shift+Tab",
         ),
         CommandBarItem::new(
+            CommandBarCommandId::CycleLeftPaneMode,
+            "Cycle sessions, plans, files",
+            "Ctrl+`",
+        ),
+        CommandBarItem::new(
             CommandBarCommandId::OpenFocusedConversationExpo,
             "Toggle Expo",
             "Ctrl+E",
@@ -35,12 +40,12 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
         CommandBarItem::new(
             CommandBarCommandId::SplitVertical,
             "Split vertical",
-            "Ctrl+]",
+            "Alt+N",
         ),
         CommandBarItem::new(
             CommandBarCommandId::SplitHorizontal,
             "Split horizontal",
-            "Ctrl+[",
+            "Alt+Shift+N",
         ),
         CommandBarItem::new(
             CommandBarCommandId::PlaceVertical,
@@ -61,7 +66,12 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
         workspace_command_bar_item(6),
         workspace_command_bar_item(7),
         workspace_command_bar_item(8),
-        CommandBarItem::new(CommandBarCommandId::StartChat, "New chat", "Ctrl+N"),
+        CommandBarItem::new(
+            CommandBarCommandId::SetupGhosttyConfig,
+            "Setup Ghostty hotkeys",
+            "",
+        ),
+        CommandBarItem::new(CommandBarCommandId::StartChat, "New chat", "Cmd+N"),
         CommandBarItem::new(CommandBarCommandId::StartTerminal, "New terminal", "Ctrl+T"),
         CommandBarItem::new(
             CommandBarCommandId::ToggleLeftPane,
@@ -147,8 +157,29 @@ mod tests {
                 && item.hotkey == "Ctrl+Shift+Tab"));
         assert!(items
             .iter()
+            .any(|item| item.id == CommandBarCommandId::CycleLeftPaneMode
+                && item.title == "Cycle sessions, plans, files"
+                && item.hotkey == "Ctrl+`"));
+        assert!(items
+            .iter()
             .any(|item| item.id == CommandBarCommandId::SplitVertical
-                && item.title == "Split vertical"));
+                && item.title == "Split vertical"
+                && item.hotkey == "Alt+N"));
+        assert!(items
+            .iter()
+            .any(|item| item.id == CommandBarCommandId::SplitHorizontal
+                && item.title == "Split horizontal"
+                && item.hotkey == "Alt+Shift+N"));
+        assert!(items
+            .iter()
+            .any(|item| item.id == CommandBarCommandId::StartChat
+                && item.title == "New chat"
+                && item.hotkey == "Cmd+N"));
+        assert!(items
+            .iter()
+            .any(|item| item.id == CommandBarCommandId::SetupGhosttyConfig
+                && item.title == "Setup Ghostty hotkeys"
+                && item.hotkey.is_empty()));
         assert!(items
             .iter()
             .any(|item| item.id == CommandBarCommandId::ToggleWorkspaceView

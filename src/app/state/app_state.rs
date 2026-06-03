@@ -87,6 +87,7 @@ pub struct AppState {
     pub last_session_list_area: Rect,
     pub last_left_session_toggle_area: Rect,
     pub last_left_plan_toggle_area: Rect,
+    pub last_left_file_toggle_area: Rect,
     pub left_pane_visible: bool,
     pub focused_pane: FocusedPane,
     pub active_main_pane_tab: MainPaneTab,

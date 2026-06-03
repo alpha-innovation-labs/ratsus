@@ -21,10 +21,17 @@ use crate::extensions::harness::conversation_picker::actions::open::open_convers
 use crate::extensions::harness::conversation_picker::actions::open_place_in_active_split::open_place_in_active_split_picker;
 use crate::extensions::harness::conversation_picker::input::handle_keyboard::handle_conversation_picker_keyboard;
 use crate::extensions::harness::sessions::creation::start_new_chat::start_new_chat;
-use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
+use crate::extensions::terminal::ghostty::setup_ghostty_config::setup_ghostty_config;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::{
+    persist_multiplexer_state, persist_multiplexer_state_now,
+};
 use crate::ui::grid_layout::split::split_active_pane::split_active_terminal_pane;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::focus::toggle_left_pane_visibility::toggle_left_pane_visibility;
+use crate::ui::left_panel::input::select_visible_left_pane_row::select_visible_left_pane_row;
+use crate::ui::left_panel::input::visible_row_index_for_keyboard::visible_row_index_for_keyboard;
+use crate::ui::left_panel::mode::cycle_left_pane_mode::cycle_left_pane_mode;
+use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 use crate::ui::notifications::toast::show_failed_to_start_new_chat::show_failed_to_start_new_chat_toast;
 use crate::ui::notifications::toast::show_failed_to_start_terminal::show_failed_to_start_terminal_toast;
 use crate::ui::workspace_pane::select_workspace_by_visible_index::select_workspace_by_visible_index;
@@ -56,6 +63,11 @@ pub fn handle_keyboard_event(
         hide_expo(app);
         return Ok(CoordinatorAction::Redraw);
     }
+    if let Some(index) = visible_row_index_for_keyboard(&keyboard) {
+        let outcome = select_visible_left_pane_row(app, index);
+        persist_left_pane_focus_outcome(app, outcome);
+        return Ok(coordinator_action_for_left_pane_outcome(outcome));
+    }
     if let Some(index) = workspace_index_for_keyboard(&keyboard) {
         return Ok(redraw_if(select_workspace_by_visible_index(app, index)));
     }
@@ -77,6 +89,11 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
     match hotkey {
         AppHotkey::CycleSession(direction) => {
             redraw_if(cycle_session_in_left_pane_order(app, direction))
+        }
+        AppHotkey::CycleLeftPaneMode => {
+            cycle_left_pane_mode(app);
+            persist_multiplexer_state(app);
+            CoordinatorAction::Redraw
         }
         AppHotkey::OpenCommandBar => {
             open_command_bar(app);
@@ -107,6 +124,10 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
         AppHotkey::SelectWorkspace(index) => {
             redraw_if(select_workspace_by_visible_index(app, index))
         }
+        AppHotkey::SetupGhosttyConfig => {
+            setup_ghostty_config_for_app(app);
+            CoordinatorAction::Redraw
+        }
         AppHotkey::StartChat => {
             if let Err(error) = start_new_chat(app) {
                 show_failed_to_start_new_chat_toast(&mut app.toast_manager, &error);
@@ -129,9 +150,42 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
         }
         AppHotkey::ToggleWorkspaceView => redraw_if(toggle_workspace_view(app)),
         AppHotkey::Quit => {
-            persist_multiplexer_state(app);
+            persist_multiplexer_state_now(app);
             CoordinatorAction::Quit
         }
+    }
+}
+
+/// Configures Ghostty for Ratsus shortcuts and reports the result to the user.
+fn setup_ghostty_config_for_app(app: &mut AppState) {
+    match setup_ghostty_config() {
+        Ok(result) if result.changed => app.toast_manager.success(format!(
+            "Updated Ghostty config: {}. Restart Ghostty.",
+            result.config_path.display()
+        )),
+        Ok(result) => app.toast_manager.info(format!(
+            "Ghostty config already ready: {}",
+            result.config_path.display()
+        )),
+        Err(error) => app
+            .toast_manager
+            .error(format!("Failed to setup Ghostty config: {error}")),
+    }
+}
+
+/// Persists app focus when a left-pane action changed visible focus.
+fn persist_left_pane_focus_outcome(app: &AppState, outcome: LeftPaneActionOutcome) {
+    if outcome == LeftPaneActionOutcome::Handled {
+        persist_multiplexer_state(app);
+    }
+}
+
+/// Converts a left-pane action outcome into a coordinator action.
+fn coordinator_action_for_left_pane_outcome(outcome: LeftPaneActionOutcome) -> CoordinatorAction {
+    match outcome {
+        LeftPaneActionOutcome::Handled => CoordinatorAction::Redraw,
+        LeftPaneActionOutcome::Continue => CoordinatorAction::Continue,
+        LeftPaneActionOutcome::Quit => CoordinatorAction::Quit,
     }
 }
 
@@ -287,9 +341,24 @@ mod tests {
 
         app.active_index = 0;
         app.focused_index = 0;
+        let control_i_outcome = handle_keyboard_event(
+            &mut app,
+            key_with_modifiers(KeyCode::Char('i'), KeyModifiers::CONTROL),
+        )
+        .expect("keyboard event");
+        let control_i_report = format!(
+            "control_i_outcome: {control_i_outcome:?}\ncontrol_i_active_index: {}\ncontrol_i_focused_index: {}",
+            app.active_index, app.focused_index
+        );
+
+        app.active_index = 0;
+        app.focused_index = 0;
         let ctrl_shift_tab_outcome = handle_keyboard_event(
             &mut app,
-            key_with_modifiers(KeyCode::BackTab, KeyModifiers::SHIFT),
+            key_with_modifiers(
+                KeyCode::BackTab,
+                KeyModifiers::CONTROL | KeyModifiers::SHIFT,
+            ),
         )
         .expect("keyboard event");
         let ctrl_shift_tab_report = format!(
@@ -298,15 +367,44 @@ mod tests {
         );
 
         assert_snapshot!(
-            format!("{ctrl_tab_report}\n{ctrl_shift_tab_report}"),
+            format!("{ctrl_tab_report}\n{control_i_report}\n{ctrl_shift_tab_report}"),
             @r###"
 ctrl_tab_outcome: Redraw
 ctrl_tab_active_index: 1
 ctrl_tab_focused_index: 1
+control_i_outcome: Redraw
+control_i_active_index: 1
+control_i_focused_index: 1
 ctrl_shift_tab_outcome: Redraw
 ctrl_shift_tab_active_index: 1
 ctrl_shift_tab_focused_index: 1
 "###
+        );
+    }
+
+    /// Ctrl+T opens a normal terminal in the selected workspace, not the active session folder.
+    #[test]
+    fn control_t_starts_terminal_in_selected_workspace() {
+        let mut app = app_fixture(vec![dormant_session("alpha", "alpha", "/workspace/alpha")])
+            .expect("app fixture");
+        app.folder_order = vec![
+            PathBuf::from("/workspace/alpha"),
+            PathBuf::from("/workspace/beta"),
+        ];
+        app.selected_workspace_path = Some(PathBuf::from("/workspace/beta"));
+        app.active_index = 0;
+        app.focused_index = 0;
+
+        let outcome = handle_keyboard_event(&mut app, control_key('t')).expect("keyboard event");
+
+        assert_eq!(outcome, CoordinatorAction::Redraw);
+        assert_eq!(
+            app.session_terminals[1].session.kind,
+            ChatSessionKind::NormalTerminal
+        );
+        assert_eq!(
+            app.session_terminals[1].session.working_dir,
+            PathBuf::from("/workspace/beta")
         );
     }
 
@@ -345,17 +443,51 @@ ctrl_shift_tab_focused_index: 1
         );
     }
 
-    /// Cmd+number no longer selects workspaces.
+    /// Cmd+number selects the matching visible row in the active left-pane content.
     #[test]
-    fn super_number_does_not_select_workspace() {
-        let mut app = app_fixture(Vec::new()).expect("app fixture");
-        app.folder_order = vec![PathBuf::from("/a"), PathBuf::from("/b")];
+    fn super_number_selects_visible_session_row() {
+        let mut app = app_fixture(vec![
+            dormant_session("one", "one", "/tmp/project"),
+            dormant_session("two", "two", "/tmp/project"),
+        ])
+        .expect("app fixture");
 
-        handle_keyboard_event(&mut app, super_key('2')).expect("keyboard event");
+        let outcome = handle_keyboard_event(&mut app, super_key('2')).expect("keyboard event");
 
+        assert_eq!(outcome, CoordinatorAction::Redraw);
+        assert_eq!(app.active_index, 1);
+        assert_eq!(app.focused_index, 1);
         assert_eq!(
             app.selected_workspace_path,
             Some(PathBuf::from("/tmp/project"))
+        );
+    }
+
+    /// Ctrl+` cycles the left pane through sessions, plans, and files.
+    #[test]
+    fn control_backtick_cycles_left_pane_modes() {
+        let mut app = app_fixture(Vec::new()).expect("app fixture");
+
+        let first = handle_keyboard_event(&mut app, control_key('`')).expect("keyboard event");
+        assert_eq!(first, CoordinatorAction::Redraw);
+        assert_eq!(
+            app.left_pane_mode,
+            crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode::Plans
+        );
+        assert_eq!(app.active_main_pane_tab, MainPaneTab::Chat);
+
+        let second = handle_keyboard_event(&mut app, control_key('`')).expect("keyboard event");
+        assert_eq!(second, CoordinatorAction::Redraw);
+        assert_eq!(
+            app.left_pane_mode,
+            crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode::Files
+        );
+
+        let third = handle_keyboard_event(&mut app, control_key('`')).expect("keyboard event");
+        assert_eq!(third, CoordinatorAction::Redraw);
+        assert_eq!(
+            app.left_pane_mode,
+            crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode::Sessions
         );
     }
 

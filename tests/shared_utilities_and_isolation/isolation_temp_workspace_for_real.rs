@@ -19,6 +19,7 @@ assertions:
 - real Nexus session catalog loaded through the application
 - full app rendered through ratatui TestBackend
 - test-owned temporary workspace protected operator files
+- workspace pane has an active selected folder
 "###);
     Ok(())
 }

@@ -1,7 +1,6 @@
 use ratatui::{layout::Rect, Frame};
 
 use crate::app::state::app_state::AppState;
-use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
 use crate::ui::left_panel::action::LeftPaneAction;
@@ -19,17 +18,24 @@ pub enum ActiveLeftPaneContent<'a> {
 }
 
 impl<'a> ActiveLeftPaneContent<'a> {
-    /// Builds the active left-pane content adapter from app state.
+    /// Builds the active left-pane content adapter from the explicit left-pane mode.
     pub fn for_app(app: &'a mut AppState) -> Self {
-        if app.active_main_pane_tab == MainPaneTab::Files {
-            app.last_session_list_area = Rect::default();
-            return Self::Files(&mut app.file_system_tree_view);
+        match app.left_pane_mode {
+            LeftPaneMode::Sessions => Self::Chat(LeftPanelKeyBehavior::new(app)),
+            LeftPaneMode::Plans => {
+                let workspace_folders = app.folder_order.clone();
+                let _ = app.plan_list.sync_workspace_folders(&workspace_folders);
+                app.last_session_list_area = Rect::default();
+                Self::Plans(&mut app.plan_list)
+            }
+            LeftPaneMode::Files => {
+                let workspace_folders = app.folder_order.clone();
+                app.file_system_tree_view
+                    .sync_workspace_roots(&workspace_folders);
+                app.last_session_list_area = Rect::default();
+                Self::Files(&mut app.file_system_tree_view)
+            }
         }
-        if app.left_pane_mode == LeftPaneMode::Plans {
-            app.last_session_list_area = Rect::default();
-            return Self::Plans(&mut app.plan_list);
-        }
-        Self::Chat(LeftPanelKeyBehavior::new(app))
     }
 }
 

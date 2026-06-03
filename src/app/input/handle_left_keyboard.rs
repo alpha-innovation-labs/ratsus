@@ -1,7 +1,9 @@
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::state::app_state::AppState;
-use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::{
+    persist_multiplexer_state, persist_multiplexer_state_now,
+};
 use crate::ui::left_panel::active_content::ActiveLeftPaneContent;
 use crate::ui::left_panel::input::dispatch_left_pane_keyboard::dispatch_left_pane_keyboard;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
@@ -15,8 +17,10 @@ pub fn handle_left_keyboard(
         let mut content = ActiveLeftPaneContent::for_app(app);
         dispatch_left_pane_keyboard(&mut content, keyboard)
     };
-    if matches!(outcome, LeftPaneActionOutcome::Quit) {
-        persist_multiplexer_state(app);
+    match outcome {
+        LeftPaneActionOutcome::Handled => persist_multiplexer_state(app),
+        LeftPaneActionOutcome::Quit => persist_multiplexer_state_now(app),
+        LeftPaneActionOutcome::Continue => {}
     }
     Ok(coordinator_action_for_left_pane_outcome(outcome))
 }

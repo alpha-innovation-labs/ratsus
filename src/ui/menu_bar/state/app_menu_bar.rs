@@ -1,42 +1,55 @@
 use ratkit::primitives::menu_bar::{MenuBar, MenuItem};
 
-use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
-use crate::ui::menu_bar::state::active_tab_menu_index::active_main_pane_tab_menu_index;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
+use crate::ui::menu_bar::state::active_tab_menu_index::active_left_pane_mode_menu_index;
 
-/// Builds the top menu bar with the current main pane tab selected.
-pub fn app_menu_bar(selected_tab: MainPaneTab) -> MenuBar {
-    MenuBar::new(vec![MenuItem::new("Chat", 0), MenuItem::new("Files", 1)])
-        .with_selected(active_main_pane_tab_menu_index(selected_tab))
+/// Builds the top menu bar with the current left-pane mode selected.
+pub fn app_menu_bar(selected_mode: LeftPaneMode) -> MenuBar {
+    MenuBar::new(vec![
+        MenuItem::new("Sessions", 0),
+        MenuItem::new("Plans", 1),
+        MenuItem::new("Files", 2),
+    ])
+    .with_selected(active_left_pane_mode_menu_index(selected_mode))
 }
 
 #[cfg(test)]
 mod tests {
     use super::app_menu_bar;
-    use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
+    use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
-    /// Verifies that the menu exposes Chat and Files top-level sections.
+    /// Verifies that the menu exposes the left-pane sections.
     #[test]
-    fn creates_chat_and_files_menu_items() {
-        let menu_bar = app_menu_bar(MainPaneTab::Chat);
+    fn creates_left_pane_menu_items() {
+        let menu_bar = app_menu_bar(LeftPaneMode::Sessions);
 
-        assert_eq!(menu_bar.items.len(), 2);
-        assert_eq!(menu_bar.items[0].name, "Chat");
-        assert_eq!(menu_bar.items[1].name, "Files");
+        assert_eq!(menu_bar.items.len(), 3);
+        assert_eq!(menu_bar.items[0].name, "Sessions");
+        assert_eq!(menu_bar.items[1].name, "Plans");
+        assert_eq!(menu_bar.items[2].name, "Files");
     }
 
-    /// Verifies that Chat is selected when the Chat tab is active.
+    /// Verifies that Sessions is selected when Sessions mode is active.
     #[test]
-    fn selects_chat_tab_item() {
-        let menu_bar = app_menu_bar(MainPaneTab::Chat);
+    fn selects_sessions_item() {
+        let menu_bar = app_menu_bar(LeftPaneMode::Sessions);
 
         assert_eq!(menu_bar.selected(), Some(0));
     }
 
-    /// Verifies that Files is selected when the Files tab is active.
+    /// Verifies that Plans is selected when Plans mode is active.
     #[test]
-    fn selects_files_tab_item() {
-        let menu_bar = app_menu_bar(MainPaneTab::Files);
+    fn selects_plans_item() {
+        let menu_bar = app_menu_bar(LeftPaneMode::Plans);
 
         assert_eq!(menu_bar.selected(), Some(1));
+    }
+
+    /// Verifies that Files is selected when Files mode is active.
+    #[test]
+    fn selects_files_item() {
+        let menu_bar = app_menu_bar(LeftPaneMode::Files);
+
+        assert_eq!(menu_bar.selected(), Some(2));
     }
 }

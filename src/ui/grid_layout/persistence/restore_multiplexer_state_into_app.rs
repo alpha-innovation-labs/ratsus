@@ -4,7 +4,9 @@ use ratkit::primitives::resizable_grid::types::LayoutNode;
 use ratkit::primitives::resizable_grid::PaneId;
 
 use crate::app::state::app_state::AppState;
+use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::sync_workspace_root::restore_file_viewer_expansion;
+use crate::extensions::plans::data::restore_active_plan_path::restore_active_plan_path;
 use crate::ui::grid_layout::group::compact_split_pane_session_groups::compact_split_pane_session_groups;
 use crate::ui::grid_layout::group::split_pane_session_group::SplitPaneSessionGroup;
 use crate::ui::grid_layout::persistence::load_persisted_multiplexer_state::load_persisted_multiplexer_state;
@@ -12,6 +14,7 @@ use crate::ui::grid_layout::persistence::persisted_multiplexer_state::PersistedM
 use crate::ui::grid_layout::persistence::resizable_grid_from_persisted::resizable_grid_from_persisted;
 use crate::ui::grid_layout::persistence::restore_workspace_state::restore_workspace_state;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
 /// Restores persisted split-pane multiplexer state into a fully loaded app.
 pub fn restore_multiplexer_state_into_app(app: &mut AppState) {
@@ -28,8 +31,31 @@ pub fn restore_persisted_multiplexer_state_into_app(
 ) {
     let previous_file_tree_root = app.file_system_tree_view.root_path().to_path_buf();
     restore_workspace_state(app, &persisted.workspace);
-    app.file_system_tree_expanded_paths = persisted.file_system_tree.expanded_paths_by_root.clone();
-    restore_file_viewer_expansion_for_root(app, previous_file_tree_root);
+    app.left_pane_mode = persisted.left_pane_mode;
+    app.active_main_pane_tab = persisted.active_main_pane_tab;
+    app.selected_expo_folder = persisted.selected_expo_folder.clone();
+    if app.left_pane_mode == LeftPaneMode::Plans {
+        let _ = app.plan_list.sync_workspace_folders(&app.folder_order);
+        if let Some(active_plan_path) = &persisted.active_plan_path {
+            let _ = restore_active_plan_path(&mut app.plan_list, active_plan_path);
+        }
+    }
+    if should_restore_file_tree_now(app.left_pane_mode, app.active_main_pane_tab) {
+        app.file_system_tree_view
+            .sync_workspace_roots(&app.folder_order);
+        app.file_system_tree_expanded_paths =
+            persisted.file_system_tree.expanded_paths_by_root.clone();
+        app.file_system_tree_view.apply_workspace_open_state(
+            &persisted.file_system_tree.workspace_expanded_paths,
+            &persisted.file_system_tree.workspace_collapsed_paths,
+        );
+        restore_file_viewer_expansion_for_root(app, previous_file_tree_root);
+        if let Some(selected_path) = &persisted.file_system_tree.selected_path {
+            let _ = app
+                .file_system_tree_view
+                .restore_workspace_selected_path(selected_path);
+        }
+    }
     let Some(layout) = resizable_grid_from_persisted(&persisted.terminal_layout) else {
         return;
     };
@@ -61,6 +87,11 @@ pub fn restore_persisted_multiplexer_state_into_app(
         app.active_index = active_index;
         app.focused_index = active_index;
     }
+}
+
+/// Returns whether persisted file-tree paths should be restored during startup.
+fn should_restore_file_tree_now(left_mode: LeftPaneMode, main_tab: MainPaneTab) -> bool {
+    left_mode == LeftPaneMode::Files || main_tab == MainPaneTab::Files
 }
 
 /// Restores expansion for the current root or a previously active saved root.
@@ -195,8 +226,12 @@ mod tests {
 
     use super::restore_persisted_multiplexer_state_into_app;
     use crate::app::test_support::app_fixture::app_fixture;
+    use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
     use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
     use crate::ui::grid_layout::persistence::capture_multiplexer_state::capture_multiplexer_state;
+    use crate::ui::left_panel::action::LeftPaneAction;
+    use crate::ui::left_panel::content::LeftPaneContent;
+    use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
     /// Restoring multiplexer state should restore saved file-viewer expansion state.
     #[test]
@@ -207,10 +242,14 @@ mod tests {
         let mut app = app_fixture(Vec::new())?;
         app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
         let mut persisted = capture_multiplexer_state(&app);
+        persisted.left_pane_mode = LeftPaneMode::Files;
+        persisted.active_main_pane_tab = MainPaneTab::Chat;
         persisted
             .file_system_tree
             .expanded_paths_by_root
             .insert(root.clone(), vec![root.clone(), nested.clone()]);
+        persisted.file_system_tree.workspace_expanded_paths = vec![nested.clone()];
+        persisted.file_system_tree.workspace_collapsed_paths = vec![root.clone()];
 
         restore_persisted_multiplexer_state_into_app(&mut app, persisted);
 
@@ -220,8 +259,54 @@ mod tests {
             .is_some_and(|paths| paths.contains(&nested)));
         assert!(app
             .file_system_tree_view
+            .workspace_expanded_directory_paths()
+            .contains(&nested));
+        assert!(app
+            .file_system_tree_view
+            .workspace_collapsed_directory_paths()
+            .contains(&root));
+        assert!(app
+            .file_system_tree_view
             .expanded_directory_paths()
             .contains(&nested));
+        let _ = fs::remove_dir_all(root);
+        Ok(())
+    }
+
+    /// Restoring multiplexer state should restore file folder open and closed state changed through left-pane actions.
+    #[test]
+    fn restores_file_folder_open_state_from_left_pane_actions() -> anyhow::Result<()> {
+        let root = temp_workspace()?;
+        let nested = root.join("nested");
+        fs::create_dir_all(&nested)?;
+        let mut app = app_fixture(Vec::new())?;
+        app.folder_order = vec![root.clone()];
+        app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
+        app.file_system_tree_view
+            .sync_workspace_roots(&app.folder_order);
+        app.file_system_tree_view.select_workspace_row(1);
+        app.file_system_tree_view
+            .handle_left_pane_action(LeftPaneAction::Expand);
+        app.file_system_tree_view.select_workspace_row(0);
+        app.file_system_tree_view
+            .handle_left_pane_action(LeftPaneAction::Collapse);
+        let mut persisted = capture_multiplexer_state(&app);
+        persisted.left_pane_mode = LeftPaneMode::Files;
+        persisted.active_main_pane_tab = MainPaneTab::Chat;
+        let mut restored_app = app_fixture(Vec::new())?;
+        restored_app.folder_order = vec![root.clone()];
+        restored_app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
+
+        restore_persisted_multiplexer_state_into_app(&mut restored_app, persisted);
+
+        assert!(restored_app
+            .file_system_tree_view
+            .workspace_expanded_directory_paths()
+            .contains(&nested));
+        assert!(restored_app
+            .file_system_tree_view
+            .workspace_collapsed_directory_paths()
+            .contains(&root));
         let _ = fs::remove_dir_all(root);
         Ok(())
     }
@@ -247,6 +332,66 @@ mod tests {
             ]
         );
         assert_eq!(app.selected_workspace_path, Some("/workspace/b".into()));
+        Ok(())
+    }
+
+    /// Restoring non-file and non-plan modes should not eagerly sync workspace file or plan state.
+    #[test]
+    fn skips_workspace_file_and_plan_sync_outside_their_modes() -> anyhow::Result<()> {
+        let root = temp_workspace()?;
+        fs::create_dir_all(root.join("plans"))?;
+        fs::write(root.join("plans/alpha.md"), "# Alpha")?;
+        fs::write(root.join("visible.txt"), "visible")?;
+        let mut app = app_fixture(Vec::new())?;
+        let original_file_roots = app.file_system_tree_view.workspace_roots.clone();
+        let mut persisted = capture_multiplexer_state(&app);
+        persisted.left_pane_mode = LeftPaneMode::Sessions;
+        persisted.active_main_pane_tab = MainPaneTab::Chat;
+        persisted.workspace.workspace_order = vec![root.clone()];
+        persisted.active_plan_path = Some(root.join("plans/alpha.md"));
+        persisted.file_system_tree.selected_path = Some(root.join("visible.txt"));
+
+        restore_persisted_multiplexer_state_into_app(&mut app, persisted);
+
+        assert!(app.plan_list.workspace_folders.is_empty());
+        assert!(!app.file_system_tree_view.workspace_roots.contains(&root));
+        assert!(!original_file_roots.contains(&root));
+        let _ = fs::remove_dir_all(root);
+        Ok(())
+    }
+
+    /// Restoring multiplexer state should restore focused file selections when files are open.
+    #[test]
+    fn restores_focused_file_path_when_files_are_open() -> anyhow::Result<()> {
+        let root = temp_workspace()?;
+        let file_path = root.join("visible.txt");
+        fs::write(&file_path, "visible")?;
+        fs::create_dir_all(root.join("plans"))?;
+        let plan_path = root.join("plans/alpha.md");
+        fs::write(&plan_path, "# Alpha")?;
+        let mut app = app_fixture(Vec::new())?;
+        app.folder_order = vec![root.clone()];
+        app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
+        let mut persisted = capture_multiplexer_state(&app);
+        persisted.workspace.workspace_order = vec![root.clone()];
+        persisted.workspace.selected_workspace_path = Some(root.clone());
+        persisted.left_pane_mode = LeftPaneMode::Files;
+        persisted.active_main_pane_tab = MainPaneTab::Files;
+        persisted.selected_expo_folder = Some(root.clone());
+        persisted.active_plan_path = Some(plan_path.clone());
+        persisted.file_system_tree.selected_path = Some(file_path.clone());
+
+        restore_persisted_multiplexer_state_into_app(&mut app, persisted);
+
+        assert_eq!(app.left_pane_mode, LeftPaneMode::Files);
+        assert_eq!(app.active_main_pane_tab, MainPaneTab::Files);
+        assert_eq!(app.selected_expo_folder, Some(root.clone()));
+        assert!(app.plan_list.active_plan().is_none());
+        assert_eq!(
+            app.file_system_tree_view.workspace_selected_status(),
+            file_path.display().to_string()
+        );
+        let _ = fs::remove_dir_all(root);
         Ok(())
     }
 

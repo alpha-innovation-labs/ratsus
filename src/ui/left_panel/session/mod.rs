@@ -3,6 +3,7 @@
 pub mod activation;
 pub mod created_timestamp;
 pub mod day_group_label;
+pub mod focus_current_workspace_session_item;
 pub mod format_age;
 pub mod icon;
 pub mod is_active_chat_row;

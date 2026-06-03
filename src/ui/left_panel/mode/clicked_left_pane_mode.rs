@@ -12,5 +12,8 @@ pub fn clicked_left_pane_mode(app: &AppState, mouse: ratkit::MouseEvent) -> Opti
     if mouse.is_inside(app.last_left_plan_toggle_area) {
         return Some(LeftPaneMode::Plans);
     }
+    if mouse.is_inside(app.last_left_file_toggle_area) {
+        return Some(LeftPaneMode::Files);
+    }
     None
 }

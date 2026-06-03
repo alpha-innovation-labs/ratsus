@@ -101,6 +101,20 @@ mod tests {
         assert!(!app.command_bar.is_open);
     }
 
+    /// Enter executes the Ghostty setup command and closes the command bar.
+    #[test]
+    fn enter_executes_ghostty_setup_command() {
+        let mut app = app_fixture(Vec::new()).expect("app fixture");
+        app.command_bar.is_open = true;
+        app.command_bar.query = "setup ghostty".to_string();
+
+        let outcome = handle_command_bar_keyboard(&mut app, key(KeyCode::Enter));
+
+        assert_eq!(outcome.action, CoordinatorAction::Redraw);
+        assert_eq!(outcome.hotkey, Some(AppHotkey::SetupGhosttyConfig));
+        assert!(!app.command_bar.is_open);
+    }
+
     /// Escape clears the active filter without closing the command bar.
     #[test]
     fn escape_clears_filter_without_closing() {

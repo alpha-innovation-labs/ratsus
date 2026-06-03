@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::observations::start_cache_load::start_observation_cache_load;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
 
 /// Activates the Expo extension for the selected folder.
 pub fn activate_expo_folder(app: &mut AppState, folder: PathBuf) {
@@ -17,4 +18,5 @@ pub fn activate_expo_folder(app: &mut AppState, folder: PathBuf) {
     if folder_changed {
         start_observation_cache_load(app);
     }
+    persist_multiplexer_state(app);
 }

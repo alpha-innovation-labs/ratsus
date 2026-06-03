@@ -8,48 +8,51 @@ use crate::ui::left_panel::footer_item::LeftPaneFooterItem;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 
 impl LeftPaneContent for FileSystemTreeView {
-    /// Handles one semantic left-pane action against the file tree.
+    /// Handles one semantic left-pane action against the grouped file tree.
     fn handle_left_pane_action(&mut self, action: LeftPaneAction) -> LeftPaneActionOutcome {
-        let outcome = match action {
+        match action {
             LeftPaneAction::MoveBy(direction) => {
-                self.move_by(direction);
+                self.move_workspace_by(direction);
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::FocusFirst => {
-                self.focus_first();
+                self.focus_workspace_first();
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::FocusLast => {
-                self.focus_last();
+                self.focus_workspace_last();
+                LeftPaneActionOutcome::Handled
+            }
+            LeftPaneAction::FocusVisibleRow(row_index) => {
+                self.focus_current_workspace_file_item(row_index);
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::FocusAdjacentGroup(_) => LeftPaneActionOutcome::Continue,
             LeftPaneAction::Collapse => {
-                self.collapse_selected();
+                self.collapse_workspace_selected();
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::Expand | LeftPaneAction::Activate => {
-                self.expand_or_enter_child();
+                self.expand_or_enter_workspace_child();
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::StartFilter => {
-                self.start_filtering();
+                self.start_workspace_filtering();
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::InsertFilterCharacter(character) => {
-                self.push_filter_character(character);
+                self.push_workspace_filter_character(character);
                 LeftPaneActionOutcome::Handled
             }
             LeftPaneAction::DeleteFilterCharacter => {
-                self.pop_filter_character();
+                self.pop_workspace_filter_character();
                 LeftPaneActionOutcome::Handled
             }
-            LeftPaneAction::Quit => self.quit_or_close_filter(),
+            LeftPaneAction::Quit => self.quit_or_close_workspace_filter(),
             LeftPaneAction::Delete
             | LeftPaneAction::ToggleSelection
             | LeftPaneAction::ReorderBy(_) => LeftPaneActionOutcome::Continue,
-        };
-        self.refresh_selection(outcome)
+        }
     }
 
     /// Returns the file-tree title for the shared left-pane shell.
@@ -62,7 +65,7 @@ impl LeftPaneContent for FileSystemTreeView {
         self.set_tree_area(area);
     }
 
-    /// Renders the file tree body inside the shared left-pane body area.
+    /// Renders the grouped workspace file tree inside the shared left-pane body area.
     fn render_body(&mut self, frame: &mut Frame, area: Rect) {
         render_file_system_tree_view(self, frame, area);
     }
@@ -81,12 +84,12 @@ impl LeftPaneContent for FileSystemTreeView {
 
     /// Returns the selected path status for the shared left-pane footer.
     fn footer_status(&self) -> Option<String> {
-        Some(self.selected_status())
+        Some(self.workspace_selected_status())
     }
 
-    /// Returns whether the file tree is accepting filter text.
+    /// Returns whether the grouped file tree is accepting filter text.
     fn is_filtering(&self) -> bool {
-        FileSystemTreeView::is_filtering(self)
+        self.workspace_filtering
     }
 
     /// Returns whether the file tree is waiting for a second `g`.

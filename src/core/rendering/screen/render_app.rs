@@ -44,12 +44,7 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
     record_app_redraw(&mut app.diagnostics);
     let frame_area = frame.area();
     let (menu_area, area) = split_app_menu_bar_area(frame_area);
-    render_app_menu_bar(
-        &mut app.menu_bar,
-        app.active_main_pane_tab,
-        frame,
-        menu_area,
-    );
+    render_app_menu_bar(&mut app.menu_bar, app.left_pane_mode, frame, menu_area);
     render_menu_bar_bottom_status(
         frame,
         menu_area,
@@ -68,9 +63,9 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
             app.last_workspace_list_area = Rect::default();
         }
         let left_focused = app.focused_pane == FocusedPane::Left;
-        let title = left_pane_title_for_app(app);
+        let title = left_pane_title_for_app(app, left_title_color(left_focused));
         let left_inner = render_left_pane(left_focused, title, frame, left_pane);
-        record_left_pane_toggle_areas(app, left_pane);
+        clear_left_pane_toggle_areas(app);
         let mut content = ActiveLeftPaneContent::for_app(app);
         render_active_left_pane_content(&mut content, frame, left_inner, is_resizing);
     } else {
@@ -78,6 +73,7 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
         app.last_session_list_area = Rect::default();
         app.last_left_session_toggle_area = Rect::default();
         app.last_left_plan_toggle_area = Rect::default();
+        app.last_left_file_toggle_area = Rect::default();
     }
 
     app.last_main_pane_area = terminal_pane;
@@ -89,6 +85,9 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
         match app.active_main_pane_tab {
             MainPaneTab::Chat if app.left_pane_mode == LeftPaneMode::Plans => {
                 render_plan_preview(&mut app.plan_list, frame, terminal_inner)
+            }
+            MainPaneTab::Chat if app.left_pane_mode == LeftPaneMode::Files => {
+                render_file_preview(&mut app.file_system_tree_view, frame, terminal_inner)
             }
             MainPaneTab::Chat => render_chat_sessions(app, frame, terminal_inner),
             MainPaneTab::Files => {
@@ -129,22 +128,24 @@ fn render_active_left_pane_content(
 }
 
 /// Builds the left-pane title for the currently hosted content.
-fn left_pane_title_for_app(app: &AppState) -> Line<'static> {
-    if app.active_main_pane_tab == MainPaneTab::Files {
-        return Line::styled(" files ", Style::default().fg(Color::White));
-    }
-    left_pane_mode_title_line(app.left_pane_mode)
+fn left_pane_title_for_app(app: &AppState, color: Color) -> Line<'static> {
+    left_pane_mode_title_line(app.left_pane_mode, color)
 }
 
-/// Records clickable top-bar toggle areas for mouse routing.
-fn record_left_pane_toggle_areas(app: &mut AppState, area: Rect) {
-    if app.active_main_pane_tab == MainPaneTab::Files {
-        app.last_left_session_toggle_area = Rect::default();
-        app.last_left_plan_toggle_area = Rect::default();
-        return;
+/// Returns the left-pane title color matching the current border state.
+fn left_title_color(is_focused: bool) -> Color {
+    if is_focused {
+        left_focused_border_color()
+    } else {
+        default_border_color()
     }
-    app.last_left_session_toggle_area = Rect::new(area.x.saturating_add(2), area.y, 10, 1);
-    app.last_left_plan_toggle_area = Rect::new(area.x.saturating_add(13), area.y, 7, 1);
+}
+
+/// Clears obsolete left-pane title toggle hit areas after moving mode selection to the navbar.
+fn clear_left_pane_toggle_areas(app: &mut AppState) {
+    app.last_left_session_toggle_area = Rect::default();
+    app.last_left_plan_toggle_area = Rect::default();
+    app.last_left_file_toggle_area = Rect::default();
 }
 
 /// Returns pane areas for the current left-pane visibility state.

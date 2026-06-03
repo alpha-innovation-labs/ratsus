@@ -96,12 +96,15 @@ fn routes_adjacent_group_to_semantic_action() {
     assert_eq!(content.actions, vec![LeftPaneAction::FocusAdjacentGroup(1)]);
 }
 
-/// Verifies quit is routed as a semantic action owned by active content.
+/// Verifies Ctrl+Q is routed as a semantic action owned by active content.
 #[test]
-fn routes_quit_to_active_content() {
+fn routes_control_q_to_active_content() {
     let mut content = FakeLeftPaneContent::default();
 
-    let outcome = dispatch_left_pane_keyboard(&mut content, key(KeyCode::Char('q')));
+    let outcome = dispatch_left_pane_keyboard(
+        &mut content,
+        key_with_modifiers(KeyCode::Char('q'), KeyModifiers::CONTROL),
+    );
 
     assert_eq!(content.actions, vec![LeftPaneAction::Quit]);
     assert_eq!(outcome, LeftPaneActionOutcome::Handled);
@@ -109,9 +112,14 @@ fn routes_quit_to_active_content() {
 
 /// Builds a key press event without modifiers.
 fn key(key_code: KeyCode) -> KeyboardEvent {
+    key_with_modifiers(key_code, KeyModifiers::empty())
+}
+
+/// Builds a key press event with modifiers.
+fn key_with_modifiers(key_code: KeyCode, modifiers: KeyModifiers) -> KeyboardEvent {
     KeyboardEvent {
         key_code,
-        modifiers: KeyModifiers::empty(),
+        modifiers,
         kind: KeyEventKind::Press,
     }
 }

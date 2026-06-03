@@ -1,9 +1,15 @@
 use std::collections::BTreeMap;
+use std::fs;
+use std::path::PathBuf;
 
 use ratatui::layout::Rect;
+use uuid::Uuid;
 
 use crate::app::test_support::app_fixture::app_fixture;
 use crate::app::test_support::dormant_session::dormant_session;
+use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
+use crate::extensions::harness::core::chat_session::ChatSession;
+use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::grid_layout::group::ensure_group_for_split::ensure_group_for_split;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 
@@ -38,6 +44,50 @@ fn activating_grouped_session_restores_group_layout() -> anyhow::Result<()> {
     assert_eq!(app.active_index, 0);
     assert_eq!(app.split_pane_session_groups.groups.len(), 1);
     Ok(())
+}
+
+/// Activating a session should point the selected workspace and Files tree at its folder.
+#[test]
+fn activating_session_syncs_file_tree_workspace() -> anyhow::Result<()> {
+    let alpha = temp_workspace("alpha")?;
+    let beta = temp_workspace("beta")?;
+    fs::write(beta.join("beta.txt"), "beta")?;
+    let mut app = app_fixture(vec![
+        session_entry("Alpha", "a", alpha.clone()),
+        session_entry("Beta", "b", beta.clone()),
+    ])?;
+    app.folder_order = vec![alpha.clone(), beta.clone()];
+    app.selected_workspace_path = Some(alpha.clone());
+    app.file_system_tree_view = FileSystemTreeView::with_root(alpha.clone())?;
+    app.focused_index = 1;
+
+    app.activate_focused_session();
+
+    assert_eq!(app.selected_workspace_path, Some(beta.clone()));
+    assert_eq!(app.file_system_tree_view.root_path(), beta.as_path());
+    assert!(app
+        .file_system_tree_view
+        .root_child_names()
+        .contains(&"beta.txt".to_string()));
+    let _ = fs::remove_dir_all(alpha);
+    let _ = fs::remove_dir_all(beta);
+    Ok(())
+}
+
+/// Builds a dormant session entry for a test-owned workspace.
+fn session_entry(title: &str, id: &str, working_dir: PathBuf) -> SessionTerminal {
+    SessionTerminal::dormant(ChatSession::new("now", title, id, working_dir))
+}
+
+/// Creates a test-owned workspace directory.
+fn temp_workspace(name: &str) -> anyhow::Result<PathBuf> {
+    let root = std::env::temp_dir().join(format!(
+        "ratsus_activate_workspace_{name}_{}_{}",
+        std::process::id(),
+        Uuid::new_v4()
+    ));
+    fs::create_dir_all(&root)?;
+    Ok(root)
 }
 
 /// Builds an app with two sessions in one split group and one standalone session.

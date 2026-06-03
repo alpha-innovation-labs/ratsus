@@ -26,6 +26,12 @@ pub fn handle_terminal_keyboard(
         MainPaneTab::Chat if app.left_pane_mode == LeftPaneMode::Plans => {
             return Ok(handle_plan_preview_key(&mut app.plan_list, &keyboard));
         }
+        MainPaneTab::Chat if app.left_pane_mode == LeftPaneMode::Files => {
+            return Ok(handle_file_preview_key(
+                &mut app.file_system_tree_view,
+                &keyboard,
+            ));
+        }
         MainPaneTab::Chat => {}
     }
     if let Some(action) = handle_terminal_copy_keyboard(app, &keyboard) {

@@ -13,8 +13,12 @@ use crate::ui::workspace_pane::select_workspace::select_workspace;
 
 /// Starts a normal shell terminal in the active selected session working directory.
 pub fn start_new_normal_terminal(app: &mut AppState) -> Result<()> {
-    let working_dir =
-        normal_terminal_working_dir(&app.session_terminals, app.active_index, app.focused_index)?;
+    let working_dir = normal_terminal_working_dir(
+        &app.session_terminals,
+        app.active_index,
+        app.focused_index,
+        app.selected_workspace_path.as_deref(),
+    )?;
     let area = active_terminal_spawn_area(app);
     let rows = area.height.max(1);
     let cols = area.width.max(1);

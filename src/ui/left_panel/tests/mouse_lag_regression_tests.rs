@@ -74,15 +74,15 @@ fn session_drag_updates_cached_visible_rows() -> anyhow::Result<()> {
 
     handle_app_mouse(
         &mut app,
-        mouse_event(MouseEventKind::Down(MouseButton::Left), 1),
+        mouse_event(MouseEventKind::Down(MouseButton::Left), 2),
     );
     handle_app_mouse(
         &mut app,
-        mouse_event(MouseEventKind::Drag(MouseButton::Left), 2),
+        mouse_event(MouseEventKind::Drag(MouseButton::Left), 3),
     );
     handle_app_mouse(
         &mut app,
-        mouse_event(MouseEventKind::Up(MouseButton::Left), 2),
+        mouse_event(MouseEventKind::Up(MouseButton::Left), 3),
     );
 
     assert_eq!(app.session_terminals[1].session.id, "session-0-0");
@@ -128,7 +128,7 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         terminal_pane_close_buttons: BTreeMap::new(),
         active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
-        menu_bar: app_menu_bar(MainPaneTab::Chat),
+        menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
         conversation_picker: ConversationPickerState::new(),
@@ -171,6 +171,7 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         last_session_list_area: Rect::new(1, 1, 18, 5),
         last_left_session_toggle_area: Rect::default(),
         last_left_plan_toggle_area: Rect::default(),
+        last_left_file_toggle_area: Rect::default(),
         left_pane_visible: true,
         focused_pane: FocusedPane::Left,
         active_main_pane_tab: MainPaneTab::Chat,

@@ -103,15 +103,27 @@ fn filtering_captures_j_and_k() {
     assert_eq!(list.position, 0);
 }
 
-/// Verifies d and q use the common delete and quit behavior.
+/// Verifies d and Ctrl+Q use the common delete and quit behavior.
 #[test]
-fn delete_and_quit_are_shared() {
+fn delete_and_control_q_are_shared() {
     let mut list = FakeList::default();
     let _ = handle_list_keyboard(&mut list, key(KeyCode::Char('d')));
-    let outcome = handle_list_keyboard(&mut list, key(KeyCode::Char('q')));
+    let outcome = handle_list_keyboard(
+        &mut list,
+        key_with_modifiers(KeyCode::Char('q'), KeyModifiers::CONTROL),
+    );
 
     assert!(list.deleted);
     assert_eq!(outcome, ListKeyOutcome::Quit);
+}
+
+/// Verifies plain q is not a quit shortcut.
+#[test]
+fn plain_q_is_ignored_for_quit() {
+    let mut list = FakeList::default();
+    let outcome = handle_list_keyboard(&mut list, key(KeyCode::Char('q')));
+
+    assert_eq!(outcome, ListKeyOutcome::Continue);
 }
 
 /// Verifies held space does not repeatedly toggle the same selection.
@@ -128,6 +140,15 @@ fn repeated_space_is_ignored_for_toggle_selection() {
 /// Builds a key press event without modifiers.
 fn key(key_code: KeyCode) -> KeyboardEvent {
     keyboard_event(key_code, KeyEventKind::Press)
+}
+
+/// Builds a key press event with modifiers.
+fn key_with_modifiers(key_code: KeyCode, modifiers: KeyModifiers) -> KeyboardEvent {
+    KeyboardEvent {
+        key_code,
+        modifiers,
+        kind: KeyEventKind::Press,
+    }
 }
 
 /// Builds a key repeat event without modifiers.

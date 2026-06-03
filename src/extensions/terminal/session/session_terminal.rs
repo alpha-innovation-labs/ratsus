@@ -6,6 +6,7 @@ use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::terminal::copy_mode::selection::copy_selection::TerminalCopySelection;
 use crate::extensions::terminal::process::default_shell_command::default_shell_command;
+use crate::extensions::terminal::process::normal_terminal_shell_argv::normal_terminal_shell_argv;
 use crate::extensions::terminal::session::chat_terminal::ChatTerminal;
 use crate::extensions::terminal::session::is_normal_terminal_session::is_normal_terminal_session;
 
@@ -72,13 +73,8 @@ fn spawn_terminal_for_session(
     let working_dir = session.working_dir.clone();
     if is_normal_terminal_session(session) {
         let shell = default_shell_command();
-        return ChatTerminal::spawn_with_command_in_dir(
-            &shell,
-            &[],
-            &working_dir,
-            rows.max(1),
-            cols.max(1),
-        );
+        let argv = normal_terminal_shell_argv(&shell, &working_dir);
+        return ChatTerminal::spawn_argv_in_dir(argv, &working_dir, rows.max(1), cols.max(1));
     }
     if let Some(chat_harness) = chat_harness {
         return chat_harness.spawn_existing_chat(session, rows.max(1), cols.max(1));

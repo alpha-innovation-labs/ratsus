@@ -6,6 +6,7 @@ use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::navigation::reorder_session_to_index::reorder_session_to_index;
 use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
+use crate::extensions::file_viewer::tree::sync_workspace_root::sync_file_viewer_workspace_root;
 use crate::extensions::terminal::session::chat_terminal::ChatTerminal;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::grid_layout::bundle::set_active_bundle_session::set_active_terminal_pane_bundle_session;
@@ -82,6 +83,7 @@ impl AppState {
             return;
         }
         self.active_index = self.focused_index;
+        sync_selected_workspace_to_active_session(self);
         remember_active_workspace_session(self);
         self.active_main_pane_tab = MainPaneTab::Chat;
         self.sync_focused_row_to_session();
@@ -112,6 +114,7 @@ impl AppState {
             let _ = entry.ensure_terminal(area.height, area.width);
         }
         self.active_terminal_area = area;
+        persist_multiplexer_state(self);
     }
 
     /// Starts dragging a session row and activates it for immediate feedback.
@@ -247,6 +250,26 @@ impl AppState {
         }
         self.active_terminal_area = area;
     }
+}
+
+/// Syncs selected workspace and file tree to the active session workspace.
+fn sync_selected_workspace_to_active_session(app: &mut AppState) {
+    let Some(workspace) = app
+        .session_terminals
+        .get(app.active_index)
+        .map(|entry| entry.session.working_dir.clone())
+    else {
+        return;
+    };
+    if !app.folder_order.iter().any(|folder| folder == &workspace) {
+        return;
+    }
+    if app.selected_workspace_path.as_ref() != Some(&workspace) {
+        app.selected_workspace_path = Some(workspace);
+        app.session_scroll = 0;
+        app.suppress_left_focus_scroll = false;
+    }
+    sync_file_viewer_workspace_root(app);
 }
 
 /// Activates a session inside an existing pane, or falls back to standalone display.

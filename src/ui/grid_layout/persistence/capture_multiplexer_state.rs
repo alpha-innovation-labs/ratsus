@@ -19,6 +19,10 @@ pub fn capture_multiplexer_state(app: &AppState) -> PersistedMultiplexerState {
             .session_terminals
             .get(app.active_index)
             .map(|entry| entry.session.id.clone()),
+        left_pane_mode: app.left_pane_mode,
+        active_main_pane_tab: app.active_main_pane_tab,
+        selected_expo_folder: app.selected_expo_folder.clone(),
+        active_plan_path: app.plan_list.active_plan().map(|plan| plan.path.clone()),
         file_system_tree: persisted_file_system_tree_state(
             &app.file_system_tree_expanded_paths,
             &app.file_system_tree_view,
@@ -35,7 +39,9 @@ mod tests {
 
     use super::capture_multiplexer_state;
     use crate::app::test_support::app_fixture::app_fixture;
+    use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
     use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
+    use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
     /// Capturing app state should include currently expanded file-viewer folders.
     #[test]
@@ -47,6 +53,8 @@ mod tests {
         app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
         app.file_system_tree_view.select_path(vec![0, 0]);
         app.file_system_tree_view.expand_or_enter_child();
+        app.file_system_tree_view
+            .apply_workspace_open_state(std::slice::from_ref(&nested), std::slice::from_ref(&root));
 
         let state = capture_multiplexer_state(&app);
 
@@ -55,6 +63,14 @@ mod tests {
             .expanded_paths_by_root
             .get(&root)
             .is_some_and(|paths| paths.contains(&nested)));
+        assert!(state
+            .file_system_tree
+            .workspace_expanded_paths
+            .contains(&nested));
+        assert!(state
+            .file_system_tree
+            .workspace_collapsed_paths
+            .contains(&root));
         let _ = fs::remove_dir_all(root);
         Ok(())
     }
@@ -75,6 +91,38 @@ mod tests {
             state.workspace.selected_workspace_path,
             Some("/workspace/b".into())
         );
+        Ok(())
+    }
+
+    /// Capturing app state should include the last focused app surfaces.
+    #[test]
+    fn captures_current_focus_surfaces() -> anyhow::Result<()> {
+        let root = temp_workspace()?;
+        let file_path = root.join("visible.txt");
+        fs::write(&file_path, "visible")?;
+        fs::create_dir_all(root.join("plans"))?;
+        let plan_path = root.join("plans/alpha.md");
+        fs::write(&plan_path, "# Alpha")?;
+        let mut app = app_fixture(Vec::new())?;
+        app.folder_order = vec![root.clone()];
+        app.left_pane_mode = LeftPaneMode::Files;
+        app.active_main_pane_tab = MainPaneTab::Files;
+        app.selected_expo_folder = Some(root.clone());
+        app.plan_list.sync_workspace_folders(&app.folder_order)?;
+        app.plan_list.active_index = Some(0);
+        app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
+        app.file_system_tree_view
+            .sync_workspace_roots(&app.folder_order);
+        app.file_system_tree_view.select_workspace_row(2);
+
+        let state = capture_multiplexer_state(&app);
+
+        assert_eq!(state.left_pane_mode, LeftPaneMode::Files);
+        assert_eq!(state.active_main_pane_tab, MainPaneTab::Files);
+        assert_eq!(state.selected_expo_folder, Some(root.clone()));
+        assert_eq!(state.active_plan_path, Some(plan_path));
+        assert_eq!(state.file_system_tree.selected_path, Some(file_path));
+        let _ = fs::remove_dir_all(root);
         Ok(())
     }
 

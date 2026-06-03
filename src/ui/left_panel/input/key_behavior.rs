@@ -16,6 +16,7 @@ use crate::ui::left_panel::input::toggle_focused_selection::toggle_focused_left_
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 use crate::ui::left_panel::render::render_scrollbar::render_left_panel_scrollbar;
 use crate::ui::left_panel::render::session_lines::session_lines;
+use crate::ui::left_panel::session::focus_current_workspace_session_item::focus_current_workspace_session_item;
 
 /// Adapts the left session pane to the shared left-pane content contract.
 pub struct LeftPanelKeyBehavior<'a> {
@@ -36,6 +37,9 @@ impl LeftPaneContent for LeftPanelKeyBehavior<'_> {
             LeftPaneAction::MoveBy(direction) => self.app.select_relative_session(direction),
             LeftPaneAction::FocusFirst => focus_left_panel_start(self.app),
             LeftPaneAction::FocusLast => focus_left_panel_end(self.app),
+            LeftPaneAction::FocusVisibleRow(row_index) => {
+                focus_current_workspace_session_item(self.app, row_index)
+            }
             LeftPaneAction::FocusAdjacentGroup(direction) => {
                 focus_adjacent_folder(self.app, direction)
             }

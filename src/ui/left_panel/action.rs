@@ -7,6 +7,7 @@ pub enum LeftPaneAction {
     Expand,
     FocusFirst,
     FocusLast,
+    FocusVisibleRow(usize),
     FocusAdjacentGroup(isize),
     Activate,
     StartFilter,

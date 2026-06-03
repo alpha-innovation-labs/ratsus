@@ -7,6 +7,9 @@ use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
 pub fn terminal_split_direction_for_keyboard(
     keyboard: &KeyboardEvent,
 ) -> Option<TerminalSplitDirection> {
+    if let Some(direction) = alt_n_split_direction(keyboard) {
+        return Some(direction);
+    }
     if keyboard.key_code == KeyCode::Char('\u{1d}') {
         return Some(TerminalSplitDirection::Right);
     }
@@ -22,6 +25,27 @@ pub fn terminal_split_direction_for_keyboard(
         return Some(TerminalSplitDirection::Bottom);
     }
     None
+}
+
+/// Returns the split direction requested by Alt+N shortcuts.
+fn alt_n_split_direction(keyboard: &KeyboardEvent) -> Option<TerminalSplitDirection> {
+    let is_alt_only = keyboard.modifiers.contains(KeyModifiers::ALT)
+        && !keyboard
+            .modifiers
+            .intersects(KeyModifiers::CONTROL | KeyModifiers::SUPER | KeyModifiers::META);
+    if !is_alt_only || !keyboard_char_eq_ignore_ascii_case(keyboard, 'n') {
+        return None;
+    }
+    if keyboard.modifiers.contains(KeyModifiers::SHIFT) {
+        Some(TerminalSplitDirection::Bottom)
+    } else {
+        Some(TerminalSplitDirection::Right)
+    }
+}
+
+/// Returns whether a keyboard event matches a character regardless of shift casing.
+fn keyboard_char_eq_ignore_ascii_case(keyboard: &KeyboardEvent, character: char) -> bool {
+    matches!(keyboard.key_code, KeyCode::Char(ch) if ch.eq_ignore_ascii_case(&character))
 }
 
 #[cfg(test)]
@@ -75,6 +99,26 @@ mod tests {
     fn maps_ctrl_left_bracket_to_bottom_split() {
         let direction =
             terminal_split_direction_for_keyboard(&key(KeyCode::Char('['), KeyModifiers::CONTROL));
+
+        assert_eq!(direction, Some(TerminalSplitDirection::Bottom));
+    }
+
+    /// Alt+N should request a right-side vertical split.
+    #[test]
+    fn maps_alt_n_to_right_split() {
+        let direction =
+            terminal_split_direction_for_keyboard(&key(KeyCode::Char('n'), KeyModifiers::ALT));
+
+        assert_eq!(direction, Some(TerminalSplitDirection::Right));
+    }
+
+    /// Alt+Shift+N should request a bottom horizontal split.
+    #[test]
+    fn maps_alt_shift_n_to_bottom_split() {
+        let direction = terminal_split_direction_for_keyboard(&key(
+            KeyCode::Char('N'),
+            KeyModifiers::ALT | KeyModifiers::SHIFT,
+        ));
 
         assert_eq!(direction, Some(TerminalSplitDirection::Bottom));
     }

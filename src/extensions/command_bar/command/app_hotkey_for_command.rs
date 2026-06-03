@@ -8,6 +8,7 @@ pub fn app_hotkey_for_command(command_id: CommandBarCommandId) -> AppHotkey {
         CommandBarCommandId::OpenConversationHistory => AppHotkey::OpenConversationPicker,
         CommandBarCommandId::CycleNextSession => AppHotkey::CycleSession(1),
         CommandBarCommandId::CyclePreviousSession => AppHotkey::CycleSession(-1),
+        CommandBarCommandId::CycleLeftPaneMode => AppHotkey::CycleLeftPaneMode,
         CommandBarCommandId::OpenFocusedConversationExpo => AppHotkey::OpenFocusedConversationExpo,
         CommandBarCommandId::SplitHorizontal => {
             AppHotkey::SplitTerminal(TerminalSplitDirection::Bottom)
@@ -22,6 +23,7 @@ pub fn app_hotkey_for_command(command_id: CommandBarCommandId) -> AppHotkey {
             AppHotkey::PlaceConversationInActiveSplit(TerminalSplitDirection::Right)
         }
         CommandBarCommandId::SelectWorkspace(index) => AppHotkey::SelectWorkspace(index),
+        CommandBarCommandId::SetupGhosttyConfig => AppHotkey::SetupGhosttyConfig,
         CommandBarCommandId::StartChat => AppHotkey::StartChat,
         CommandBarCommandId::StartTerminal => AppHotkey::StartTerminal,
         CommandBarCommandId::ToggleLeftPane => AppHotkey::ToggleLeftPane,

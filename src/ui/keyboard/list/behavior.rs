@@ -105,7 +105,9 @@ pub fn handle_list_keyboard<T: ListKeyBehavior + ?Sized>(
         KeyCode::Char('d') if keyboard.modifiers.is_empty() => delete_selection(behavior),
         KeyCode::Char('g') if keyboard.modifiers.is_empty() => handle_g(behavior),
         KeyCode::Char('G') => focus_last(behavior),
-        KeyCode::Char('q') if keyboard.modifiers.is_empty() => ListKeyOutcome::Quit,
+        KeyCode::Char('q') if keyboard.modifiers.contains(KeyModifiers::CONTROL) => {
+            ListKeyOutcome::Quit
+        }
         _ => continue_unhandled(behavior),
     }
 }

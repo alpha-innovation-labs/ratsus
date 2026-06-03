@@ -27,6 +27,7 @@ fn global_hotkeys() -> Vec<Hotkey> {
         Hotkey::new("t", "New terminal").scope(GLOBAL_SCOPE),
         Hotkey::new("l", "Toggle left pane").scope(GLOBAL_SCOPE),
         Hotkey::new("x", "Toggle focus").scope(GLOBAL_SCOPE),
-        Hotkey::new("q", "Quit").scope(GLOBAL_SCOPE),
+        Hotkey::new("Ctrl+`", "Cycle sessions/plans/files").scope(GLOBAL_SCOPE),
+        Hotkey::new("Ctrl+Q", "Quit").scope(GLOBAL_SCOPE),
     ]
 }

@@ -9,6 +9,7 @@ use crate::extensions::expo::observations::drain_cache_receiver::drain_observati
 use crate::extensions::expo::observations::poll_watcher::poll_observation_watcher;
 use crate::extensions::file_viewer::tree::poll_watchers::poll_file_viewer_watchers;
 use crate::extensions::harness::sessions::refresh::poll_session_watcher::poll_session_watcher;
+use crate::extensions::plans::watch::poll_plan_watchers::poll_plan_watchers;
 use crate::ui::layout::resizable_grid::is_resizing::is_resizing_layout;
 use crate::ui::left_panel::session::running_indicator_frame_changed::running_indicator_frame_changed;
 use crate::ui::notifications::toast::show_failed_to_replace_chat::show_failed_to_replace_chat_toast;
@@ -29,6 +30,7 @@ pub fn handle_tick_event(app: &mut AppState, tick_count: u64) -> CoordinatorActi
     let delete_changed = drain_delete_session_receiver(app);
     let sessions_changed = poll_session_watcher(app);
     let file_viewer_changed = poll_file_viewer_watchers(app);
+    let plans_changed = poll_plan_watchers(app);
     let exited_changed = match close_exited_sessions(app) {
         Ok(changed) => changed,
         Err(error) => {
@@ -59,6 +61,7 @@ pub fn handle_tick_event(app: &mut AppState, tick_count: u64) -> CoordinatorActi
             || initial_sessions_changed
             || observations_changed
             || file_viewer_changed
+            || plans_changed
             || delete_changed
             || exited_changed
             || scroll_changed

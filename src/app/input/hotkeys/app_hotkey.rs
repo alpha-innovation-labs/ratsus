@@ -5,6 +5,8 @@ use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
 pub enum AppHotkey {
     /// Move the active session selection by a signed offset.
     CycleSession(isize),
+    /// Cycle the shared left pane through sessions, plans, and files.
+    CycleLeftPaneMode,
     /// Open the command bar modal.
     OpenCommandBar,
     /// Open the conversation picker modal.
@@ -17,6 +19,8 @@ pub enum AppHotkey {
     SplitTerminal(TerminalSplitDirection),
     /// Select a workspace by visible zero-based index.
     SelectWorkspace(usize),
+    /// Configure Ghostty so Ratsus can receive app shortcuts.
+    SetupGhosttyConfig,
     /// Start a new harness-backed chat session.
     StartChat,
     /// Start a new normal terminal session.

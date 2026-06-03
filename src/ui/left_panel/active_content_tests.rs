@@ -3,6 +3,7 @@ use crate::app::test_support::dormant_session::dormant_session;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::ui::left_panel::active_content::ActiveLeftPaneContent;
 use crate::ui::left_panel::content::LeftPaneContent;
+use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
 /// Verifies chat content exposes footer shortcuts without status text.
 #[test]
@@ -33,7 +34,7 @@ fn chat_title_is_generic_sessions() {
 #[test]
 fn files_footer_contract_has_shortcuts_and_selected_status() {
     let mut app = app_fixture(Vec::new()).expect("app fixture");
-    app.active_main_pane_tab = MainPaneTab::Files;
+    app.left_pane_mode = LeftPaneMode::Files;
     let content = ActiveLeftPaneContent::for_app(&mut app);
 
     let items = content.footer_items();

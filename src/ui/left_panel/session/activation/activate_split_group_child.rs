@@ -4,6 +4,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::ui::grid_layout::bundle::set_active_bundle_session::set_active_terminal_pane_bundle_session;
 use crate::ui::grid_layout::pane::pane_exists_in_terminal_layout::pane_exists_in_terminal_layout;
+use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
 use crate::ui::grid_layout::persistence::restore_available_multiplexer_state_into_app::restore_available_multiplexer_state_into_app;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 
@@ -28,6 +29,7 @@ pub fn activate_split_group_child(app: &mut AppState, pane_id: PaneId, index: us
     set_active_terminal_pane_bundle_session(app, pane_id, session_id);
     sync_active_pane_area(app, pane_id);
     app.keep_focused_row_visible();
+    persist_multiplexer_state(app);
 }
 
 /// Updates active pane geometry from the most recent render pass.

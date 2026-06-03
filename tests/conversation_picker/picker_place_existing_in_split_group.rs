@@ -50,13 +50,13 @@ fn picker_place_existing_in_split_group() -> anyhow::Result<()> {
         .terminal_layout
         .layout_panes(app.last_terminal_area)
         .len();
-    let group_names = app
+    let (group_id, group) = app
         .split_pane_session_groups
         .groups
-        .values()
-        .map(|group| group.name.as_str())
-        .collect::<Vec<_>>()
-        .join(", ");
+        .iter()
+        .next()
+        .context("placement must create a split-session group")?;
+    let group_name = group.name.as_str();
 
     let rows = visible_session_rows(
         &app.session_terminals,
@@ -68,28 +68,29 @@ fn picker_place_existing_in_split_group() -> anyhow::Result<()> {
     );
     let left_group_rows = rows
         .iter()
-        .filter(|row| matches!(row, SessionListRow::SplitGroup { name, .. } if name == "Group 1"))
+        .filter(|row| matches!(row, SessionListRow::SplitGroup { name, .. } if name == group_name))
         .count();
     let left_group_children = rows
         .iter()
-        .filter(|row| matches!(row, SessionListRow::SplitGroupChild { group_id: 1, .. }))
+        .filter(|row| matches!(row, SessionListRow::SplitGroupChild { group_id: row_group_id, .. } if row_group_id == group_id))
         .count();
 
     assert_snapshot!(format!(
         "pane_count: {pane_count}\n\
          group_count: {}\n\
-         group_names: {group_names}\n\
+         group_name_is_assigned: {}\n\
          active_index_is_placed: {}\n\
          left_group_rows: {left_group_rows}\n\
          left_group_children: {left_group_children}\n\
          group_label_count: {}\n",
         app.split_pane_session_groups.groups.len(),
+        group_name.starts_with("Group "),
         app.active_index == placed_index,
-        rendered.matches("Group 1").count(),
+        rendered.matches(group_name).count(),
     ), @r###"
 pane_count: 2
 group_count: 1
-group_names: Group 1
+group_name_is_assigned: true
 active_index_is_placed: true
 left_group_rows: 1
 left_group_children: 2

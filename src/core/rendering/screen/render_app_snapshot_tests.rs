@@ -18,7 +18,6 @@ use crate::app::state::app_state::AppState;
 use crate::core::rendering::screen::render_app::render_app;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
-use crate::extensions::file_viewer::tree::update_selection::update_file_system_tree_selection;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
 use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_session::ChatSession;
@@ -69,11 +68,11 @@ fn snapshots_right_and_bottom_split_layout() -> anyhow::Result<()> {
 
     assert!(!output.contains("No session assigned"));
     assert_snapshot!(output, @r###"
-ons | Plans╮╭Chat──────────────────────────────────────────────╮
-ion A    0m││┌Session A─────────── x ┐┌Session B─────────── x ┐│
-ion B    0m│││Starting chat session… ││Starting chat session… ││
+ons ───────╮╭Chat──────────────────────────────────────────────╮
+today ─────││┌Session A─────────── x ┐┌Session B─────────── x ┐│
+ion A    0m│││Starting chat session… ││Starting chat session… ││
+ion B    0m│││                       ││                       ││
 ion C    0m│││                       ││                       ││
-           │││                       ││                       ││
            │││                       ││                       ││
            │││                       ││                       ││
            │││                       │└───────────────────────┘│
@@ -115,7 +114,7 @@ fn snapshots_bundled_session_left_panel_markers() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Snapshots the Files tab with the file tree on the left and code preview on the right.
+/// Snapshots Files mode with the file tree on the left and code preview on the right.
 #[test]
 fn snapshots_files_tab_tree_and_preview() -> anyhow::Result<()> {
     let root = std::env::temp_dir().join(format!("ratsus-files-tab-{}", uuid::Uuid::new_v4()));
@@ -123,16 +122,20 @@ fn snapshots_files_tab_tree_and_preview() -> anyhow::Result<()> {
     fs::write(root.join("README.md"), "# Project Notes\n\nPreview body")?;
 
     let mut app = snapshot_app(vec![session("Session A", "a")])?;
-    app.active_main_pane_tab = MainPaneTab::Files;
+    app.active_main_pane_tab = MainPaneTab::Chat;
+    app.left_pane_mode = LeftPaneMode::Files;
+    app.folder_order = vec![root.clone()];
+    app.selected_workspace_path = Some(root.clone());
     app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
-    app.file_system_tree_view.select_path(vec![0, 0]);
-    update_file_system_tree_selection(&mut app.file_system_tree_view);
+    app.file_system_tree_view
+        .sync_workspace_roots(&app.folder_order);
+    app.file_system_tree_view.select_workspace_row(1);
     wait_for_file_viewer_load(&mut app.file_system_tree_view);
 
     let output = render_snapshot(&mut app, Rect::new(0, 0, 80, 10))?;
 
     let _ = fs::remove_dir_all(&root);
-    assert!(output.contains("files"));
+    assert!(output.contains("Files"));
     assert!(output.contains("README.m"));
     assert!(output.contains("  1 │"));
     assert!(output.contains("  3 │ Preview body"));
@@ -177,7 +180,7 @@ fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppSt
         terminal_pane_close_buttons: BTreeMap::new(),
         active_terminal_pane_id: TERMINAL_PANE_ID,
         toast_manager: ToastManager::new(),
-        menu_bar: app_menu_bar(MainPaneTab::Chat),
+        menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
         conversation_picker: ConversationPickerState::new(),
@@ -219,6 +222,7 @@ fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppSt
         last_session_list_area: Rect::default(),
         last_left_session_toggle_area: Rect::default(),
         last_left_plan_toggle_area: Rect::default(),
+        last_left_file_toggle_area: Rect::default(),
         left_pane_visible: true,
         focused_pane: FocusedPane::Terminal,
         active_main_pane_tab: MainPaneTab::Chat,

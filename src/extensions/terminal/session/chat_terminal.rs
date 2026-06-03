@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::path::Path;
 
 use anyhow::Result;
@@ -33,6 +34,21 @@ impl ChatTerminal {
         Ok(Self::Pty(PtyTerminal::spawn_with_command_in_dir(
             command,
             args,
+            working_dir,
+            rows,
+            cols,
+        )?))
+    }
+
+    /// Spawns a PTY-backed terminal argv in the requested working directory.
+    pub fn spawn_argv_in_dir(
+        argv: Vec<OsString>,
+        working_dir: &Path,
+        rows: u16,
+        cols: u16,
+    ) -> Result<Self> {
+        Ok(Self::Pty(PtyTerminal::spawn_argv_in_dir(
+            argv,
             working_dir,
             rows,
             cols,

@@ -7,7 +7,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::harness::conversation_picker::data::scope_label::conversation_picker_scope_label;
 use crate::extensions::harness::conversation_picker::layout::dialog_body_area::conversation_picker_dialog_area;
 
-/// Renders the current picker scope into the top-right dialog header.
+/// Renders workspace and all-workspaces scope status into the top-right dialog header.
 pub fn render_conversation_picker_scope_header(app: &AppState, frame: &mut Frame) {
     let label = conversation_picker_scope_label(app);
     let text = format!(" {label} ");
