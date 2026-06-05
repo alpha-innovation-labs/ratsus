@@ -1,8 +1,8 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
-use crate::extensions::history_modal::data::item::ConversationPickerItemKind;
-use crate::extensions::history_modal::data::items::conversation_picker_items;
+use crate::extensions::history_modal::data::item::HistoryModalItemKind;
+use crate::extensions::history_modal::data::items::history_modal_items;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 
@@ -26,16 +26,16 @@ fn groups_sessions_under_folder_parent_rows() {
 
     assert!(matches!(
         items[0].kind,
-        ConversationPickerItemKind::Folder { .. }
+        HistoryModalItemKind::Folder { .. }
     ));
     assert_eq!(items[0].title, "/tmp/a");
     assert!(matches!(
         items[1].kind,
-        ConversationPickerItemKind::Session { index: 0, .. }
+        HistoryModalItemKind::Session { index: 0, .. }
     ));
     assert!(matches!(
         items[2].kind,
-        ConversationPickerItemKind::Folder { .. }
+        HistoryModalItemKind::Folder { .. }
     ));
 }
 
@@ -53,11 +53,11 @@ fn query_keeps_matching_child_with_folder_parent() {
     assert_eq!(items.len(), 2);
     assert!(matches!(
         items[0].kind,
-        ConversationPickerItemKind::Folder { .. }
+        HistoryModalItemKind::Folder { .. }
     ));
     assert!(matches!(
         items[1].kind,
-        ConversationPickerItemKind::Session { index: 0, .. }
+        HistoryModalItemKind::Session { index: 0, .. }
     ));
 }
 
@@ -97,7 +97,7 @@ fn pins_active_session_to_top_of_folder() {
 
     assert!(matches!(
         items[1].kind,
-        ConversationPickerItemKind::Session { index: 1, .. }
+        HistoryModalItemKind::Session { index: 1, .. }
     ));
     assert!(items[1].is_active);
 }
@@ -116,11 +116,11 @@ fn pins_running_sessions_after_active_session() {
 
     assert!(matches!(
         items[1].kind,
-        ConversationPickerItemKind::Session { index: 1, .. }
+        HistoryModalItemKind::Session { index: 1, .. }
     ));
     assert!(matches!(
         items[2].kind,
-        ConversationPickerItemKind::Session { index: 2, .. }
+        HistoryModalItemKind::Session { index: 2, .. }
     ));
 }
 
@@ -142,7 +142,7 @@ fn picker_items(
     folders: &[PathBuf],
     query: &str,
     selected: &BTreeSet<String>,
-) -> Vec<crate::extensions::history_modal::data::item::ConversationPickerItem> {
+) -> Vec<crate::extensions::history_modal::data::item::HistoryModalItem> {
     picker_items_with_active(sessions, folders, query, selected, 0)
 }
 
@@ -153,8 +153,8 @@ fn picker_items_with_active(
     query: &str,
     selected: &BTreeSet<String>,
     active_index: usize,
-) -> Vec<crate::extensions::history_modal::data::item::ConversationPickerItem> {
-    conversation_picker_items(
+) -> Vec<crate::extensions::history_modal::data::item::HistoryModalItem> {
+    history_modal_items(
         sessions,
         folders,
         query,

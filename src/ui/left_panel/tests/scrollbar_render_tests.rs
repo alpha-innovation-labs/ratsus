@@ -17,7 +17,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::HistoryModalState;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -135,7 +135,7 @@ fn scrollbar_test_app(session_count: usize, session_scroll: usize) -> anyhow::Re
         menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
-        conversation_picker: ConversationPickerState::new(),
+        history_modal: HistoryModalState::new(),
         delete_confirmation: DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
         initial_sessions_receiver: None,

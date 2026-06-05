@@ -1,6 +1,6 @@
 use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::state::app_state::AppState;
-use crate::extensions::harness::conversation_picker::actions::open_folder::open_folder_conversation_picker;
+use crate::extensions::history_modal::actions::open_folder::open_folder_history_modal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::focus::focused_row::focused_left_row;
 use crate::ui::left_panel::session::activation::activate_split_group_child::activate_split_group_child;
@@ -14,7 +14,7 @@ pub fn activate_focused_left_row(app: &mut AppState) {
     };
     match row {
         SessionListRow::Folder { path, .. } => activate_expo_folder(app, path),
-        SessionListRow::FolderMore { path } => open_folder_conversation_picker(app, path),
+        SessionListRow::FolderMore { path } => open_folder_history_modal(app, path),
         SessionListRow::SplitGroup { group_id, .. } => activate_split_group_parent(app, group_id),
         SessionListRow::SplitGroupChild { pane_id, index, .. } => {
             activate_split_group_child(app, pane_id, index);

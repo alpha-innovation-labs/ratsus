@@ -10,7 +10,7 @@ pub enum AppHotkey {
     /// Open the command bar modal.
     OpenCommandBar,
     /// Open the conversation picker modal.
-    OpenConversationPicker,
+    OpenHistoryModal,
     /// Open Expo for the focused conversation.
     OpenFocusedConversationExpo,
     /// Open the split-placement picker with the requested split direction.

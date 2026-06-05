@@ -1,15 +1,15 @@
 use insta::assert_snapshot;
 
-/// Validates the documented conversation_picker E2E scenario.
+/// Validates the documented history_modal E2E scenario.
 #[test]
 fn picker_catalog_grouping() -> anyhow::Result<()> {
     let report = crate::support::run_case(
-        "conversation_picker",
+        "history_modal",
         "picker_catalog_grouping",
         "The picker lists grouped conversations in deterministic order.",
     )?;
     assert_snapshot!(report.to_snapshot(), @r###"
-domain: conversation_picker
+domain: history_modal
 test: picker_catalog_grouping
 description: The picker lists grouped conversations in deterministic order.
 backend: nexus

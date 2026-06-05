@@ -3,26 +3,26 @@ use ratatui::layout::Rect;
 use ratatui::widgets::{Paragraph, Widget};
 use ratkit::primitives::dialog::DialogBodyRenderer;
 
-use crate::extensions::history_modal::data::item::ConversationPickerItem;
+use crate::extensions::history_modal::data::item::HistoryModalItem;
 use crate::extensions::history_modal::layout::lines::{
-    conversation_picker_lines, ConversationPickerLinesConfig,
+    history_modal_lines, HistoryModalLinesConfig,
 };
 
 /// Ratkit dialog body renderer for the conversation picker results.
-pub struct ConversationPickerBody {
+pub struct HistoryModalBody {
     query: String,
-    items: Vec<ConversationPickerItem>,
+    items: Vec<HistoryModalItem>,
     selected_position: usize,
     is_filtering: bool,
     loader_tick: u64,
     dragging_session_index: Option<usize>,
 }
 
-impl ConversationPickerBody {
+impl HistoryModalBody {
     /// Creates an owned dialog body renderer for the current picker snapshot.
     pub fn new(
         query: String,
-        items: Vec<ConversationPickerItem>,
+        items: Vec<HistoryModalItem>,
         selected_position: usize,
         is_filtering: bool,
         loader_tick: u64,
@@ -39,10 +39,10 @@ impl ConversationPickerBody {
     }
 }
 
-impl DialogBodyRenderer for ConversationPickerBody {
+impl DialogBodyRenderer for HistoryModalBody {
     /// Renders the filter query and visible conversation rows.
     fn render_body(&mut self, area: Rect, buf: &mut Buffer) {
-        let lines = conversation_picker_lines(ConversationPickerLinesConfig {
+        let lines = history_modal_lines(HistoryModalLinesConfig {
             query: &self.query,
             items: &self.items,
             selected_position: self.selected_position,

@@ -1,8 +1,8 @@
-use crate::extensions::history_modal::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::HistoryModalState;
 
 /// Clamps picker selection to the available filtered result count.
-pub fn clamp_conversation_picker_selection(
-    state: &mut ConversationPickerState,
+pub fn clamp_history_modal_selection(
+    state: &mut HistoryModalState,
     result_count: usize,
 ) {
     if result_count == 0 {

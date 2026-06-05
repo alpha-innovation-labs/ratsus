@@ -1,8 +1,8 @@
-use crate::extensions::history_modal::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::HistoryModalState;
 
 /// Returns the session index selected by the picker state and filtered result list.
 pub fn selected_conversation_index(
-    state: &ConversationPickerState,
+    state: &HistoryModalState,
     filtered_indices: &[usize],
 ) -> Option<usize> {
     filtered_indices.get(state.selected_position).copied()
@@ -11,12 +11,12 @@ pub fn selected_conversation_index(
 #[cfg(test)]
 mod tests {
     use super::selected_conversation_index;
-    use crate::extensions::history_modal::data::state::ConversationPickerState;
+    use crate::extensions::history_modal::data::state::HistoryModalState;
 
     /// Selection should map from visible position to source session index.
     #[test]
     fn maps_selected_position_to_session_index() {
-        let state = ConversationPickerState {
+        let state = HistoryModalState {
             is_open: true,
             query: String::new(),
             is_filtering: false,
@@ -24,7 +24,7 @@ mod tests {
             pending_g: false,
             folder_filter: None,
             mode:
-                crate::extensions::history_modal::data::mode::ConversationPickerMode::Open,
+                crate::extensions::history_modal::data::mode::HistoryModalMode::Open,
             ..Default::default()
         };
         assert_eq!(selected_conversation_index(&state, &[4, 9]), Some(9));
@@ -33,7 +33,7 @@ mod tests {
     /// Out-of-range selection should produce no selected session.
     #[test]
     fn out_of_range_selection_returns_none() {
-        let state = ConversationPickerState {
+        let state = HistoryModalState {
             is_open: true,
             query: String::new(),
             is_filtering: false,
@@ -41,7 +41,7 @@ mod tests {
             pending_g: false,
             folder_filter: None,
             mode:
-                crate::extensions::history_modal::data::mode::ConversationPickerMode::Open,
+                crate::extensions::history_modal::data::mode::HistoryModalMode::Open,
             ..Default::default()
         };
         assert_eq!(selected_conversation_index(&state, &[4, 9]), None);

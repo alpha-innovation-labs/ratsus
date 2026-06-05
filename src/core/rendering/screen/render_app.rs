@@ -20,7 +20,7 @@ use crate::extensions::expo::render::render_view::render_expo_view;
 use crate::extensions::file_viewer::preview::render_preview::render_file_preview;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tabs::title_line::main_pane_title_line;
-use crate::extensions::history_modal::render::render_dialog::render_conversation_picker_dialog;
+use crate::extensions::history_modal::render::render_dialog::render_history_modal_dialog;
 use crate::extensions::plans::preview::render_plan_preview::render_plan_preview;
 use crate::ui::grid_layout::render::render_chat_sessions::render_chat_sessions;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
@@ -102,7 +102,7 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
     }
     app.toast_manager.remove_expired();
     render_toasts(frame, &app.toast_manager);
-    render_conversation_picker_dialog(app, frame);
+    render_history_modal_dialog(app, frame);
     render_command_bar_dialog(app, frame);
     render_delete_session_confirmation_dialog(app, frame);
 }

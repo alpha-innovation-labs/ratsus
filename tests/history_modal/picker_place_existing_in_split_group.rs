@@ -3,8 +3,8 @@ use crossterm::event::{KeyCode, KeyEventKind, KeyModifiers};
 use insta::assert_snapshot;
 use ratkit::KeyboardEvent;
 use ratsus::app::input::handle_keyboard_event::handle_keyboard_event;
-use ratsus::extensions::history_modal::data::item::ConversationPickerItemKind;
-use ratsus::extensions::history_modal::data::items::conversation_picker_items;
+use ratsus::extensions::history_modal::data::item::HistoryModalItemKind;
+use ratsus::extensions::history_modal::data::items::history_modal_items;
 use ratsus::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use ratsus::ui::left_panel::session::list_row::SessionListRow;
 use ratsus::ui::left_panel::session::visible_rows::visible_session_rows;
@@ -35,13 +35,13 @@ fn picker_place_existing_in_split_group() -> anyhow::Result<()> {
         ),
     )?;
     ensure!(
-        app.conversation_picker.is_open,
+        app.history_modal.is_open,
         "placement picker must open"
     );
     select_picker_session(&mut app, placed_index)?;
     handle_keyboard_event(&mut app, key(KeyCode::Enter, KeyModifiers::empty()))?;
     ensure!(
-        !app.conversation_picker.is_open,
+        !app.history_modal.is_open,
         "placement picker must close after activation"
     );
 
@@ -123,21 +123,21 @@ fn select_picker_session(
     app: &mut ratsus::app::state::app_state::AppState,
     session_index: usize,
 ) -> anyhow::Result<()> {
-    let items = conversation_picker_items(
+    let items = history_modal_items(
         &app.session_terminals,
         &app.folder_order,
-        &app.conversation_picker.query,
+        &app.history_modal.query,
         app.active_index,
         &app.selected_conversation_ids,
-        app.conversation_picker.folder_filter.as_deref(),
+        app.history_modal.folder_filter.as_deref(),
         &app.collapsed_folders,
     );
-    app.conversation_picker.selected_position = items
+    app.history_modal.selected_position = items
         .iter()
         .position(|item| {
             matches!(
                 item.kind,
-                ConversationPickerItemKind::Session { index, .. } if index == session_index
+                HistoryModalItemKind::Session { index, .. } if index == session_index
             )
         })
         .context("placed session must be visible in the picker")?;

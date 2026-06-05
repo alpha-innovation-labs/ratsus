@@ -1,5 +1,5 @@
 /// Returns the first visible result index for a selected row and viewport height.
-pub fn conversation_picker_start_index(
+pub fn history_modal_start_index(
     selected_position: usize,
     item_count: usize,
     height: usize,
@@ -14,17 +14,17 @@ pub fn conversation_picker_start_index(
 
 #[cfg(test)]
 mod tests {
-    use super::conversation_picker_start_index;
+    use super::history_modal_start_index;
 
     /// Selected rows near the top should start at zero.
     #[test]
     fn starts_at_zero_near_top() {
-        assert_eq!(conversation_picker_start_index(1, 10, 5), 0);
+        assert_eq!(history_modal_start_index(1, 10, 5), 0);
     }
 
     /// Selected rows near the bottom should clamp to the last full page.
     #[test]
     fn clamps_to_last_full_page() {
-        assert_eq!(conversation_picker_start_index(9, 10, 5), 5);
+        assert_eq!(history_modal_start_index(9, 10, 5), 5);
     }
 }

@@ -18,9 +18,9 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::actions::open::open_command_bar;
 use crate::extensions::command_bar::input::handle_keyboard::handle_command_bar_keyboard;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
-use crate::extensions::history_modal::actions::open::open_conversation_picker;
+use crate::extensions::history_modal::actions::open::open_history_modal;
 use crate::extensions::history_modal::actions::open_place_in_active_split::open_place_in_active_split_picker;
-use crate::extensions::history_modal::input::handle_keyboard::handle_conversation_picker_keyboard;
+use crate::extensions::history_modal::input::handle_keyboard::handle_history_modal_keyboard;
 use crate::extensions::harness::sessions::creation::start_new_chat::start_new_chat;
 use crate::extensions::terminal::ghostty::setup_ghostty_config::setup_ghostty_config;
 use crate::ui::grid_layout::persistence::persist_multiplexer_state::{
@@ -57,8 +57,8 @@ pub fn handle_keyboard_event(
         }
         return Ok(outcome.action);
     }
-    if app.conversation_picker.is_open {
-        return Ok(handle_conversation_picker_keyboard(app, keyboard));
+    if app.history_modal.is_open {
+        return Ok(handle_history_modal_keyboard(app, keyboard));
     }
     if app.active_main_pane_tab == MainPaneTab::Expo && keyboard.key_code == KeyCode::Esc {
         hide_expo(app);
@@ -100,8 +100,8 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
             open_command_bar(app);
             CoordinatorAction::Redraw
         }
-        AppHotkey::OpenConversationPicker => {
-            open_conversation_picker(app);
+        AppHotkey::OpenHistoryModal => {
+            open_history_modal(app);
             CoordinatorAction::Redraw
         }
         AppHotkey::OpenFocusedConversationExpo => {
@@ -229,18 +229,18 @@ mod tests {
         assert_eq!(outcome, CoordinatorAction::Redraw);
         assert!(app.command_bar.is_open);
         assert!(app.command_bar.is_filtering);
-        assert!(!app.conversation_picker.is_open);
+        assert!(!app.history_modal.is_open);
     }
 
     /// Ctrl+H opens the conversation picker for chat history.
     #[test]
-    fn control_h_opens_conversation_picker() {
+    fn control_h_opens_history_modal() {
         let mut app = app_fixture(Vec::new()).expect("app fixture");
 
         let outcome = handle_keyboard_event(&mut app, control_key('h')).expect("keyboard event");
 
         assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert!(app.conversation_picker.is_open);
+        assert!(app.history_modal.is_open);
         assert!(!app.command_bar.is_open);
     }
 

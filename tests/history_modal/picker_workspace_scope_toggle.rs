@@ -4,12 +4,12 @@ use insta::assert_snapshot;
 #[test]
 fn picker_workspace_scope_toggle() -> anyhow::Result<()> {
     let report = crate::support::run_case(
-        "conversation_picker",
+        "history_modal",
         "picker_workspace_scope_toggle",
         "Ctrl+H opens conversations scoped to the selected workspace and shows the scope in the header.",
     )?;
     assert_snapshot!(report.to_snapshot(), @r###"
-domain: conversation_picker
+domain: history_modal
 test: picker_workspace_scope_toggle
 description: Ctrl+H opens conversations scoped to the selected workspace and shows the scope in the header.
 backend: nexus

@@ -3,8 +3,8 @@ use ratkit::CoordinatorAction;
 use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::input::handle_mouse::handle_expo_mouse;
-use crate::extensions::history_modal::actions::open_folder::open_folder_conversation_picker;
-use crate::extensions::history_modal::input::handle_mouse::handle_conversation_picker_mouse;
+use crate::extensions::history_modal::actions::open_folder::open_folder_history_modal;
+use crate::extensions::history_modal::input::handle_mouse::handle_history_modal_mouse;
 use crate::extensions::plans::input::handle_plan_drag_mouse::handle_plan_drag_mouse;
 use crate::extensions::plans::input::handle_plan_left_mouse::handle_plan_left_mouse;
 use crate::extensions::plans::preview::handle_plan_preview_mouse::handle_plan_preview_mouse;
@@ -42,8 +42,8 @@ const MOUSE_SCROLL_LINES_PER_TICK: usize = 3;
 
 /// Handles one mouse event for the app.
 pub fn handle_app_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> CoordinatorAction {
-    if app.conversation_picker.is_open {
-        return handle_conversation_picker_mouse(app, mouse);
+    if app.history_modal.is_open {
+        return handle_history_modal_mouse(app, mouse);
     }
     if app.delete_confirmation.is_open() {
         return CoordinatorAction::Continue;
@@ -139,7 +139,7 @@ fn handle_left_click(app: &mut AppState, mouse: ratkit::MouseEvent) {
                 toggle_session_folder(app, path);
             }
         }
-        SessionListRow::FolderMore { path } => open_folder_conversation_picker(app, path),
+        SessionListRow::FolderMore { path } => open_folder_history_modal(app, path),
         SessionListRow::SplitGroup { group_id, .. } => activate_split_group_parent(app, group_id),
         SessionListRow::SplitGroupChild { pane_id, index, .. } => {
             activate_split_group_child(app, pane_id, index);

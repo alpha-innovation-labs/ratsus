@@ -1,15 +1,15 @@
 use insta::assert_snapshot;
 
-/// Validates the documented conversation_picker E2E scenario.
+/// Validates the documented history_modal E2E scenario.
 #[test]
 fn picker_cancel_preserves_state() -> anyhow::Result<()> {
     let report = crate::support::run_case(
-        "conversation_picker",
+        "history_modal",
         "picker_cancel_preserves_state",
         "Cancelling the picker returns to the previous app state.",
     )?;
     assert_snapshot!(report.to_snapshot(), @r###"
-domain: conversation_picker
+domain: history_modal
 test: picker_cancel_preserves_state
 description: Cancelling the picker returns to the previous app state.
 backend: nexus

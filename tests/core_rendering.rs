@@ -1,7 +1,7 @@
 mod support;
 
-#[path = "core_rendering/render_conversation_picker_dialog.rs"]
-mod render_conversation_picker_dialog;
+#[path = "core_rendering/render_history_modal_dialog.rs"]
+mod render_history_modal_dialog;
 #[path = "core_rendering/render_delete_confirmation_dialog.rs"]
 mod render_delete_confirmation_dialog;
 #[path = "core_rendering/render_full_screen_baseline.rs"]

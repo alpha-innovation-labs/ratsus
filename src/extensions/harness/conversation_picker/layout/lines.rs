@@ -2,18 +2,18 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Line;
 
 use crate::extensions::history_modal::data::item::{
-    ConversationPickerItem, ConversationPickerItemKind,
+    HistoryModalItem, HistoryModalItemKind,
 };
-use crate::extensions::history_modal::layout::start_index::conversation_picker_start_index;
+use crate::extensions::history_modal::layout::start_index::history_modal_start_index;
 use crate::ui::left_panel::render::session_row_line::{
     folder_row_line, session_row_line, ChatSessionRowLineConfig, FolderRowLineConfig,
 };
 use crate::ui::left_panel::session::running_indicator::running_session_indicator;
 
 /// Values needed to build conversation picker body lines.
-pub struct ConversationPickerLinesConfig<'a> {
+pub struct HistoryModalLinesConfig<'a> {
     pub query: &'a str,
-    pub items: &'a [ConversationPickerItem],
+    pub items: &'a [HistoryModalItem],
     pub selected_position: usize,
     pub is_filtering: bool,
     pub height: u16,
@@ -23,7 +23,7 @@ pub struct ConversationPickerLinesConfig<'a> {
 }
 
 /// Builds styled picker body lines for the current query and filtered items.
-pub fn conversation_picker_lines(config: ConversationPickerLinesConfig<'_>) -> Vec<Line<'static>> {
+pub fn history_modal_lines(config: HistoryModalLinesConfig<'_>) -> Vec<Line<'static>> {
     if config.height == 0 {
         return Vec::new();
     }
@@ -63,7 +63,7 @@ fn picker_header_lines(query: &str, is_filtering: bool) -> Vec<Line<'static>> {
 
 /// Builds the visible result lines between the header and bottom hotkeys.
 fn picker_result_lines(
-    items: &[ConversationPickerItem],
+    items: &[HistoryModalItem],
     selected_position: usize,
     height: usize,
     width: u16,
@@ -80,14 +80,14 @@ fn picker_result_lines(
         )];
     }
 
-    let start = conversation_picker_start_index(selected_position, items.len(), height);
+    let start = history_modal_start_index(selected_position, items.len(), height);
     let end = start.saturating_add(height).min(items.len());
     items[start..end]
         .iter()
         .enumerate()
         .map(|(position, item)| {
             let index = start + position;
-            conversation_picker_line(
+            history_modal_line(
                 item,
                 index == selected_position,
                 width,
@@ -99,15 +99,15 @@ fn picker_result_lines(
 }
 
 /// Builds one visible picker row with the same row renderer used by the left pane.
-fn conversation_picker_line(
-    item: &ConversationPickerItem,
+fn history_modal_line(
+    item: &HistoryModalItem,
     is_selected: bool,
     width: u16,
     loader_tick: u64,
     dragging_session_index: Option<usize>,
 ) -> Line<'static> {
     match &item.kind {
-        ConversationPickerItemKind::Folder {
+        HistoryModalItemKind::Folder {
             path,
             current_session_count,
             total_session_count,
@@ -126,7 +126,7 @@ fn conversation_picker_line(
             is_selected,
             is_dragging: false,
         }),
-        ConversationPickerItemKind::Session {
+        HistoryModalItemKind::Session {
             index,
             age,
             icon,

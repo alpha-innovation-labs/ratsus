@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 /// Selectable action represented by one picker display row.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConversationPickerItemKind {
+pub enum HistoryModalItemKind {
     Folder {
         path: PathBuf,
         current_session_count: usize,
@@ -20,16 +20,16 @@ pub enum ConversationPickerItemKind {
 
 /// Display and activation data for one row in the conversation picker.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ConversationPickerItem {
+pub struct HistoryModalItem {
     pub title: String,
     pub is_active: bool,
     pub is_toggled: bool,
-    pub kind: ConversationPickerItemKind,
+    pub kind: HistoryModalItemKind,
 }
 
-impl ConversationPickerItem {
+impl HistoryModalItem {
     /// Returns whether this picker row represents a parent folder action.
     pub fn is_folder(&self) -> bool {
-        matches!(self.kind, ConversationPickerItemKind::Folder { .. })
+        matches!(self.kind, HistoryModalItemKind::Folder { .. })
     }
 }

@@ -2,7 +2,7 @@ use ratatui::{layout::Rect, widgets::Paragraph, Frame};
 
 use crate::app::deletion::open_delete_session_confirmation::open_delete_session_confirmation;
 use crate::app::state::app_state::AppState;
-use crate::extensions::harness::conversation_picker::actions::open_in_filter_mode::open_conversation_picker_in_filter_mode;
+use crate::extensions::history_modal::actions::open_in_filter_mode::open_history_modal_in_filter_mode;
 use crate::ui::left_panel::action::LeftPaneAction;
 use crate::ui::left_panel::content::LeftPaneContent;
 use crate::ui::left_panel::focus::focus_adjacent_folder::focus_adjacent_folder;
@@ -48,7 +48,7 @@ impl LeftPaneContent for LeftPanelKeyBehavior<'_> {
             LeftPaneAction::Expand => open_focused_project(self.app),
             LeftPaneAction::Delete => open_delete_session_confirmation(self.app),
             LeftPaneAction::ToggleSelection => toggle_focused_left_conversation_selection(self.app),
-            LeftPaneAction::StartFilter => open_conversation_picker_in_filter_mode(self.app),
+            LeftPaneAction::StartFilter => open_history_modal_in_filter_mode(self.app),
             LeftPaneAction::Quit => return LeftPaneActionOutcome::Quit,
             LeftPaneAction::ReorderBy(_)
             | LeftPaneAction::InsertFilterCharacter(_)
@@ -112,8 +112,8 @@ mod tests {
 
         behavior.handle_left_pane_action(LeftPaneAction::StartFilter);
 
-        assert!(behavior.app.conversation_picker.is_open);
-        assert!(behavior.app.conversation_picker.is_filtering);
+        assert!(behavior.app.history_modal.is_open);
+        assert!(behavior.app.history_modal.is_filtering);
         Ok(())
     }
 }

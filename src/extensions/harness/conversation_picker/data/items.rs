@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use chrono::Utc;
 
 use crate::extensions::history_modal::data::item::{
-    ConversationPickerItem, ConversationPickerItemKind,
+    HistoryModalItem, HistoryModalItemKind,
 };
 use crate::extensions::history_modal::data::matches_query::matches_conversation_query;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
@@ -13,7 +13,7 @@ use crate::ui::left_panel::session::format_age::format_session_age;
 use crate::ui::left_panel::session::icon::session_icon;
 
 /// Builds grouped picker rows for folders and their matching conversations.
-pub fn conversation_picker_items(
+pub fn history_modal_items(
     sessions: &[SessionTerminal],
     folder_order: &[PathBuf],
     query: &str,
@@ -21,7 +21,7 @@ pub fn conversation_picker_items(
     selected_conversation_ids: &BTreeSet<String>,
     folder_filter: Option<&Path>,
     collapsed_folders: &BTreeSet<PathBuf>,
-) -> Vec<ConversationPickerItem> {
+) -> Vec<HistoryModalItem> {
     folder_order
         .iter()
         .filter(|folder| folder_filter.map_or(true, |filter| folder.as_path() == filter))
@@ -46,7 +46,7 @@ fn folder_items(
     active_index: usize,
     selected_conversation_ids: &BTreeSet<String>,
     collapsed_folders: &BTreeSet<PathBuf>,
-) -> Vec<ConversationPickerItem> {
+) -> Vec<HistoryModalItem> {
     let session_indices = matching_folder_session_indices(sessions, folder, query);
     if session_indices.is_empty() {
         return Vec::new();
@@ -138,12 +138,12 @@ fn folder_item(
     current_session_count: usize,
     total_session_count: usize,
     is_collapsed: bool,
-) -> ConversationPickerItem {
-    ConversationPickerItem {
+) -> HistoryModalItem {
+    HistoryModalItem {
         title: folder.display().to_string(),
         is_active: false,
         is_toggled: false,
-        kind: ConversationPickerItemKind::Folder {
+        kind: HistoryModalItemKind::Folder {
             path: folder.to_path_buf(),
             current_session_count,
             total_session_count,
@@ -159,13 +159,13 @@ fn session_item(
     index: usize,
     active_index: usize,
     selected_conversation_ids: &BTreeSet<String>,
-) -> Option<ConversationPickerItem> {
+) -> Option<HistoryModalItem> {
     let entry = sessions.get(index)?;
-    Some(ConversationPickerItem {
+    Some(HistoryModalItem {
         title: entry.session.title.clone(),
         is_active: index == active_index,
         is_toggled: selected_conversation_ids.contains(&entry.session.id),
-        kind: ConversationPickerItemKind::Session {
+        kind: HistoryModalItemKind::Session {
             index,
             age: format_session_age(&entry.session, Utc::now()),
             icon: session_icon(&entry.session).to_string(),

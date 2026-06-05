@@ -69,7 +69,7 @@ mod tests {
         let outcome = handle_command_bar_keyboard(&mut app, key(KeyCode::Enter));
 
         assert_eq!(outcome.action, CoordinatorAction::Redraw);
-        assert_eq!(outcome.hotkey, Some(AppHotkey::OpenConversationPicker));
+        assert_eq!(outcome.hotkey, Some(AppHotkey::OpenHistoryModal));
         assert!(!app.command_bar.is_open);
     }
 

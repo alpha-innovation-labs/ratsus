@@ -2,15 +2,15 @@ use insta::assert_snapshot;
 
 /// Validates the documented core_rendering E2E scenario.
 #[test]
-fn render_conversation_picker_dialog() -> anyhow::Result<()> {
+fn render_history_modal_dialog() -> anyhow::Result<()> {
     let report = crate::support::run_case(
         "core_rendering",
-        "render_conversation_picker_dialog",
+        "render_history_modal_dialog",
         "Picker modal overlays the app without damaging the underlying screen.",
     )?;
     assert_snapshot!(report.to_snapshot(), @r###"
 domain: core_rendering
-test: render_conversation_picker_dialog
+test: render_history_modal_dialog
 description: Picker modal overlays the app without damaging the underlying screen.
 backend: nexus
 workflow: real Nexus terminal rendering workflow

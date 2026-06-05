@@ -36,7 +36,7 @@ pub fn verify_real_case(
     }
     if name == "picker_workspace_scope_toggle" {
         ensure!(
-            app.conversation_picker.folder_filter.as_deref()
+            app.history_modal.folder_filter.as_deref()
                 == app.selected_workspace_path.as_deref(),
             "conversation picker must be scoped to the selected workspace"
         );

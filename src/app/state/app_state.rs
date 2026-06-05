@@ -19,7 +19,7 @@ use crate::extensions::expo::card::area::ExpoCardArea;
 use crate::extensions::expo::observations::conversation_preview::ConversationObservationPreview;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::HistoryModalState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -48,7 +48,7 @@ pub struct AppState {
     pub menu_bar: MenuBar,
     pub hotkey_registry: HotkeyRegistry,
     pub command_bar: CommandBarState,
-    pub conversation_picker: ConversationPickerState,
+    pub history_modal: HistoryModalState,
     pub delete_confirmation: DeleteSessionConfirmationState,
     pub delete_session_receiver: Option<Receiver<DeleteSessionsResult>>,
     pub initial_sessions_receiver: Option<Receiver<anyhow::Result<Vec<ChatSession>>>>,

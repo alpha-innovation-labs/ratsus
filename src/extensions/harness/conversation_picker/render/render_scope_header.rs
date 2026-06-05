@@ -4,14 +4,14 @@ use ratatui::widgets::Paragraph;
 use ratatui::Frame;
 
 use crate::app::state::app_state::AppState;
-use crate::extensions::history_modal::data::scope_label::conversation_picker_scope_label;
-use crate::extensions::history_modal::layout::dialog_body_area::conversation_picker_dialog_area;
+use crate::extensions::history_modal::data::scope_label::history_modal_scope_label;
+use crate::extensions::history_modal::layout::dialog_body_area::history_modal_dialog_area;
 
 /// Renders workspace and all-workspaces scope status into the top-right dialog header.
-pub fn render_conversation_picker_scope_header(app: &AppState, frame: &mut Frame) {
-    let label = conversation_picker_scope_label(app);
+pub fn render_history_modal_scope_header(app: &AppState, frame: &mut Frame) {
+    let label = history_modal_scope_label(app);
     let text = format!(" {label} ");
-    let dialog_area = conversation_picker_dialog_area(frame.area());
+    let dialog_area = history_modal_dialog_area(frame.area());
     let width = text.chars().count() as u16;
     if dialog_area.width <= width.saturating_add(2) {
         return;

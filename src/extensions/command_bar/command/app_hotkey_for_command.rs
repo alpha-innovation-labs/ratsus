@@ -5,7 +5,7 @@ use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
 /// Maps a command bar command identifier to the existing app hotkey action.
 pub fn app_hotkey_for_command(command_id: CommandBarCommandId) -> AppHotkey {
     match command_id {
-        CommandBarCommandId::OpenConversationHistory => AppHotkey::OpenConversationPicker,
+        CommandBarCommandId::OpenConversationHistory => AppHotkey::OpenHistoryModal,
         CommandBarCommandId::CycleNextSession => AppHotkey::CycleSession(1),
         CommandBarCommandId::CyclePreviousSession => AppHotkey::CycleSession(-1),
         CommandBarCommandId::CycleLeftPaneMode => AppHotkey::CycleLeftPaneMode,

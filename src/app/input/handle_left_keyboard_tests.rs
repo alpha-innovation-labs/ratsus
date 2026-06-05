@@ -18,7 +18,7 @@ fn chat_filter_shortcut_uses_shared_left_pane_dispatcher() {
     let outcome = handle_left_keyboard(&mut app, key(KeyCode::Char('/'))).expect("left keyboard");
 
     assert_eq!(outcome, CoordinatorAction::Redraw);
-    assert!(app.conversation_picker.is_open);
+    assert!(app.history_modal.is_open);
 }
 
 /// Verifies chat group jumps are handled without folder headers in the session list.

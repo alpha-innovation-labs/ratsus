@@ -7,8 +7,8 @@ const CONVERSATION_PICKER_HORIZONTAL_PADDING: u16 = 2;
 const CONVERSATION_PICKER_VERTICAL_PADDING: u16 = 1;
 
 /// Returns the body area used by the conversation picker dialog for a frame area.
-pub fn conversation_picker_dialog_body_area(frame_area: Rect) -> Rect {
-    let dialog_area = conversation_picker_dialog_area(frame_area);
+pub fn history_modal_dialog_body_area(frame_area: Rect) -> Rect {
+    let dialog_area = history_modal_dialog_area(frame_area);
     let inner = Block::default().borders(Borders::ALL).inner(dialog_area);
     inset_rect(
         inner,
@@ -18,7 +18,7 @@ pub fn conversation_picker_dialog_body_area(frame_area: Rect) -> Rect {
 }
 
 /// Returns the full dialog area used by Ratkit's centered percentage layout.
-pub fn conversation_picker_dialog_area(area: Rect) -> Rect {
+pub fn history_modal_dialog_area(area: Rect) -> Rect {
     let width = (area.width as f32 * CONVERSATION_PICKER_WIDTH_PERCENT) as u16;
     let height = (area.height as f32 * CONVERSATION_PICKER_HEIGHT_PERCENT) as u16;
     Rect::new(

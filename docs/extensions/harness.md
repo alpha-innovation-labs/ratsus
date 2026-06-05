@@ -66,5 +66,5 @@ Observation previews are loaded from consolidated Nexus observation JSON files u
 - `src/extensions/harness/nexus/process/is_alive.rs`
 - `src/extensions/harness/nexus/sessions/load_chat_sessions.rs`
 - `src/extensions/harness/stub/adapter/stub_harness.rs`
-- `src/extensions/harness/conversation_picker/`
+- `src/extensions/history_modal/`
 - `src/extensions/harness/observations/`

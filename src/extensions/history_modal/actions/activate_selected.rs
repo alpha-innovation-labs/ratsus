@@ -1,7 +1,7 @@
 use crate::app::state::app_state::AppState;
-use crate::extensions::history_modal::data::item::ConversationPickerItemKind;
-use crate::extensions::history_modal::data::items::conversation_picker_items;
-use crate::extensions::history_modal::data::mode::ConversationPickerMode;
+use crate::extensions::history_modal::data::item::HistoryModalItemKind;
+use crate::extensions::history_modal::data::items::history_modal_items;
+use crate::extensions::history_modal::data::mode::HistoryModalMode;
 use crate::extensions::harness::sessions::creation::start_new_chat_in_dir::start_new_chat_in_dir;
 use crate::ui::grid_layout::split::place_existing_session_in_split::place_existing_session_in_terminal_split;
 use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
@@ -9,29 +9,29 @@ use crate::ui::notifications::toast::show_failed_to_start_new_chat::show_failed_
 
 /// Activates the conversation or folder action highlighted in the picker.
 pub fn activate_selected_conversation(app: &mut AppState) {
-    let items = conversation_picker_items(
+    let items = history_modal_items(
         &app.session_terminals,
         &app.folder_order,
-        &app.conversation_picker.query,
+        &app.history_modal.query,
         app.active_index,
         &app.selected_conversation_ids,
-        app.conversation_picker.folder_filter.as_deref(),
+        app.history_modal.folder_filter.as_deref(),
         &app.collapsed_folders,
     );
-    let Some(item) = items.get(app.conversation_picker.selected_position) else {
+    let Some(item) = items.get(app.history_modal.selected_position) else {
         return;
     };
 
-    match app.conversation_picker.mode {
-        ConversationPickerMode::Open => match item.kind.clone() {
-            ConversationPickerItemKind::Folder { path, .. } => activate_folder(app, path),
-            ConversationPickerItemKind::Session { index, .. } => activate_session(app, index),
+    match app.history_modal.mode {
+        HistoryModalMode::Open => match item.kind.clone() {
+            HistoryModalItemKind::Folder { path, .. } => activate_folder(app, path),
+            HistoryModalItemKind::Session { index, .. } => activate_session(app, index),
         },
-        ConversationPickerMode::PlaceInActiveSplit(direction) => match item.kind {
-            ConversationPickerItemKind::Session { index, .. } => {
+        HistoryModalMode::PlaceInActiveSplit(direction) => match item.kind {
+            HistoryModalItemKind::Session { index, .. } => {
                 place_session(app, index, direction)
             }
-            ConversationPickerItemKind::Folder { .. } => {}
+            HistoryModalItemKind::Folder { .. } => {}
         },
     }
 }
@@ -63,9 +63,9 @@ fn place_session(app: &mut AppState, index: usize, direction: TerminalSplitDirec
 
 /// Closes the picker and restores normal activation mode.
 fn close_picker(app: &mut AppState) {
-    app.conversation_picker.is_open = false;
-    app.conversation_picker.folder_filter = None;
-    app.conversation_picker.mode = ConversationPickerMode::Open;
+    app.history_modal.is_open = false;
+    app.history_modal.folder_filter = None;
+    app.history_modal.mode = HistoryModalMode::Open;
 }
 
 #[cfg(test)]
@@ -73,7 +73,7 @@ mod tests {
     use super::activate_selected_conversation;
     use crate::app::test_support::app_fixture::app_fixture;
     use crate::app::test_support::dormant_session::dormant_session;
-    use crate::extensions::history_modal::data::mode::ConversationPickerMode;
+    use crate::extensions::history_modal::data::mode::HistoryModalMode;
     use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
     use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 
@@ -84,10 +84,10 @@ mod tests {
             dormant_session("Alpha", "a", "/tmp/project"),
             dormant_session("Beta", "b", "/tmp/project"),
         ])?;
-        app.conversation_picker.is_open = true;
-        app.conversation_picker.mode =
-            ConversationPickerMode::PlaceInActiveSplit(TerminalSplitDirection::Right);
-        app.conversation_picker.selected_position = 2;
+        app.history_modal.is_open = true;
+        app.history_modal.mode =
+            HistoryModalMode::PlaceInActiveSplit(TerminalSplitDirection::Right);
+        app.history_modal.selected_position = 2;
         app.terminal_pane_sessions
             .insert(TERMINAL_PANE_ID, "a".to_string());
         app.terminal_pane_session_bundles
@@ -107,7 +107,7 @@ mod tests {
             .values()
             .any(|bundle| bundle == &vec!["b".to_string()]));
         assert_eq!(app.split_pane_session_groups.groups.len(), 1);
-        assert!(!app.conversation_picker.is_open);
+        assert!(!app.history_modal.is_open);
         Ok(())
     }
 }

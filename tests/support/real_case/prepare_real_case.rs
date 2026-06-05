@@ -25,11 +25,11 @@ pub fn prepare_real_case(
             .map(|entry| entry.session.working_dir.clone());
     }
     if name.contains("picker") {
-        app.conversation_picker.is_open = true;
-        app.conversation_picker.query = "plan".to_string();
+        app.history_modal.is_open = true;
+        app.history_modal.query = "plan".to_string();
     }
     if name == "picker_workspace_scope_toggle" {
-        app.conversation_picker.folder_filter = app.selected_workspace_path.clone();
+        app.history_modal.folder_filter = app.selected_workspace_path.clone();
     }
     if domain.contains("delete") || name.contains("delete") {
         open_delete_dialog(app)?;

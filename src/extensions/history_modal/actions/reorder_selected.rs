@@ -1,15 +1,15 @@
 use crate::app::navigation::reorder_session_to_index::reorder_session_to_index;
 use crate::app::state::app_state::AppState;
 use crate::extensions::history_modal::data::item::{
-    ConversationPickerItem, ConversationPickerItemKind,
+    HistoryModalItem, HistoryModalItemKind,
 };
-use crate::extensions::history_modal::data::items::conversation_picker_items;
-use crate::extensions::history_modal::selection::focus_session::focus_conversation_picker_session;
+use crate::extensions::history_modal::data::items::history_modal_items;
+use crate::extensions::history_modal::selection::focus_session::focus_history_modal_session;
 
 /// Reorders the selected picker conversation by moving it to the next visible session target.
 pub fn reorder_selected_conversation(app: &mut AppState, direction: isize) {
     let items = current_items(app);
-    let selected_position = app.conversation_picker.selected_position;
+    let selected_position = app.history_modal.selected_position;
     let Some(from_index) = selected_session_index(&items, selected_position) else {
         return;
     };
@@ -20,25 +20,25 @@ pub fn reorder_selected_conversation(app: &mut AppState, direction: isize) {
         return;
     };
     if reorder_session_to_index(app, from_index, target_index) {
-        focus_conversation_picker_session(app, &session_id);
+        focus_history_modal_session(app, &session_id);
     }
 }
 
 /// Builds the current picker item snapshot.
-fn current_items(app: &AppState) -> Vec<ConversationPickerItem> {
-    conversation_picker_items(
+fn current_items(app: &AppState) -> Vec<HistoryModalItem> {
+    history_modal_items(
         &app.session_terminals,
         &app.folder_order,
-        &app.conversation_picker.query,
+        &app.history_modal.query,
         app.active_index,
         &app.selected_conversation_ids,
-        app.conversation_picker.folder_filter.as_deref(),
+        app.history_modal.folder_filter.as_deref(),
         &app.collapsed_folders,
     )
 }
 
 /// Returns the session vector index for a picker item position.
-fn selected_session_index(items: &[ConversationPickerItem], position: usize) -> Option<usize> {
+fn selected_session_index(items: &[HistoryModalItem], position: usize) -> Option<usize> {
     let item = items.get(position)?;
     session_index_for_item(item)
 }
@@ -52,7 +52,7 @@ fn session_id_at_index(app: &AppState, index: usize) -> Option<String> {
 
 /// Finds the nearest visible session item in the requested direction.
 fn target_session_index(
-    items: &[ConversationPickerItem],
+    items: &[HistoryModalItem],
     selected_position: usize,
     direction: isize,
 ) -> Option<usize> {
@@ -70,9 +70,9 @@ fn target_session_index(
 }
 
 /// Returns the session vector index for a session picker item.
-fn session_index_for_item(item: &ConversationPickerItem) -> Option<usize> {
+fn session_index_for_item(item: &HistoryModalItem) -> Option<usize> {
     match &item.kind {
-        ConversationPickerItemKind::Session { index, .. } => Some(*index),
-        ConversationPickerItemKind::Folder { .. } => None,
+        HistoryModalItemKind::Session { index, .. } => Some(*index),
+        HistoryModalItemKind::Folder { .. } => None,
     }
 }

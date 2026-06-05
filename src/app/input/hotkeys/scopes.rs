@@ -19,7 +19,7 @@ pub fn active_hotkey_scope(app: &AppState) -> HotkeyScope {
     if app.delete_confirmation.is_open() {
         return MODAL_SCOPE;
     }
-    if app.conversation_picker.is_open {
+    if app.history_modal.is_open {
         return PICKER_SCOPE;
     }
     match app.focused_pane {

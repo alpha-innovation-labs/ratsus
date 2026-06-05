@@ -2,20 +2,20 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::state::app_state::AppState;
-use crate::extensions::history_modal::actions::toggle_scope::toggle_conversation_picker_scope;
-use crate::extensions::history_modal::input::key_behavior::ConversationPickerKeyBehavior;
+use crate::extensions::history_modal::actions::toggle_scope::toggle_history_modal_scope;
+use crate::extensions::history_modal::input::key_behavior::HistoryModalKeyBehavior;
 use crate::ui::keyboard::list::behavior::ListKeyBehavior;
 use crate::ui::keyboard::list::outcome::ListKeyOutcome;
 
 /// Handles keyboard input while the conversation picker modal is open.
-pub fn handle_conversation_picker_keyboard(
+pub fn handle_history_modal_keyboard(
     app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> CoordinatorAction {
     if should_toggle_picker_scope(&keyboard) {
-        return redraw_if(toggle_conversation_picker_scope(app));
+        return redraw_if(toggle_history_modal_scope(app));
     }
-    let mut behavior = ConversationPickerKeyBehavior::new(app);
+    let mut behavior = HistoryModalKeyBehavior::new(app);
     coordinator_action_for_list_outcome(behavior.handle_list_keyboard(keyboard))
 }
 

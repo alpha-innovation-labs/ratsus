@@ -27,7 +27,7 @@ pub fn resolve_app_hotkey(
         return Some(AppHotkey::OpenCommandBar);
     }
     if control_char(keyboard, 'h') {
-        return Some(AppHotkey::OpenConversationPicker);
+        return Some(AppHotkey::OpenHistoryModal);
     }
     if control_char(keyboard, 'e') {
         return Some(AppHotkey::OpenFocusedConversationExpo);
@@ -110,7 +110,7 @@ mod tests {
             &TERMINAL_SCOPE,
         );
 
-        assert_eq!(hotkey, Some(AppHotkey::OpenConversationPicker));
+        assert_eq!(hotkey, Some(AppHotkey::OpenHistoryModal));
     }
 
     /// Ctrl+Tab should resolve into next-session cycling.

@@ -17,7 +17,7 @@ use crate::core::rendering::screen::render_app::render_app;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::HistoryModalState;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -129,7 +129,7 @@ fn scroll_test_app() -> anyhow::Result<AppState> {
         menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
-        conversation_picker: ConversationPickerState::new(),
+        history_modal: HistoryModalState::new(),
         delete_confirmation:
             crate::app::deletion::delete_session_confirmation_state::DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,

@@ -5,39 +5,39 @@ use ratkit::primitives::dialog::{Dialog, DialogModalMode, DialogWidget};
 
 use crate::app::state::app_state::AppState;
 use crate::core::rendering::style::default_border_color::default_border_color;
-use crate::extensions::history_modal::data::items::conversation_picker_items;
-use crate::extensions::history_modal::data::mode::ConversationPickerMode;
-use crate::extensions::history_modal::layout::body::ConversationPickerBody;
-use crate::extensions::history_modal::layout::footer_text::conversation_picker_footer_text;
-use crate::extensions::history_modal::render::render_scope_header::render_conversation_picker_scope_header;
+use crate::extensions::history_modal::data::items::history_modal_items;
+use crate::extensions::history_modal::data::mode::HistoryModalMode;
+use crate::extensions::history_modal::layout::body::HistoryModalBody;
+use crate::extensions::history_modal::layout::footer_text::history_modal_footer_text;
+use crate::extensions::history_modal::render::render_scope_header::render_history_modal_scope_header;
 
 /// Renders the centered conversation picker modal dialog when it is open.
-pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
-    if !app.conversation_picker.is_open {
+pub fn render_history_modal_dialog(app: &AppState, frame: &mut Frame) {
+    if !app.history_modal.is_open {
         return;
     }
 
-    let items = conversation_picker_items(
+    let items = history_modal_items(
         &app.session_terminals,
         &app.folder_order,
-        &app.conversation_picker.query,
+        &app.history_modal.query,
         app.active_index,
         &app.selected_conversation_ids,
-        app.conversation_picker.folder_filter.as_deref(),
+        app.history_modal.folder_filter.as_deref(),
         &app.collapsed_folders,
     );
-    let body = ConversationPickerBody::new(
-        app.conversation_picker.query.clone(),
+    let body = HistoryModalBody::new(
+        app.history_modal.query.clone(),
         items,
         &app.session_terminals,
-        app.conversation_picker.selected_position,
-        app.conversation_picker.is_filtering,
+        app.history_modal.selected_position,
+        app.history_modal.is_filtering,
         app.loader_tick,
         app.session_drag.map(|drag| drag.current_index),
     );
-    let title = match app.conversation_picker.mode {
-        ConversationPickerMode::Open => " conversations ",
-        ConversationPickerMode::PlaceInActiveSplit(_) => " place conversation in split ",
+    let title = match app.history_modal.mode {
+        HistoryModalMode::Open => " conversations ",
+        HistoryModalMode::PlaceInActiveSplit(_) => " place conversation in split ",
     };
     let mut dialog = Dialog::new(title, "")
         .width_percent(0.72)
@@ -45,7 +45,7 @@ pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
         .buttons(vec![])
         .content_padding(2, 1)
         .message_alignment(Alignment::Left)
-        .footer(conversation_picker_footer_text())
+        .footer(history_modal_footer_text())
         .footer_alignment(Alignment::Center)
         .footer_style(Style::default().fg(Color::DarkGray))
         .no_backdrop()
@@ -54,5 +54,5 @@ pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {
         .body_renderer(Box::new(body));
 
     frame.render_widget(DialogWidget::new(&mut dialog), frame.area());
-    render_conversation_picker_scope_header(app, frame);
+    render_history_modal_scope_header(app, frame);
 }
