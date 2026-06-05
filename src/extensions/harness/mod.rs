@@ -2,7 +2,6 @@
 
 use std::sync::Arc;
 
-pub mod conversation_picker;
 pub mod core;
 pub mod nexus;
 pub mod observations;

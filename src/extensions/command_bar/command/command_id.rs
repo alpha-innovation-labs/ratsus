@@ -17,5 +17,6 @@ pub enum CommandBarCommandId {
     ToggleLeftPane,
     ToggleFocusedPane,
     ToggleWorkspaceView,
+    DeleteSession,
     Quit,
 }

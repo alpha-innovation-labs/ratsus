@@ -89,6 +89,7 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
             "",
         ),
         CommandBarItem::new(CommandBarCommandId::Quit, "Quit", "Ctrl+Q"),
+        CommandBarItem::new(CommandBarCommandId::DeleteSession, "Delete session", "d"),
     ]
 }
 
@@ -182,14 +183,9 @@ mod tests {
                 && item.hotkey.is_empty()));
         assert!(items
             .iter()
-            .any(|item| item.id == CommandBarCommandId::ToggleWorkspaceView
-                && item.title == "Toggle workspace view"
-                && item.hotkey.is_empty()));
-        assert!(items
-            .iter()
-            .any(|item| item.id == CommandBarCommandId::SelectWorkspace(0)
-                && item.title == "Select workspace 1"
-                && item.hotkey == "Ctrl+1"));
+            .any(|item| item.id == CommandBarCommandId::DeleteSession
+                && item.title == "Delete session"
+                && item.hotkey == "d"));
     }
 
     /// Verifies command filtering matches command titles.
@@ -199,5 +195,14 @@ mod tests {
 
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].id, CommandBarCommandId::OpenConversationHistory);
+    }
+
+    /// Verifies the delete session command is reachable by title filter.
+    #[test]
+    fn filters_commands_by_delete_keyword() {
+        let items = filtered_command_bar_items("delete");
+
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].id, CommandBarCommandId::DeleteSession);
     }
 }

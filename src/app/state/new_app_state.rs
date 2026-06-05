@@ -17,7 +17,7 @@ use crate::extensions::expo::observations::preview_requests::observation_preview
 use crate::extensions::expo::observations::spawn_cache_worker::spawn_observation_cache_worker;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::sessions::load::spawn_initial_sessions_worker::spawn_initial_sessions_worker;
 use crate::extensions::plans::data::plan_list_state::PlanListState;

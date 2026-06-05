@@ -5,11 +5,11 @@ use ratkit::primitives::dialog::{Dialog, DialogModalMode, DialogWidget};
 
 use crate::app::state::app_state::AppState;
 use crate::core::rendering::style::default_border_color::default_border_color;
-use crate::extensions::harness::conversation_picker::data::items::conversation_picker_items;
-use crate::extensions::harness::conversation_picker::data::mode::ConversationPickerMode;
-use crate::extensions::harness::conversation_picker::layout::body::ConversationPickerBody;
-use crate::extensions::harness::conversation_picker::layout::footer_text::conversation_picker_footer_text;
-use crate::extensions::harness::conversation_picker::render::render_scope_header::render_conversation_picker_scope_header;
+use crate::extensions::history_modal::data::items::conversation_picker_items;
+use crate::extensions::history_modal::data::mode::ConversationPickerMode;
+use crate::extensions::history_modal::layout::body::ConversationPickerBody;
+use crate::extensions::history_modal::layout::footer_text::conversation_picker_footer_text;
+use crate::extensions::history_modal::render::render_scope_header::render_conversation_picker_scope_header;
 
 /// Renders the centered conversation picker modal dialog when it is open.
 pub fn render_conversation_picker_dialog(app: &AppState, frame: &mut Frame) {

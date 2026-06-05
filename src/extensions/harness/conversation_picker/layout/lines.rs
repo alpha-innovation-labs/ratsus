@@ -1,10 +1,10 @@
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Line;
 
-use crate::extensions::harness::conversation_picker::data::item::{
+use crate::extensions::history_modal::data::item::{
     ConversationPickerItem, ConversationPickerItemKind,
 };
-use crate::extensions::harness::conversation_picker::layout::start_index::conversation_picker_start_index;
+use crate::extensions::history_modal::layout::start_index::conversation_picker_start_index;
 use crate::ui::left_panel::render::session_row_line::{
     folder_row_line, session_row_line, ChatSessionRowLineConfig, FolderRowLineConfig,
 };

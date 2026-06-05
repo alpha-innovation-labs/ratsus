@@ -19,7 +19,7 @@ use crate::extensions::expo::card::area::ExpoCardArea;
 use crate::extensions::expo::observations::conversation_preview::ConversationObservationPreview;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::plans::data::plan_list_state::PlanListState;

@@ -2,6 +2,7 @@ use crossterm::event::KeyCode;
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::deletion::handle_delete_session_confirmation_keyboard::handle_delete_session_confirmation_keyboard;
+use crate::app::deletion::open_delete_session_confirmation::open_delete_session_confirmation;
 use crate::app::expo::hide_expo::hide_expo;
 use crate::app::expo::open_expo_for_focused_conversation::open_expo_for_focused_conversation;
 use crate::app::focus::toggle_focused_pane::toggle_focused_pane;
@@ -17,9 +18,9 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::actions::open::open_command_bar;
 use crate::extensions::command_bar::input::handle_keyboard::handle_command_bar_keyboard;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
-use crate::extensions::harness::conversation_picker::actions::open::open_conversation_picker;
-use crate::extensions::harness::conversation_picker::actions::open_place_in_active_split::open_place_in_active_split_picker;
-use crate::extensions::harness::conversation_picker::input::handle_keyboard::handle_conversation_picker_keyboard;
+use crate::extensions::history_modal::actions::open::open_conversation_picker;
+use crate::extensions::history_modal::actions::open_place_in_active_split::open_place_in_active_split_picker;
+use crate::extensions::history_modal::input::handle_keyboard::handle_conversation_picker_keyboard;
 use crate::extensions::harness::sessions::creation::start_new_chat::start_new_chat;
 use crate::extensions::terminal::ghostty::setup_ghostty_config::setup_ghostty_config;
 use crate::ui::grid_layout::persistence::persist_multiplexer_state::{
@@ -149,6 +150,10 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
             CoordinatorAction::Redraw
         }
         AppHotkey::ToggleWorkspaceView => redraw_if(toggle_workspace_view(app)),
+        AppHotkey::DeleteFocusedSession => {
+            open_delete_session_confirmation(app);
+            CoordinatorAction::Redraw
+        }
         AppHotkey::Quit => {
             persist_multiplexer_state_now(app);
             CoordinatorAction::Quit

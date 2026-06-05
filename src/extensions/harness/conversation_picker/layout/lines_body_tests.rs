@@ -1,5 +1,5 @@
-use crate::extensions::harness::conversation_picker::layout::footer_text::conversation_picker_footer_text;
-use crate::extensions::harness::conversation_picker::layout::lines::{
+use crate::extensions::history_modal::layout::footer_text::conversation_picker_footer_text;
+use crate::extensions::history_modal::layout::lines::{
     conversation_picker_lines, ConversationPickerLinesConfig,
 };
 

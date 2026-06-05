@@ -29,6 +29,7 @@ pub fn app_hotkey_for_command(command_id: CommandBarCommandId) -> AppHotkey {
         CommandBarCommandId::ToggleLeftPane => AppHotkey::ToggleLeftPane,
         CommandBarCommandId::ToggleFocusedPane => AppHotkey::ToggleFocusedPane,
         CommandBarCommandId::ToggleWorkspaceView => AppHotkey::ToggleWorkspaceView,
+        CommandBarCommandId::DeleteSession => AppHotkey::DeleteFocusedSession,
         CommandBarCommandId::Quit => AppHotkey::Quit,
     }
 }

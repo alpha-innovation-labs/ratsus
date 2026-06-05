@@ -3,8 +3,8 @@ use ratatui::layout::Rect;
 use ratatui::widgets::{Paragraph, Widget};
 use ratkit::primitives::dialog::DialogBodyRenderer;
 
-use crate::extensions::harness::conversation_picker::data::item::ConversationPickerItem;
-use crate::extensions::harness::conversation_picker::layout::lines::{
+use crate::extensions::history_modal::data::item::ConversationPickerItem;
+use crate::extensions::history_modal::layout::lines::{
     conversation_picker_lines, ConversationPickerLinesConfig,
 };
 

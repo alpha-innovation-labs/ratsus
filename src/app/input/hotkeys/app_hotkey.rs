@@ -31,6 +31,8 @@ pub enum AppHotkey {
     ToggleFocusedPane,
     /// Toggle between workspace-pane and legacy all-folders left-pane modes.
     ToggleWorkspaceView,
+    /// Open delete confirmation for the focused session.
+    DeleteFocusedSession,
     /// Quit the application.
     Quit,
 }

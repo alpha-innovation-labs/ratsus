@@ -13,7 +13,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::harness::conversation_picker::data::state::ConversationPickerState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
