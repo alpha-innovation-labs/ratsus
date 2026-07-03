@@ -27,7 +27,7 @@ Expected benefit: fewer scattered modifier checks and a single source for shortc
 
 - Move the conversation picker help line out of custom body rendering.
 - Use Ratkit dialog footer support for static keyboard hints.
-- Keep only filter text and result rows inside `ConversationPickerBody`.
+- Keep only filter text and result rows inside `HistoryModalBody`.
 
 Expected benefit: cleaner body layout and consistent modal chrome with delete confirmation.
 

@@ -28,9 +28,6 @@ pub fn prepare_real_case(
         app.history_modal.is_open = true;
         app.history_modal.query = "plan".to_string();
     }
-    if name == "picker_workspace_scope_toggle" {
-        app.history_modal.folder_filter = app.selected_workspace_path.clone();
-    }
     if domain.contains("delete") || name.contains("delete") {
         open_delete_dialog(app)?;
     }

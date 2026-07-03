@@ -13,7 +13,7 @@
 
 1. `render_full_screen_baseline` — The full shell renders menu bar, left pane, main pane, borders, and footer consistently.
 2. `render_delete_confirmation_dialog` — Delete confirmation appears centered with the expected titles and actions.
-3. `render_conversation_picker_dialog` — Picker modal overlays the app without damaging the underlying screen.
+3. `render_history_modal_dialog` — Picker modal overlays the app without damaging the underlying screen.
 4. `render_resize_overlay` — Active resizing displays the resize overlay and returns to normal rendering after release.
 5. `render_small_terminal_layout` — Small terminal sizes clip content safely without panics or malformed borders.
 6. `render_snapshot_regression_baseline` — Stable snapshots catch visible regressions in layout, text, and symbols.
