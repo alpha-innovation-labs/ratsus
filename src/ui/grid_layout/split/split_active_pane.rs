@@ -11,7 +11,6 @@ use crate::ui::grid_layout::split::split_direction::TerminalSplitDirection;
 use crate::ui::grid_layout::split::split_terminal_layout::split_terminal_layout;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
-use crate::ui::workspace_pane::select_workspace::select_workspace;
 
 /// Opens a new chat in a split adjacent to the active terminal pane.
 pub fn split_active_terminal_pane(
@@ -38,7 +37,6 @@ pub fn split_active_terminal_pane(
     );
     app.session_terminals.push(session_terminal);
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
-    let _ = select_workspace(app, working_dir);
     let new_index = app.session_terminals.len() - 1;
     app.active_terminal_pane_id = new_pane_id;
     set_active_terminal_pane_session(app, session_id);

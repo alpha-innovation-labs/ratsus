@@ -8,7 +8,6 @@ use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::persisted_file_system_tree_state::PersistedFileSystemTreeState;
 use crate::ui::grid_layout::group::split_pane_session_group_state::SplitPaneSessionGroupState;
 use crate::ui::grid_layout::persistence::persisted_resizable_grid::PersistedResizableGrid;
-use crate::ui::grid_layout::persistence::persisted_workspace_state::PersistedWorkspaceState;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
 /// Versioned on-disk state for restoring Nexus split-pane multiplexer groups.
@@ -31,6 +30,4 @@ pub struct PersistedMultiplexerState {
     pub active_plan_path: Option<PathBuf>,
     #[serde(default)]
     pub file_system_tree: PersistedFileSystemTreeState,
-    #[serde(default)]
-    pub workspace: PersistedWorkspaceState,
 }

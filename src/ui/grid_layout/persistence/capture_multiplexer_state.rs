@@ -1,6 +1,5 @@
 use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tree::persisted_file_system_tree_state::persisted_file_system_tree_state;
-use crate::ui::grid_layout::persistence::capture_workspace_state::capture_workspace_state;
 use crate::ui::grid_layout::persistence::persisted_multiplexer_state::PersistedMultiplexerState;
 use crate::ui::grid_layout::persistence::persisted_resizable_grid_from_layout::persisted_resizable_grid_from_layout;
 
@@ -27,7 +26,6 @@ pub fn capture_multiplexer_state(app: &AppState) -> PersistedMultiplexerState {
             &app.file_system_tree_expanded_paths,
             &app.file_system_tree_view,
         ),
-        workspace: capture_workspace_state(app),
     }
 }
 
@@ -72,25 +70,6 @@ mod tests {
             .workspace_collapsed_paths
             .contains(&root));
         let _ = fs::remove_dir_all(root);
-        Ok(())
-    }
-
-    /// Capturing app state should include workspace mode and order.
-    #[test]
-    fn captures_workspace_mode_and_order() -> anyhow::Result<()> {
-        let mut app = app_fixture(Vec::new())?;
-        app.workspace_view_enabled = false;
-        app.folder_order = vec!["/workspace/b".into(), "/workspace/a".into()];
-        app.selected_workspace_path = Some("/workspace/b".into());
-
-        let state = capture_multiplexer_state(&app);
-
-        assert!(!state.workspace.workspace_view_enabled);
-        assert_eq!(state.workspace.workspace_order, app.folder_order);
-        assert_eq!(
-            state.workspace.selected_workspace_path,
-            Some("/workspace/b".into())
-        );
         Ok(())
     }
 

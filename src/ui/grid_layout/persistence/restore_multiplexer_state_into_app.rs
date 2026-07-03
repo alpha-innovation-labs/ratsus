@@ -12,7 +12,6 @@ use crate::ui::grid_layout::group::split_pane_session_group::SplitPaneSessionGro
 use crate::ui::grid_layout::persistence::load_persisted_multiplexer_state::load_persisted_multiplexer_state;
 use crate::ui::grid_layout::persistence::persisted_multiplexer_state::PersistedMultiplexerState;
 use crate::ui::grid_layout::persistence::resizable_grid_from_persisted::resizable_grid_from_persisted;
-use crate::ui::grid_layout::persistence::restore_workspace_state::restore_workspace_state;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 
@@ -30,7 +29,6 @@ pub fn restore_persisted_multiplexer_state_into_app(
     persisted: PersistedMultiplexerState,
 ) {
     let previous_file_tree_root = app.file_system_tree_view.root_path().to_path_buf();
-    restore_workspace_state(app, &persisted.workspace);
     app.left_pane_mode = persisted.left_pane_mode;
     app.active_main_pane_tab = persisted.active_main_pane_tab;
     app.selected_expo_folder = persisted.selected_expo_folder.clone();
@@ -311,30 +309,6 @@ mod tests {
         Ok(())
     }
 
-    /// Restoring multiplexer state should restore workspace mode and known folder order.
-    #[test]
-    fn restores_workspace_mode_and_order() -> anyhow::Result<()> {
-        let mut app = app_fixture(Vec::new())?;
-        app.folder_order = vec!["/workspace/a".into(), "/workspace/b".into()];
-        let mut persisted = capture_multiplexer_state(&app);
-        persisted.workspace.workspace_view_enabled = false;
-        persisted.workspace.workspace_order = vec!["/workspace/b".into(), "/workspace/a".into()];
-        persisted.workspace.selected_workspace_path = Some("/workspace/b".into());
-
-        restore_persisted_multiplexer_state_into_app(&mut app, persisted);
-
-        assert!(!app.workspace_view_enabled);
-        assert_eq!(
-            app.folder_order,
-            vec![
-                std::path::PathBuf::from("/workspace/b"),
-                std::path::PathBuf::from("/workspace/a")
-            ]
-        );
-        assert_eq!(app.selected_workspace_path, Some("/workspace/b".into()));
-        Ok(())
-    }
-
     /// Restoring non-file and non-plan modes should not eagerly sync workspace file or plan state.
     #[test]
     fn skips_workspace_file_and_plan_sync_outside_their_modes() -> anyhow::Result<()> {
@@ -347,7 +321,6 @@ mod tests {
         let mut persisted = capture_multiplexer_state(&app);
         persisted.left_pane_mode = LeftPaneMode::Sessions;
         persisted.active_main_pane_tab = MainPaneTab::Chat;
-        persisted.workspace.workspace_order = vec![root.clone()];
         persisted.active_plan_path = Some(root.join("plans/alpha.md"));
         persisted.file_system_tree.selected_path = Some(root.join("visible.txt"));
 
@@ -373,8 +346,6 @@ mod tests {
         app.folder_order = vec![root.clone()];
         app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
         let mut persisted = capture_multiplexer_state(&app);
-        persisted.workspace.workspace_order = vec![root.clone()];
-        persisted.workspace.selected_workspace_path = Some(root.clone());
         persisted.left_pane_mode = LeftPaneMode::Files;
         persisted.active_main_pane_tab = MainPaneTab::Files;
         persisted.selected_expo_folder = Some(root.clone());
