@@ -57,15 +57,6 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
             "Place in horizontal split",
             "Ctrl+Shift+[",
         ),
-        workspace_command_bar_item(0),
-        workspace_command_bar_item(1),
-        workspace_command_bar_item(2),
-        workspace_command_bar_item(3),
-        workspace_command_bar_item(4),
-        workspace_command_bar_item(5),
-        workspace_command_bar_item(6),
-        workspace_command_bar_item(7),
-        workspace_command_bar_item(8),
         CommandBarItem::new(
             CommandBarCommandId::SetupGhosttyConfig,
             "Setup Ghostty hotkeys",
@@ -83,43 +74,9 @@ pub fn command_bar_items() -> Vec<CommandBarItem> {
             "Toggle focus",
             "Ctrl+X",
         ),
-        CommandBarItem::new(
-            CommandBarCommandId::ToggleWorkspaceView,
-            "Toggle workspace view",
-            "",
-        ),
         CommandBarItem::new(CommandBarCommandId::Quit, "Quit", "Ctrl+Q"),
         CommandBarItem::new(CommandBarCommandId::DeleteSession, "Delete session", "d"),
     ]
-}
-
-/// Builds one workspace-selection command row for a zero-based workspace index.
-fn workspace_command_bar_item(index: usize) -> CommandBarItem {
-    let title = match index {
-        0 => "Select workspace 1",
-        1 => "Select workspace 2",
-        2 => "Select workspace 3",
-        3 => "Select workspace 4",
-        4 => "Select workspace 5",
-        5 => "Select workspace 6",
-        6 => "Select workspace 7",
-        7 => "Select workspace 8",
-        8 => "Select workspace 9",
-        _ => "Select workspace",
-    };
-    let hotkey = match index {
-        0 => "Ctrl+1",
-        1 => "Ctrl+2",
-        2 => "Ctrl+3",
-        3 => "Ctrl+4",
-        4 => "Ctrl+5",
-        5 => "Ctrl+6",
-        6 => "Ctrl+7",
-        7 => "Ctrl+8",
-        8 => "Ctrl+9",
-        _ => "Ctrl+?",
-    };
-    CommandBarItem::new(CommandBarCommandId::SelectWorkspace(index), title, hotkey)
 }
 
 /// Returns whether a command row matches the normalized query.

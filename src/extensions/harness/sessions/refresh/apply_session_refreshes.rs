@@ -3,7 +3,6 @@ use std::collections::BTreeMap;
 use crate::app::state::app_state::AppState;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
-use crate::ui::workspace_pane::sync_selected_workspace::sync_selected_workspace;
 
 /// Applies refreshed session metadata and updates dependent visible ordering state.
 pub fn apply_session_refreshes(app: &mut AppState, refreshed_sessions: Vec<ChatSession>) -> bool {
@@ -22,7 +21,6 @@ pub fn apply_session_refreshes(app: &mut AppState, refreshed_sessions: Vec<ChatS
     if changed {
         update_completed_unseen_sessions(app, &running_before, active_session_id.as_deref());
         app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
-        sync_selected_workspace(app);
         app.keep_focused_session_visible();
     }
     changed

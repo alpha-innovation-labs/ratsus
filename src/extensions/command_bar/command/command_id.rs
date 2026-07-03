@@ -10,13 +10,11 @@ pub enum CommandBarCommandId {
     SplitVertical,
     PlaceHorizontal,
     PlaceVertical,
-    SelectWorkspace(usize),
     SetupGhosttyConfig,
     StartChat,
     StartTerminal,
     ToggleLeftPane,
     ToggleFocusedPane,
-    ToggleWorkspaceView,
     DeleteSession,
     Quit,
 }

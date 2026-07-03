@@ -29,6 +29,7 @@ pub fn render_history_modal_dialog(app: &AppState, frame: &mut Frame) {
     let body = HistoryModalBody::new(
         app.history_modal.query.clone(),
         items,
+        &app.session_terminals,
         app.history_modal.selected_position,
         app.history_modal.is_filtering,
         app.loader_tick,

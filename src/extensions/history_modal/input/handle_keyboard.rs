@@ -1,8 +1,6 @@
-use crossterm::event::{KeyCode, KeyModifiers};
 use ratkit::{CoordinatorAction, KeyboardEvent};
 
 use crate::app::state::app_state::AppState;
-use crate::extensions::history_modal::actions::toggle_scope::toggle_history_modal_scope;
 use crate::extensions::history_modal::input::key_behavior::HistoryModalKeyBehavior;
 use crate::ui::keyboard::list::behavior::ListKeyBehavior;
 use crate::ui::keyboard::list::outcome::ListKeyOutcome;
@@ -12,25 +10,8 @@ pub fn handle_history_modal_keyboard(
     app: &mut AppState,
     keyboard: KeyboardEvent,
 ) -> CoordinatorAction {
-    if should_toggle_picker_scope(&keyboard) {
-        return redraw_if(toggle_history_modal_scope(app));
-    }
     let mut behavior = HistoryModalKeyBehavior::new(app);
     coordinator_action_for_list_outcome(behavior.handle_list_keyboard(keyboard))
-}
-
-/// Returns true when Tab should toggle between workspace and all picker scopes.
-fn should_toggle_picker_scope(keyboard: &KeyboardEvent) -> bool {
-    keyboard.key_code == KeyCode::Tab && keyboard.modifiers == KeyModifiers::empty()
-}
-
-/// Converts a state-change flag into a coordinator action.
-fn redraw_if(changed: bool) -> CoordinatorAction {
-    if changed {
-        CoordinatorAction::Redraw
-    } else {
-        CoordinatorAction::Continue
-    }
 }
 
 /// Converts shared list-key outcomes into coordinator actions.

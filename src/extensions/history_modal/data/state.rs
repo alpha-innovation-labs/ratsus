@@ -2,6 +2,9 @@ use std::path::PathBuf;
 
 use crate::extensions::history_modal::data::mode::HistoryModalMode;
 
+/// Backward-compatible alias for the history modal state used by app state.
+pub type ConversationPickerState = HistoryModalState;
+
 /// Tracks filter text, filter mode, and highlighted row for the conversation picker modal.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct HistoryModalState {

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::app::state::app_state::AppState;
 use crate::extensions::history_modal::data::item::HistoryModalItemKind;
 use crate::extensions::history_modal::data::items::history_modal_items;
@@ -11,7 +13,7 @@ pub fn open_history_modal(app: &mut AppState) {
     app.history_modal.pending_g = false;
     app.history_modal.mouse_down_position = None;
     app.history_modal.mouse_drag_moved = false;
-    app.history_modal.folder_filter = app.selected_workspace_path.clone();
+    app.history_modal.folder_filter = None;
     app.history_modal.mode = HistoryModalMode::Open;
 
     let items = history_modal_items(
@@ -39,9 +41,9 @@ mod tests {
     use crate::extensions::history_modal::data::item::HistoryModalItemKind;
     use crate::extensions::history_modal::data::items::history_modal_items;
 
-    /// Verifies Ctrl+H opens the picker scoped to the selected workspace folder.
+    /// Verifies Ctrl+H opens the picker without a folder filter by default.
     #[test]
-    fn opens_scoped_to_selected_workspace() -> anyhow::Result<()> {
+    fn opens_without_folder_filter() -> anyhow::Result<()> {
         let mut app = app_fixture(vec![
             dormant_session("Alpha", "a", "/workspace/alpha"),
             dormant_session("Beta", "b", "/workspace/beta"),
@@ -50,7 +52,6 @@ mod tests {
             PathBuf::from("/workspace/alpha"),
             PathBuf::from("/workspace/beta"),
         ];
-        app.selected_workspace_path = Some(PathBuf::from("/workspace/beta"));
 
         open_history_modal(&mut app);
 
@@ -65,11 +66,11 @@ mod tests {
         );
         assert!(items.iter().any(|item| matches!(
             &item.kind,
-            HistoryModalItemKind::Folder { path, .. } if path == &PathBuf::from("/workspace/beta")
-        )));
-        assert!(!items.iter().any(|item| matches!(
-            &item.kind,
             HistoryModalItemKind::Folder { path, .. } if path == &PathBuf::from("/workspace/alpha")
+        )));
+        assert!(items.iter().any(|item| matches!(
+            &item.kind,
+            HistoryModalItemKind::Folder { path, .. } if path == &PathBuf::from("/workspace/beta")
         )));
         Ok(())
     }

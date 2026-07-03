@@ -10,14 +10,6 @@ pub fn store_current_file_viewer_expansion(app: &mut AppState) {
         .insert(root, expanded_paths);
 }
 
-/// Points the Files tree at the selected workspace and restores its expansion state.
-pub fn sync_file_viewer_workspace_root(app: &mut AppState) {
-    let Some(root) = app.selected_workspace_path.clone() else {
-        return;
-    };
-    replace_file_viewer_root(app, root);
-}
-
 /// Applies persisted expansion state to the current file-viewer root.
 pub fn restore_file_viewer_expansion(app: &mut AppState) {
     let root = app.file_system_tree_view.root_path().to_path_buf();
@@ -44,4 +36,12 @@ fn replace_file_viewer_root(app: &mut AppState, root: PathBuf) {
     let _ = app
         .file_system_tree_view
         .replace_root(root, &expanded_paths);
+}
+
+/// Points the Files tree at the first folder in folder_order and restores its expansion state.
+pub fn sync_file_viewer_workspace_root(app: &mut AppState) {
+    let Some(root) = app.folder_order.first().cloned() else {
+        return;
+    };
+    replace_file_viewer_root(app, root);
 }

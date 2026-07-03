@@ -22,13 +22,11 @@ pub fn app_hotkey_for_command(command_id: CommandBarCommandId) -> AppHotkey {
         CommandBarCommandId::PlaceVertical => {
             AppHotkey::PlaceConversationInActiveSplit(TerminalSplitDirection::Right)
         }
-        CommandBarCommandId::SelectWorkspace(index) => AppHotkey::SelectWorkspace(index),
         CommandBarCommandId::SetupGhosttyConfig => AppHotkey::SetupGhosttyConfig,
         CommandBarCommandId::StartChat => AppHotkey::StartChat,
         CommandBarCommandId::StartTerminal => AppHotkey::StartTerminal,
         CommandBarCommandId::ToggleLeftPane => AppHotkey::ToggleLeftPane,
         CommandBarCommandId::ToggleFocusedPane => AppHotkey::ToggleFocusedPane,
-        CommandBarCommandId::ToggleWorkspaceView => AppHotkey::ToggleWorkspaceView,
         CommandBarCommandId::DeleteSession => AppHotkey::DeleteFocusedSession,
         CommandBarCommandId::Quit => AppHotkey::Quit,
     }
