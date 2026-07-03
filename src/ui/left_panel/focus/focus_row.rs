@@ -24,7 +24,7 @@ pub fn focus_left_panel_row(app: &mut AppState, row_index: usize) {
             app.focused_index = *index;
             app.activate_focused_session();
         }
-        Some(SessionListRow::FolderMore { .. }) | None => {}
+        None => {}
     }
     app.keep_focused_row_visible();
 }

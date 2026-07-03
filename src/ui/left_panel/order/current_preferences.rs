@@ -1,6 +1,5 @@
 use crate::app::state::app_state::AppState;
 use crate::ui::layout::resizable_grid::shell_split_percent::shell_split_percent;
-use crate::ui::layout::resizable_grid::workspace_split_percent::workspace_split_percent;
 use crate::ui::left_panel::order::preferences::SessionOrderPreferences;
 
 /// Builds persisted ordering preferences from current app state.
@@ -19,6 +18,5 @@ pub fn current_session_order_preferences(app: &AppState) -> SessionOrderPreferen
         collapsed_folder_paths: app.collapsed_folders.iter().cloned().collect(),
         expo_card_width: app.expo_card_width,
         shell_split_percent: shell_split_percent(&app.layout),
-        workspace_split_percent: workspace_split_percent(&app.layout),
     }
 }

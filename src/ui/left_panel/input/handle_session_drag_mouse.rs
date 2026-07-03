@@ -31,7 +31,7 @@ fn start_drag_from_mouse(app: &mut AppState, row: u16) -> bool {
         SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. } => {
             app.start_session_drag(index);
         }
-        SessionListRow::FolderMore { .. } | SessionListRow::SplitGroup { .. } => return false,
+        SessionListRow::SplitGroup { .. } => return false,
     }
     true
 }

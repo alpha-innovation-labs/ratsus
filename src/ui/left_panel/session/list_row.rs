@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use ratkit::primitives::resizable_grid::PaneId;
 
 use crate::ui::grid_layout::group::split_pane_session_group::SplitPaneSessionGroupId;
@@ -26,17 +24,16 @@ pub enum SessionListRow {
     Session {
         index: usize,
     },
-    FolderMore {
-        path: PathBuf,
-    },
 }
+
+use std::path::PathBuf;
 
 impl SessionListRow {
     /// Returns the session index represented by this row, when this is a session row.
     pub fn session_index(&self) -> Option<usize> {
         match self {
             Self::Session { index } | Self::SplitGroupChild { index, .. } => Some(*index),
-            Self::Folder { .. } | Self::FolderMore { .. } | Self::SplitGroup { .. } => None,
+            Self::Folder { .. } | Self::SplitGroup { .. } => None,
         }
     }
 }

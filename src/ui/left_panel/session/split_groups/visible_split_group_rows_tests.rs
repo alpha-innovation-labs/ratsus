@@ -6,14 +6,14 @@ use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::grid_layout::group::split_pane_session_group::SplitPaneSessionGroup;
 use crate::ui::grid_layout::group::split_pane_session_group_state::SplitPaneSessionGroupState;
 use crate::ui::left_panel::session::list_row::SessionListRow;
-use crate::ui::left_panel::session::visible_rows::visible_session_rows;
+use crate::ui::left_panel::session::visible_rows::visible_session_rows_with_folders;
 
 /// Verifies one unsplit session still renders as a flat left-panel session row.
 #[test]
 fn unsplit_session_stays_flat() {
     let sessions = vec![session_entry("Alpha", "a")];
 
-    let rows = visible_session_rows(
+    let rows = visible_session_rows_with_folders(
         &sessions,
         &BTreeSet::new(),
         &[PathBuf::from("/tmp/project")],
@@ -32,7 +32,7 @@ fn split_sessions_render_under_group_parent() {
     let groups = group_state(vec![1, 2]);
     let bundles = BTreeMap::from([(1, vec!["a".to_string()]), (2, vec!["b".to_string()])]);
 
-    let rows = visible_session_rows(
+    let rows = visible_session_rows_with_folders(
         &sessions,
         &BTreeSet::new(),
         &[PathBuf::from("/tmp/project")],

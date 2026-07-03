@@ -173,11 +173,6 @@ pub fn split_group_row_line(
     ])
 }
 
-/// Builds a styled folder-scoped row that opens older conversations.
-pub fn folder_more_row_line(is_selected: bool) -> Line<'static> {
-    Line::styled("  + more", more_line_style(is_selected))
-}
-
 /// Builds the separator shown between non-interactive left-panel sections.
 pub fn session_row_separator_line(width: u16, label: Option<&str>) -> Line<'static> {
     Line::styled(
@@ -317,14 +312,4 @@ fn folder_line_style(_is_selected: bool, is_dragging: bool, _is_active_expo_fold
     Style::default()
         .fg(folder_blue_color())
         .add_modifier(Modifier::BOLD)
-}
-
-/// Returns the style for a folder-scoped more row.
-fn more_line_style(is_selected: bool) -> Style {
-    if is_selected {
-        return Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD);
-    }
-    Style::default().fg(Color::Magenta)
 }

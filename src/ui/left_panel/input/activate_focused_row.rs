@@ -1,20 +1,18 @@
 use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::state::app_state::AppState;
-use crate::extensions::history_modal::actions::open_folder::open_folder_history_modal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::focus::focused_row::focused_left_row;
 use crate::ui::left_panel::session::activation::activate_split_group_child::activate_split_group_child;
 use crate::ui::left_panel::session::activation::activate_split_group_parent::activate_split_group_parent;
 use crate::ui::left_panel::session::list_row::SessionListRow;
 
-/// Activates the focused left-panel row as Expo, more-history picker, or session selection.
+/// Activates the focused left-panel row as Expo or session selection.
 pub fn activate_focused_left_row(app: &mut AppState) {
     let Some(row) = focused_left_row(app) else {
         return;
     };
     match row {
         SessionListRow::Folder { path, .. } => activate_expo_folder(app, path),
-        SessionListRow::FolderMore { path } => open_folder_history_modal(app, path),
         SessionListRow::SplitGroup { group_id, .. } => activate_split_group_parent(app, group_id),
         SessionListRow::SplitGroupChild { pane_id, index, .. } => {
             activate_split_group_child(app, pane_id, index);

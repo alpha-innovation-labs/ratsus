@@ -15,7 +15,6 @@ pub mod sort_by_creation_date;
 pub mod split_groups;
 pub mod title_color;
 pub mod visible_rows;
-pub mod visible_rows_cache;
 #[cfg(test)]
 mod visible_rows_running_tests;
 #[cfg(test)]

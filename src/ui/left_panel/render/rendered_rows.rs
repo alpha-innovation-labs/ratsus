@@ -94,7 +94,7 @@ fn append_pinned_section(
     rendered.push(RenderedLeftPanelRow::Separator { label: None });
 }
 
-/// Appends normal scrolled rows with optional workspace day separators.
+/// Appends normal scrolled rows with day-group separators.
 fn append_scrolled_rows(
     rendered: &mut Vec<RenderedLeftPanelRow>,
     app: &AppState,
@@ -120,7 +120,7 @@ fn append_scrolled_rows(
     }
 }
 
-/// Appends a day-group separator when a workspace session row starts a new day group.
+/// Appends a day-group separator when a session row starts a new day group.
 fn append_day_separator_if_needed(
     rendered: &mut Vec<RenderedLeftPanelRow>,
     app: &AppState,
@@ -147,7 +147,7 @@ fn previous_session_day_group_label(
     rows: &[SessionListRow],
     start: usize,
 ) -> Option<String> {
-    if !workspace_day_separators_enabled(app) || start == 0 {
+    if start == 0 {
         return None;
     }
     rows[..start]
@@ -158,18 +158,10 @@ fn previous_session_day_group_label(
 
 /// Returns the day group label for a session-bearing row.
 fn session_row_day_group_label(app: &AppState, row: &SessionListRow) -> Option<String> {
-    if !workspace_day_separators_enabled(app) {
-        return None;
-    }
     let session_index = row.session_index()?;
     app.session_terminals
         .get(session_index)
         .and_then(|entry| session_day_group_label(&entry.session, Utc::now()))
-}
-
-/// Returns whether workspace-scoped date separators should be shown.
-fn workspace_day_separators_enabled(app: &AppState) -> bool {
-    app.workspace_view_enabled && app.selected_workspace_path.is_some()
 }
 
 #[cfg(test)]

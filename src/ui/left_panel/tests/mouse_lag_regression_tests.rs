@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -15,18 +14,15 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::HistoryModalState;
-use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::harness::stub::StubHarness;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::resizable_grid::build_shell_layout::build_shell_layout;
 use crate::ui::layout::resizable_grid::default_shell_split_percent::default_shell_split_percent;
-use crate::ui::layout::resizable_grid::default_workspace_split_percent::default_workspace_split_percent;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
-use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 
 /// Reproduces the wheel-lag path and verifies wheel bursts do not rebuild rows per event.
@@ -34,19 +30,16 @@ use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 fn left_panel_wheel_burst_reuses_cached_visible_rows() -> anyhow::Result<()> {
     let mut app = lag_test_app(72, 12)?;
     let _ = app.visible_rows();
-    let initial_rebuilds = app.visible_rows_rebuild_count();
 
     for _ in 0..80 {
         handle_app_mouse(&mut app, mouse_event(MouseEventKind::ScrollDown, 2));
     }
 
-    assert_eq!(initial_rebuilds, 1);
-    assert_eq!(app.visible_rows_rebuild_count(), initial_rebuilds);
     assert_eq!(app.session_scroll, 7);
     Ok(())
 }
 
-/// Verifies session clicks keep visible rows stable after cache reuse.
+/// Verifies session clicks keep visible rows stable.
 #[test]
 fn session_click_keeps_cached_visible_rows_stable() -> anyhow::Result<()> {
     let mut app = lag_test_app(1, 12)?;
@@ -67,7 +60,7 @@ fn session_click_keeps_cached_visible_rows_stable() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Verifies session drag still reorders rows and refreshes the cache when inputs change.
+/// Verifies session drag still reorders rows when inputs change.
 #[test]
 fn session_drag_updates_cached_visible_rows() -> anyhow::Result<()> {
     let mut app = lag_test_app(1, 3)?;
@@ -108,10 +101,7 @@ fn mouse_event_at_column(kind: MouseEventKind, row: u16, column: u16) -> ratkit:
 
 /// Builds a app state with many visible rows for mouse-lag regression tests.
 fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Result<AppState> {
-    let layout = build_shell_layout(
-        default_shell_split_percent(),
-        default_workspace_split_percent(),
-    );
+    let layout = build_shell_layout(default_shell_split_percent());
 
     let plan_root =
         std::env::temp_dir().join(format!("ratsus-mouse-lag-plans-{}", uuid::Uuid::new_v4()));
@@ -131,14 +121,13 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
-        history_modal: HistoryModalState::new(),
+        history_modal: ConversationPickerState::new(),
         delete_confirmation:
             crate::app::deletion::delete_session_confirmation_state::DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
         initial_sessions_receiver: None,
         diagnostics: new_app_diagnostics(),
         session_terminals: lag_test_sessions(folder_count, sessions_per_folder),
-        visible_rows_cache: RefCell::new(VisibleSessionRowsCache::new()),
         closed_chat_session_ids: BTreeSet::new(),
         completed_unseen_session_ids: BTreeSet::new(),
         selected_conversation_ids: BTreeSet::new(),
@@ -150,14 +139,8 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         session_drag: None,
         folder_drag: None,
         folder_drag_moved: false,
-        workspace_drag: None,
-        workspace_drag_moved: false,
         collapsed_folders: BTreeSet::new(),
         folder_order: (0..folder_count).map(lag_test_folder).collect(),
-        selected_workspace_path: Some(lag_test_folder(0)),
-        workspace_focused_session_ids: BTreeMap::new(),
-        workspace_view_enabled: true,
-        workspace_scroll: 0,
         focused_row: 0,
         pending_left_g: false,
         pending_left_scroll_redraw: false,
@@ -165,8 +148,6 @@ fn lag_test_app(folder_count: usize, sessions_per_folder: usize) -> anyhow::Resu
         last_layout_area: Rect::new(0, 0, 120, 40),
         last_terminal_area: Rect::new(20, 0, 100, 40),
         active_terminal_area: Rect::new(20, 0, 100, 40),
-        last_workspace_area: Rect::default(),
-        last_workspace_list_area: Rect::default(),
         last_left_area: Rect::new(0, 0, 20, 20),
         last_session_list_area: Rect::new(1, 1, 18, 5),
         last_left_session_toggle_area: Rect::default(),
@@ -200,7 +181,7 @@ fn lag_test_sessions(folder_count: usize, sessions_per_folder: usize) -> Vec<Ses
     (0..folder_count)
         .flat_map(|folder| {
             (0..sessions_per_folder).map(move |session| {
-                SessionTerminal::dormant(ChatSession::new(
+                SessionTerminal::dormant(crate::extensions::harness::core::chat_session::ChatSession::new(
                     "2026-05-12T10:00:00Z",
                     format!("Session {folder}-{session}"),
                     format!("session-{folder}-{session}"),

@@ -21,7 +21,7 @@ pub fn collapse_focused_project(app: &mut AppState) {
 /// Returns the project path associated with the focused left-panel row.
 fn focused_project_path(app: &AppState) -> Option<std::path::PathBuf> {
     match focused_left_row(app)? {
-        SessionListRow::Folder { path, .. } | SessionListRow::FolderMore { path } => Some(path),
+        SessionListRow::Folder { path, .. } => Some(path),
         SessionListRow::Session { index } | SessionListRow::SplitGroupChild { index, .. } => app
             .session_terminals
             .get(index)
