@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
@@ -19,7 +18,7 @@ use crate::extensions::expo::card::area::ExpoCardArea;
 use crate::extensions::expo::observations::conversation_preview::ConversationObservationPreview;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::HistoryModalState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -29,7 +28,6 @@ use crate::ui::grid_layout::persistence::persisted_multiplexer_state::PersistedM
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::input::session_drag_state::SessionDragState;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
-use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 
 /// Demo app state for chat session terminals.
 pub struct AppState {
@@ -48,13 +46,12 @@ pub struct AppState {
     pub menu_bar: MenuBar,
     pub hotkey_registry: HotkeyRegistry,
     pub command_bar: CommandBarState,
-    pub history_modal: HistoryModalState,
+    pub history_modal: ConversationPickerState,
     pub delete_confirmation: DeleteSessionConfirmationState,
     pub delete_session_receiver: Option<Receiver<DeleteSessionsResult>>,
     pub initial_sessions_receiver: Option<Receiver<anyhow::Result<Vec<ChatSession>>>>,
     pub diagnostics: AppDiagnostics,
     pub session_terminals: Vec<SessionTerminal>,
-    pub visible_rows_cache: RefCell<VisibleSessionRowsCache>,
     pub closed_chat_session_ids: BTreeSet<String>,
     pub completed_unseen_session_ids: BTreeSet<String>,
     pub selected_conversation_ids: BTreeSet<String>,
@@ -68,21 +65,13 @@ pub struct AppState {
     pub session_drag: Option<SessionDragState>,
     pub folder_drag: Option<PathBuf>,
     pub folder_drag_moved: bool,
-    pub workspace_drag: Option<PathBuf>,
-    pub workspace_drag_moved: bool,
     pub collapsed_folders: BTreeSet<PathBuf>,
     pub folder_order: Vec<PathBuf>,
-    pub selected_workspace_path: Option<PathBuf>,
-    pub workspace_focused_session_ids: BTreeMap<PathBuf, String>,
-    pub workspace_view_enabled: bool,
-    pub workspace_scroll: usize,
     pub focused_row: usize,
     pub pending_left_g: bool,
     pub last_layout_area: Rect,
     pub last_terminal_area: Rect,
     pub active_terminal_area: Rect,
-    pub last_workspace_area: Rect,
-    pub last_workspace_list_area: Rect,
     pub last_left_area: Rect,
     pub last_session_list_area: Rect,
     pub last_left_session_toggle_area: Rect,

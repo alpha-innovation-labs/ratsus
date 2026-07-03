@@ -9,7 +9,6 @@ use crate::ui::grid_layout::split::active_spawn_area::active_terminal_spawn_area
 use crate::ui::grid_layout::split::set_active_session::set_active_terminal_pane_session;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
-use crate::ui::workspace_pane::select_workspace::select_workspace;
 
 /// Starts a normal shell terminal in the active selected session working directory.
 pub fn start_new_normal_terminal(app: &mut AppState) -> Result<()> {
@@ -17,7 +16,7 @@ pub fn start_new_normal_terminal(app: &mut AppState) -> Result<()> {
         &app.session_terminals,
         app.active_index,
         app.focused_index,
-        app.selected_workspace_path.as_deref(),
+        None,
     )?;
     let area = active_terminal_spawn_area(app);
     let rows = area.height.max(1);
@@ -34,7 +33,6 @@ pub fn start_new_normal_terminal(app: &mut AppState) -> Result<()> {
     let new_index = normal_terminal_insert_index(app.session_terminals.len(), app.focused_index);
     app.session_terminals.insert(new_index, session_terminal);
     app.folder_order = sync_folder_order(&app.folder_order, &app.session_terminals);
-    let _ = select_workspace(app, working_dir);
     app.active_index = new_index;
     app.focused_index = new_index;
     app.focused_pane = FocusedPane::Terminal;

@@ -3,8 +3,7 @@ use ratkit::CoordinatorAction;
 use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::state::app_state::AppState;
 use crate::extensions::expo::input::handle_mouse::handle_expo_mouse;
-use crate::extensions::history_modal::actions::open_folder::open_folder_history_modal;
-use crate::extensions::history_modal::input::handle_mouse::handle_history_modal_mouse;
+use crate::extensions::harness::conversation_picker::input::handle_mouse::handle_history_modal_mouse;
 use crate::extensions::plans::input::handle_plan_drag_mouse::handle_plan_drag_mouse;
 use crate::extensions::plans::input::handle_plan_left_mouse::handle_plan_left_mouse;
 use crate::extensions::plans::preview::handle_plan_preview_mouse::handle_plan_preview_mouse;
@@ -36,7 +35,6 @@ use crate::ui::grid_layout::pane::id_at_position::terminal_pane_id_at_position;
 use crate::ui::grid_layout::persistence::persist_multiplexer_state::persist_multiplexer_state;
 use crate::ui::grid_layout::split::close_terminal_pane::close_terminal_pane;
 use crate::ui::menu_bar::input::handle_mouse::handle_menu_bar_mouse;
-use crate::ui::workspace_pane::handle_workspace_mouse::handle_workspace_mouse;
 
 const MOUSE_SCROLL_LINES_PER_TICK: usize = 3;
 
@@ -57,9 +55,6 @@ pub fn handle_app_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> Coordi
     if handle_resizable_grid_mouse(app, mouse) {
         return CoordinatorAction::Redraw;
     }
-    if app.workspace_view_enabled && app.workspace_drag.is_some() {
-        return handle_workspace_mouse(app, mouse);
-    }
     if app.left_pane_mode == LeftPaneMode::Plans
         && app.plan_list.drag.is_some()
         && handle_plan_drag_mouse(&mut app.plan_list, mouse)
@@ -70,9 +65,6 @@ pub fn handle_app_mouse(app: &mut AppState, mouse: ratkit::MouseEvent) -> Coordi
         && handle_session_drag_mouse(app, mouse)
     {
         return CoordinatorAction::Redraw;
-    }
-    if app.workspace_view_enabled && mouse.is_inside(app.last_workspace_area) {
-        return handle_workspace_mouse(app, mouse);
     }
     if mouse.is_inside(app.last_left_area) {
         return handle_left_mouse(app, mouse);
@@ -139,7 +131,6 @@ fn handle_left_click(app: &mut AppState, mouse: ratkit::MouseEvent) {
                 toggle_session_folder(app, path);
             }
         }
-        SessionListRow::FolderMore { path } => open_folder_history_modal(app, path),
         SessionListRow::SplitGroup { group_id, .. } => activate_split_group_parent(app, group_id),
         SessionListRow::SplitGroupChild { pane_id, index, .. } => {
             activate_split_group_child(app, pane_id, index);

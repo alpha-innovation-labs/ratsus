@@ -35,9 +35,6 @@ use crate::ui::left_panel::mode::cycle_left_pane_mode::cycle_left_pane_mode;
 use crate::ui::left_panel::outcome::LeftPaneActionOutcome;
 use crate::ui::notifications::toast::show_failed_to_start_new_chat::show_failed_to_start_new_chat_toast;
 use crate::ui::notifications::toast::show_failed_to_start_terminal::show_failed_to_start_terminal_toast;
-use crate::ui::workspace_pane::select_workspace_by_visible_index::select_workspace_by_visible_index;
-use crate::ui::workspace_pane::toggle_workspace_view::toggle_workspace_view;
-use crate::ui::workspace_pane::workspace_index_for_keyboard::workspace_index_for_keyboard;
 
 /// Handles keyboard input for global shortcuts and the focused pane.
 pub fn handle_keyboard_event(
@@ -68,9 +65,6 @@ pub fn handle_keyboard_event(
         let outcome = select_visible_left_pane_row(app, index);
         persist_left_pane_focus_outcome(app, outcome);
         return Ok(coordinator_action_for_left_pane_outcome(outcome));
-    }
-    if let Some(index) = workspace_index_for_keyboard(&keyboard) {
-        return Ok(redraw_if(select_workspace_by_visible_index(app, index)));
     }
     if !normal_terminal_passthrough_hotkey(app, &keyboard) {
         if let Some(hotkey) =
@@ -122,9 +116,6 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
             }
             CoordinatorAction::Redraw
         }
-        AppHotkey::SelectWorkspace(index) => {
-            redraw_if(select_workspace_by_visible_index(app, index))
-        }
         AppHotkey::SetupGhosttyConfig => {
             setup_ghostty_config_for_app(app);
             CoordinatorAction::Redraw
@@ -149,7 +140,6 @@ fn handle_app_hotkey(app: &mut AppState, hotkey: AppHotkey) -> CoordinatorAction
             toggle_focused_pane(app);
             CoordinatorAction::Redraw
         }
-        AppHotkey::ToggleWorkspaceView => redraw_if(toggle_workspace_view(app)),
         AppHotkey::DeleteFocusedSession => {
             open_delete_session_confirmation(app);
             CoordinatorAction::Redraw
@@ -387,16 +377,12 @@ ctrl_shift_tab_focused_index: 1
         );
     }
 
-    /// Ctrl+T opens a normal terminal in the selected workspace, not the active session folder.
+    /// Ctrl+T opens a normal terminal in the active session folder.
     #[test]
-    fn control_t_starts_terminal_in_selected_workspace() {
+    fn control_t_starts_terminal_in_active_session_folder() {
         let mut app = app_fixture(vec![dormant_session("alpha", "alpha", "/workspace/alpha")])
             .expect("app fixture");
-        app.folder_order = vec![
-            PathBuf::from("/workspace/alpha"),
-            PathBuf::from("/workspace/beta"),
-        ];
-        app.selected_workspace_path = Some(PathBuf::from("/workspace/beta"));
+        app.folder_order = vec![PathBuf::from("/workspace/alpha")];
         app.active_index = 0;
         app.focused_index = 0;
 
@@ -409,62 +395,7 @@ ctrl_shift_tab_focused_index: 1
         );
         assert_eq!(
             app.session_terminals[1].session.working_dir,
-            PathBuf::from("/workspace/beta")
-        );
-    }
-
-    /// Ctrl+number selects a workspace before terminal passthrough.
-    #[test]
-    fn control_number_selects_workspace() {
-        let mut app = app_fixture(Vec::new()).expect("app fixture");
-        app.folder_order = vec![PathBuf::from("/a"), PathBuf::from("/b")];
-
-        let outcome = handle_keyboard_event(&mut app, control_key('2')).expect("keyboard event");
-
-        assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert_eq!(app.selected_workspace_path, Some(PathBuf::from("/b")));
-    }
-
-    /// Ctrl+number selects the first folder session in grouped folder mode.
-    #[test]
-    fn control_number_selects_folder_session_when_workspace_view_is_disabled() {
-        let mut app = app_fixture(vec![
-            dormant_session("a-one", "a-one", "/workspace/a"),
-            dormant_session("b-one", "b-one", "/workspace/b"),
-            dormant_session("b-two", "b-two", "/workspace/b"),
-        ])
-        .expect("app fixture");
-        app.workspace_view_enabled = false;
-        app.folder_order = vec![PathBuf::from("/workspace/a"), PathBuf::from("/workspace/b")];
-
-        let outcome = handle_keyboard_event(&mut app, control_key('2')).expect("keyboard event");
-
-        assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert_eq!(app.active_index, 1);
-        assert_eq!(app.focused_index, 1);
-        assert_eq!(
-            app.selected_workspace_path,
-            Some(PathBuf::from("/workspace/b"))
-        );
-    }
-
-    /// Cmd+number selects the matching visible row in the active left-pane content.
-    #[test]
-    fn super_number_selects_visible_session_row() {
-        let mut app = app_fixture(vec![
-            dormant_session("one", "one", "/tmp/project"),
-            dormant_session("two", "two", "/tmp/project"),
-        ])
-        .expect("app fixture");
-
-        let outcome = handle_keyboard_event(&mut app, super_key('2')).expect("keyboard event");
-
-        assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert_eq!(app.active_index, 1);
-        assert_eq!(app.focused_index, 1);
-        assert_eq!(
-            app.selected_workspace_path,
-            Some(PathBuf::from("/tmp/project"))
+            PathBuf::from("/workspace/alpha")
         );
     }
 
@@ -494,34 +425,6 @@ ctrl_shift_tab_focused_index: 1
             app.left_pane_mode,
             crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode::Sessions
         );
-    }
-
-    /// Command bar workspace command toggles the workspace view mode.
-    #[test]
-    fn command_bar_workspace_command_toggles_workspace_view() {
-        let mut app = app_fixture(Vec::new()).expect("app fixture");
-        app.command_bar.is_open = true;
-        app.command_bar.query = "toggle workspace".to_string();
-        app.workspace_view_enabled = true;
-
-        let outcome = handle_keyboard_event(&mut app, key(KeyCode::Enter)).expect("keyboard event");
-
-        assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert!(!app.workspace_view_enabled);
-    }
-
-    /// Command bar workspace hotkey command selects the requested workspace.
-    #[test]
-    fn command_bar_select_workspace_command_selects_workspace() {
-        let mut app = app_fixture(Vec::new()).expect("app fixture");
-        app.folder_order = vec![PathBuf::from("/a"), PathBuf::from("/b")];
-        app.command_bar.is_open = true;
-        app.command_bar.query = "select workspace 2".to_string();
-
-        let outcome = handle_keyboard_event(&mut app, key(KeyCode::Enter)).expect("keyboard event");
-
-        assert_eq!(outcome, CoordinatorAction::Redraw);
-        assert_eq!(app.selected_workspace_path, Some(PathBuf::from("/b")));
     }
 
     /// Builds an app with Expo active for keyboard tests.
@@ -554,15 +457,6 @@ ctrl_shift_tab_focused_index: 1
         KeyboardEvent {
             key_code,
             modifiers,
-            kind: KeyEventKind::Press,
-        }
-    }
-
-    /// Builds a Cmd-character key press.
-    fn super_key(character: char) -> KeyboardEvent {
-        KeyboardEvent {
-            key_code: KeyCode::Char(character),
-            modifiers: KeyModifiers::SUPER,
             kind: KeyEventKind::Press,
         }
     }

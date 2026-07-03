@@ -6,7 +6,6 @@ use crate::app::expo::activate_expo_folder::activate_expo_folder;
 use crate::app::navigation::reorder_session_to_index::reorder_session_to_index;
 use crate::app::state::app_state::AppState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
-use crate::extensions::file_viewer::tree::sync_workspace_root::sync_file_viewer_workspace_root;
 use crate::extensions::terminal::session::chat_terminal::ChatTerminal;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::grid_layout::bundle::set_active_bundle_session::set_active_terminal_pane_bundle_session;
@@ -26,7 +25,6 @@ use crate::ui::left_panel::scroll::clamp_visible_offset::clamp_visible_offset;
 use crate::ui::left_panel::session::activation::activate_split_group_child::activate_split_group_child;
 use crate::ui::left_panel::session::activation::activate_split_group_parent::activate_split_group_parent;
 use crate::ui::left_panel::session::list_row::SessionListRow;
-use crate::ui::workspace_pane::remember_active_workspace_session::remember_active_workspace_session;
 
 impl AppState {
     /// Returns the active terminal for immutable operations.
@@ -66,7 +64,7 @@ impl AppState {
                 self.focused_index = *index;
                 self.activate_focused_session();
             }
-            Some(SessionListRow::FolderMore { .. }) | None => {}
+            None => {}
         }
         self.keep_focused_row_visible();
     }
@@ -83,8 +81,6 @@ impl AppState {
             return;
         }
         self.active_index = self.focused_index;
-        sync_selected_workspace_to_active_session(self);
-        remember_active_workspace_session(self);
         self.active_main_pane_tab = MainPaneTab::Chat;
         self.sync_focused_row_to_session();
         persist_session_order_preferences(self);
@@ -170,36 +166,6 @@ impl AppState {
         }
     }
 
-    /// Starts dragging a workspace row.
-    pub fn start_workspace_drag(&mut self, path: PathBuf) {
-        self.workspace_drag = Some(path);
-        self.workspace_drag_moved = false;
-    }
-
-    /// Marks the active workspace drag as having moved beyond the initial click.
-    pub fn mark_workspace_drag_moved(&mut self) {
-        if self.workspace_drag.is_some() {
-            self.workspace_drag_moved = true;
-        }
-    }
-
-    /// Moves the active dragged workspace before the target workspace row.
-    pub fn move_dragged_workspace(&mut self, target: PathBuf) {
-        let Some(source) = self.workspace_drag.clone() else {
-            return;
-        };
-        if move_folder_order(&mut self.folder_order, &source, &target) {
-            persist_session_order_preferences(self);
-            persist_multiplexer_state(self);
-        }
-    }
-
-    /// Ends any active workspace drag operation.
-    pub fn finish_workspace_drag(&mut self) {
-        self.workspace_drag = None;
-        self.workspace_drag_moved = false;
-    }
-
     /// Ends any active left-pane drag operation.
     pub fn finish_left_panel_drag(&mut self) {
         self.session_drag = None;
@@ -250,26 +216,6 @@ impl AppState {
         }
         self.active_terminal_area = area;
     }
-}
-
-/// Syncs selected workspace and file tree to the active session workspace.
-fn sync_selected_workspace_to_active_session(app: &mut AppState) {
-    let Some(workspace) = app
-        .session_terminals
-        .get(app.active_index)
-        .map(|entry| entry.session.working_dir.clone())
-    else {
-        return;
-    };
-    if !app.folder_order.iter().any(|folder| folder == &workspace) {
-        return;
-    }
-    if app.selected_workspace_path.as_ref() != Some(&workspace) {
-        app.selected_workspace_path = Some(workspace);
-        app.session_scroll = 0;
-        app.suppress_left_focus_scroll = false;
-    }
-    sync_file_viewer_workspace_root(app);
 }
 
 /// Activates a session inside an existing pane, or falls back to standalone display.

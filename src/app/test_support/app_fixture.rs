@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 
@@ -13,7 +12,7 @@ use crate::app::state::app_state::AppState;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::HistoryModalState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
 use crate::extensions::terminal::session::session_terminal::SessionTerminal;
@@ -21,18 +20,13 @@ use crate::ui::grid_layout::group::default_split_pane_session_group_state::defau
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::resizable_grid::build_shell_layout::build_shell_layout;
 use crate::ui::layout::resizable_grid::default_shell_split_percent::default_shell_split_percent;
-use crate::ui::layout::resizable_grid::default_workspace_split_percent::default_workspace_split_percent;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
-use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 
 /// Builds a minimal AppState fixture without spawning terminal processes.
 pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppState> {
-    let layout = build_shell_layout(
-        default_shell_split_percent(),
-        default_workspace_split_percent(),
-    );
+    let layout = build_shell_layout(default_shell_split_percent());
     let plan_root =
         std::env::temp_dir().join(format!("ratsus-app-fixture-plans-{}", uuid::Uuid::new_v4()));
     Ok(AppState {
@@ -51,13 +45,12 @@ pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<Ap
         menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
-        history_modal: HistoryModalState::new(),
+        history_modal: ConversationPickerState::new(),
         delete_confirmation: DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
         initial_sessions_receiver: None,
         diagnostics: new_app_diagnostics(),
         session_terminals,
-        visible_rows_cache: RefCell::new(VisibleSessionRowsCache::new()),
         closed_chat_session_ids: BTreeSet::new(),
         completed_unseen_session_ids: BTreeSet::new(),
         selected_conversation_ids: BTreeSet::new(),
@@ -71,21 +64,13 @@ pub fn app_fixture(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<Ap
         session_drag: None,
         folder_drag: None,
         folder_drag_moved: false,
-        workspace_drag: None,
-        workspace_drag_moved: false,
         collapsed_folders: BTreeSet::new(),
         folder_order: vec!["/tmp/project".into()],
-        selected_workspace_path: Some("/tmp/project".into()),
-        workspace_focused_session_ids: BTreeMap::new(),
-        workspace_view_enabled: true,
-        workspace_scroll: 0,
         focused_row: 1,
         pending_left_g: false,
         last_layout_area: Rect::default(),
         last_terminal_area: Rect::default(),
         active_terminal_area: Rect::default(),
-        last_workspace_area: Rect::default(),
-        last_workspace_list_area: Rect::default(),
         last_left_area: Rect::default(),
         last_session_list_area: Rect::default(),
         last_left_session_toggle_area: Rect::default(),

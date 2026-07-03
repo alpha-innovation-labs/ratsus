@@ -17,8 +17,6 @@ pub enum AppHotkey {
     PlaceConversationInActiveSplit(TerminalSplitDirection),
     /// Split the active terminal pane in one direction.
     SplitTerminal(TerminalSplitDirection),
-    /// Select a workspace by visible zero-based index.
-    SelectWorkspace(usize),
     /// Configure Ghostty so Ratsus can receive app shortcuts.
     SetupGhosttyConfig,
     /// Start a new harness-backed chat session.
@@ -29,8 +27,6 @@ pub enum AppHotkey {
     ToggleLeftPane,
     /// Toggle keyboard focus between app panes.
     ToggleFocusedPane,
-    /// Toggle between workspace-pane and legacy all-folders left-pane modes.
-    ToggleWorkspaceView,
     /// Open delete confirmation for the focused session.
     DeleteFocusedSession,
     /// Quit the application.

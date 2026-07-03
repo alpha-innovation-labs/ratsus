@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 
@@ -17,7 +16,7 @@ use crate::extensions::expo::observations::preview_requests::observation_preview
 use crate::extensions::expo::observations::spawn_cache_worker::spawn_observation_cache_worker;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::HistoryModalState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_harness::ChatHarness;
 use crate::extensions::harness::sessions::load::spawn_initial_sessions_worker::spawn_initial_sessions_worker;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -28,17 +27,13 @@ use crate::ui::layout::resizable_grid::build_shell_layout::build_shell_layout;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
 use crate::ui::left_panel::order::load_preferences::load_session_order_preferences;
-use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 
 impl AppState {
     /// Builds the app state with an injected chat harness.
     pub fn new_with_harness(chat_harness: Arc<dyn ChatHarness>) -> Result<Self> {
         let preferences = load_session_order_preferences();
-        let layout = build_shell_layout(
-            preferences.shell_split_percent,
-            preferences.workspace_split_percent,
-        );
+        let layout = build_shell_layout(preferences.shell_split_percent);
         let session_terminals = Vec::<SessionTerminal>::new();
         let folder_order = preferences.folder_paths.clone();
         let active_index = 0;
@@ -72,13 +67,12 @@ impl AppState {
             menu_bar: app_menu_bar(LeftPaneMode::Sessions),
             hotkey_registry: app_hotkey_registry(),
             command_bar: CommandBarState::new(),
-            history_modal: HistoryModalState::new(),
+            history_modal: ConversationPickerState::new(),
             delete_confirmation: DeleteSessionConfirmationState::default(),
             delete_session_receiver: None,
             initial_sessions_receiver,
             diagnostics: new_app_diagnostics(),
             session_terminals,
-            visible_rows_cache: RefCell::new(VisibleSessionRowsCache::new()),
             closed_chat_session_ids: BTreeSet::new(),
             completed_unseen_session_ids: BTreeSet::new(),
             selected_conversation_ids: BTreeSet::new(),
@@ -92,21 +86,13 @@ impl AppState {
             session_drag: None,
             folder_drag: None,
             folder_drag_moved: false,
-            workspace_drag: None,
-            workspace_drag_moved: false,
             collapsed_folders,
             folder_order,
-            selected_workspace_path: None,
-            workspace_focused_session_ids: BTreeMap::new(),
-            workspace_view_enabled: true,
-            workspace_scroll: 0,
             focused_row,
             pending_left_g: false,
             last_layout_area: Rect::default(),
             last_terminal_area: Rect::default(),
             active_terminal_area: Rect::default(),
-            last_workspace_area: Rect::default(),
-            last_workspace_list_area: Rect::default(),
             last_left_area: Rect::default(),
             last_session_list_area: Rect::default(),
             last_left_session_toggle_area: Rect::default(),

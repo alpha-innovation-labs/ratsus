@@ -13,9 +13,7 @@ use crate::ui::left_panel::order::apply_session_id_order::apply_session_id_order
 use crate::ui::left_panel::order::load_preferences::load_session_order_preferences;
 use crate::ui::left_panel::order::sync_folder_order::sync_folder_order;
 use crate::ui::left_panel::session::sort_by_creation_date::sort_sessions_by_creation_date;
-use crate::ui::left_panel::session::visible_rows::visible_session_rows;
-use crate::ui::workspace_pane::selected_folder_order::selected_folder_order;
-use crate::ui::workspace_pane::sync_selected_workspace::sync_selected_workspace;
+use crate::ui::left_panel::session::visible_rows::visible_session_rows_with_folders;
 
 /// Applies startup sessions loaded by the background worker when ready.
 pub fn drain_initial_sessions_receiver(app: &mut AppState) -> Result<bool> {
@@ -65,7 +63,6 @@ fn apply_initial_sessions(
     app.active_index = active_index;
     app.focused_index = active_index;
     app.folder_order = sync_folder_order(&preferences.folder_paths, &app.session_terminals);
-    sync_selected_workspace(app);
     app.observation_cache_receiver = Some(spawn_observation_cache_worker(
         app.chat_harness.clone(),
         observation_preview_requests(&app.session_terminals),
@@ -82,10 +79,10 @@ fn apply_initial_sessions(
     }
     restore_multiplexer_state_into_app(app);
     app.focused_row = session_visible_row_index(
-        &visible_session_rows(
+        &visible_session_rows_with_folders(
             &app.session_terminals,
             &app.collapsed_folders,
-            &selected_folder_order(&app.folder_order, app.selected_workspace_path.as_ref()),
+            &app.folder_order,
             Some(app.active_index),
             &app.split_pane_session_groups,
             &app.terminal_pane_session_bundles,
