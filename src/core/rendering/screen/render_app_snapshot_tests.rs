@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
 use std::sync::Arc;
@@ -19,7 +18,7 @@ use crate::core::rendering::screen::render_app::render_app;
 use crate::extensions::command_bar::data::command_bar_state::CommandBarState;
 use crate::extensions::file_viewer::tabs::tab::MainPaneTab;
 use crate::extensions::file_viewer::tree::view::FileSystemTreeView;
-use crate::extensions::history_modal::data::state::HistoryModalState;
+use crate::extensions::history_modal::data::state::ConversationPickerState;
 use crate::extensions::harness::core::chat_session::ChatSession;
 use crate::extensions::harness::stub::StubHarness;
 use crate::extensions::plans::data::plan_list_state::PlanListState;
@@ -27,10 +26,8 @@ use crate::extensions::terminal::session::session_terminal::SessionTerminal;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::resizable_grid::build_shell_layout::build_shell_layout;
 use crate::ui::layout::resizable_grid::default_shell_split_percent::default_shell_split_percent;
-use crate::ui::layout::resizable_grid::default_workspace_split_percent::default_workspace_split_percent;
 use crate::ui::layout::resizable_grid::pane_ids::TERMINAL_PANE_ID;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
-use crate::ui::left_panel::session::visible_rows_cache::VisibleSessionRowsCache;
 use crate::ui::menu_bar::state::app_menu_bar::app_menu_bar;
 
 /// Snapshots right and bottom split rendering without a real terminal process.
@@ -64,26 +61,26 @@ fn snapshots_right_and_bottom_split_layout() -> anyhow::Result<()> {
     app.focused_index = 2;
     app.terminal_pane_areas = terminal_split_content_areas(right_pane, bottom_pane);
 
-    let output = render_snapshot(&mut app, Rect::new(16, 3, 64, 16))?;
+    let output = render_snapshot(&mut app, Rect::new(8, 3, 72, 16))?;
 
     assert!(!output.contains("No session assigned"));
     assert_snapshot!(output, @r###"
-ons ───────╮╭Chat──────────────────────────────────────────────╮
-today ─────││┌Session A─────────── x ┐┌Session B─────────── x ┐│
-ion A    0m│││Starting chat session… ││Starting chat session… ││
-ion B    0m│││                       ││                       ││
-ion C    0m│││                       ││                       ││
-           │││                       ││                       ││
-           │││                       ││                       ││
-           │││                       │└───────────────────────┘│
-           │││                       │┌Session C─────────── x ┐│
-           │││                       ││Starting chat session… ││
-           │││                       ││                       ││
-           │││                       ││                       ││
-           │││                       ││                       ││
-           │││                       ││                       ││
-           │││                       ││                       ││
-ove  h/l fo││└───────────────────────┘└───────────────────────┘│
+─────╮╭Chat────────────────────────────────────────────────────╮
+      │┌Session A─────────── x ┐┌Session B─────────── x ┐        │
+      ││Starting chat session… ││Starting chat session… │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       │└───────────────────────┘        │
+      ││                       │┌Session C─────────── x ┐        │
+      ││                       ││Starting chat session… │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+      ││                       ││                       │        │
+h/l fo│└───────────────────────┘└───────────────────────┘        │
 "###);
     Ok(())
 }
@@ -97,19 +94,19 @@ fn snapshots_bundled_session_left_panel_markers() -> anyhow::Result<()> {
         BTreeMap::from([(TERMINAL_PANE_ID, vec!["a".to_string(), "b".to_string()])]);
     app.active_index = 1;
     app.focused_index = 1;
-    app.terminal_pane_areas = BTreeMap::from([(TERMINAL_PANE_ID, Rect::new(17, 4, 62, 15))]);
+    app.terminal_pane_areas = BTreeMap::from([(TERMINAL_PANE_ID, Rect::new(8, 4, 71, 15))]);
 
-    let output = render_snapshot(&mut app, Rect::new(0, 3, 16, 6))?;
+    let output = render_snapshot(&mut app, Rect::new(0, 3, 8, 6))?;
 
-    assert!(output.contains("󰀘 Alph"));
-    assert!(output.contains("󰀘 Beta"));
+    assert!(output.contains("Alph"));
+    assert!(output.contains("Beta"));
     assert_snapshot!(output, @r###"
-╭ Worksp╮╭ Sessi
-│╭─── 2╮││───── 
-││proj…│││󰀘 Alph
-│╰─────╯││󰀘 Beta
-│       ││      
-│       ││
+╭ Sessi
+│───── 
+│󰀘 Alph
+│󰀘 Beta
+│      
+│      
 "###);
     Ok(())
 }
@@ -125,7 +122,6 @@ fn snapshots_files_tab_tree_and_preview() -> anyhow::Result<()> {
     app.active_main_pane_tab = MainPaneTab::Chat;
     app.left_pane_mode = LeftPaneMode::Files;
     app.folder_order = vec![root.clone()];
-    app.selected_workspace_path = Some(root.clone());
     app.file_system_tree_view = FileSystemTreeView::with_root(root.clone())?;
     app.file_system_tree_view
         .sync_workspace_roots(&app.folder_order);
@@ -161,10 +157,7 @@ fn session(title: &str, id: &str) -> SessionTerminal {
 
 /// Builds a minimal app state for rendering snapshots.
 fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppState> {
-    let layout = build_shell_layout(
-        default_shell_split_percent(),
-        default_workspace_split_percent(),
-    );
+    let layout = build_shell_layout(default_shell_split_percent());
     let plan_root =
         std::env::temp_dir().join(format!("ratsus-snapshot-plans-{}", uuid::Uuid::new_v4()));
     Ok(AppState {
@@ -183,13 +176,12 @@ fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppSt
         menu_bar: app_menu_bar(LeftPaneMode::Sessions),
         hotkey_registry: app_hotkey_registry(),
         command_bar: CommandBarState::new(),
-        history_modal: HistoryModalState::new(),
+        history_modal: ConversationPickerState::new(),
         delete_confirmation: DeleteSessionConfirmationState::default(),
         delete_session_receiver: None,
         initial_sessions_receiver: None,
         diagnostics: new_app_diagnostics(),
         session_terminals,
-        visible_rows_cache: RefCell::new(VisibleSessionRowsCache::new()),
         closed_chat_session_ids: BTreeSet::new(),
         completed_unseen_session_ids: BTreeSet::new(),
         selected_conversation_ids: BTreeSet::new(),
@@ -203,21 +195,13 @@ fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppSt
         session_drag: None,
         folder_drag: None,
         folder_drag_moved: false,
-        workspace_drag: None,
-        workspace_drag_moved: false,
         collapsed_folders: BTreeSet::new(),
         folder_order: vec!["/tmp/project".into()],
-        selected_workspace_path: Some("/tmp/project".into()),
-        workspace_focused_session_ids: BTreeMap::new(),
-        workspace_view_enabled: true,
-        workspace_scroll: 0,
         focused_row: 1,
         pending_left_g: false,
         last_layout_area: Rect::default(),
         last_terminal_area: Rect::default(),
         active_terminal_area: Rect::default(),
-        last_workspace_area: Rect::default(),
-        last_workspace_list_area: Rect::default(),
         last_left_area: Rect::default(),
         last_session_list_area: Rect::default(),
         last_left_session_toggle_area: Rect::default(),
@@ -248,7 +232,7 @@ fn snapshot_app(session_terminals: Vec<SessionTerminal>) -> anyhow::Result<AppSt
 /// Returns expected content areas so snapshots never spawn real terminal processes.
 fn terminal_split_content_areas(right_pane: PaneId, bottom_pane: PaneId) -> BTreeMap<PaneId, Rect> {
     BTreeMap::from([
-        (TERMINAL_PANE_ID, Rect::new(18, 5, 29, 13)),
+        (TERMINAL_PANE_ID, Rect::new(10, 5, 37, 13)),
         (right_pane, Rect::new(49, 5, 29, 5)),
         (bottom_pane, Rect::new(49, 12, 29, 6)),
     ])

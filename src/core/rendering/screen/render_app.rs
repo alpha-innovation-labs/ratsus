@@ -26,9 +26,7 @@ use crate::ui::grid_layout::render::render_chat_sessions::render_chat_sessions;
 use crate::ui::layout::focus::focused_pane::FocusedPane;
 use crate::ui::layout::resizable_grid::is_resizing::is_resizing_layout;
 use crate::ui::layout::resizable_grid::pane_area_by_id::pane_area_by_id;
-use crate::ui::layout::resizable_grid::pane_ids::{
-    LEFT_PANE_ID, TERMINAL_PANE_ID, WORKSPACE_PANE_ID,
-};
+use crate::ui::layout::resizable_grid::pane_ids::{LEFT_PANE_ID, TERMINAL_PANE_ID};
 use crate::ui::left_panel::active_content::ActiveLeftPaneContent;
 use crate::ui::left_panel::content::LeftPaneContent;
 use crate::ui::left_panel::mode::left_pane_mode::LeftPaneMode;
@@ -37,7 +35,6 @@ use crate::ui::left_panel::render::hotkey_footer::left_panel_hotkey_footer;
 use crate::ui::menu_bar::render::render_app_menu_bar::render_app_menu_bar;
 use crate::ui::menu_bar::render::render_menu_bar_bottom_status::render_menu_bar_bottom_status;
 use crate::ui::menu_bar::render::split_area::split_app_menu_bar_area;
-use crate::ui::workspace_pane::render_workspace_pane::render_workspace_pane;
 
 /// Renders the full terminal demo, including session list and active session terminal.
 pub fn render_app(app: &mut AppState, frame: &mut Frame) {
@@ -51,17 +48,11 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
         &app_diagnostics_status_line(&app.diagnostics),
     );
     app.last_layout_area = area;
-    let (workspace_pane, left_pane, terminal_pane) = visible_pane_areas(app, area);
-    app.last_workspace_area = workspace_pane;
+    let (left_pane, terminal_pane) = visible_pane_areas(app, area);
     app.last_left_area = left_pane;
 
     let is_resizing = is_resizing_layout(&app.layout_widget_state);
     if app.left_pane_visible {
-        if app.workspace_view_enabled {
-            render_workspace_pane(app, frame, workspace_pane, is_resizing);
-        } else {
-            app.last_workspace_list_area = Rect::default();
-        }
         let left_focused = app.focused_pane == FocusedPane::Left;
         let title = left_pane_title_for_app(app, left_title_color(left_focused));
         let left_inner = render_left_pane(left_focused, title, frame, left_pane);
@@ -69,7 +60,6 @@ pub fn render_app(app: &mut AppState, frame: &mut Frame) {
         let mut content = ActiveLeftPaneContent::for_app(app);
         render_active_left_pane_content(&mut content, frame, left_inner, is_resizing);
     } else {
-        app.last_workspace_list_area = Rect::default();
         app.last_session_list_area = Rect::default();
         app.last_left_session_toggle_area = Rect::default();
         app.last_left_plan_toggle_area = Rect::default();
@@ -149,40 +139,14 @@ fn clear_left_pane_toggle_areas(app: &mut AppState) {
 }
 
 /// Returns pane areas for the current left-pane visibility state.
-fn visible_pane_areas(app: &AppState, area: Rect) -> (Rect, Rect, Rect) {
+fn visible_pane_areas(app: &AppState, area: Rect) -> (Rect, Rect) {
     if !app.left_pane_visible {
-        return (Rect::default(), Rect::default(), area);
+        return (Rect::default(), area);
     }
     let pane_layouts = app.layout.layout_panes(area);
-    let workspace = pane_area_by_id(&pane_layouts, WORKSPACE_PANE_ID);
     let left = pane_area_by_id(&pane_layouts, LEFT_PANE_ID);
     let terminal = pane_area_by_id(&pane_layouts, TERMINAL_PANE_ID);
-    if app.workspace_view_enabled {
-        return (workspace, left, terminal);
-    }
-    (
-        Rect::default(),
-        combined_left_area(workspace, left),
-        terminal,
-    )
-}
-
-/// Combines workspace and session pane rectangles for legacy all-folders mode.
-fn combined_left_area(workspace: Rect, left: Rect) -> Rect {
-    if workspace == Rect::default() {
-        return left;
-    }
-    let x = workspace.x.min(left.x);
-    let y = workspace.y.min(left.y);
-    let right = workspace
-        .x
-        .saturating_add(workspace.width)
-        .max(left.x.saturating_add(left.width));
-    let bottom = workspace
-        .y
-        .saturating_add(workspace.height)
-        .max(left.y.saturating_add(left.height));
-    Rect::new(x, y, right.saturating_sub(x), bottom.saturating_sub(y))
+    (left, terminal)
 }
 
 /// Renders the rounded left session pane and returns its content area.
