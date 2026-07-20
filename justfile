@@ -74,6 +74,7 @@ import 'justfiles/testing/test.just'
 # ============================================================================
 
 import 'justfiles/utilities/fmt.just'
+import 'justfiles/utilities/graphify.just'
 import 'justfiles/utilities/install-tools.just'
 import 'justfiles/utilities/_require-nextest.just'
 import 'justfiles/utilities/_require-sccache.just'

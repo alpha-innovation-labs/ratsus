@@ -7,10 +7,8 @@ use crate::extensions::plans::data::plan_entry::PlanEntry;
 use crate::extensions::plans::fs::is_markdown_plan_path::is_markdown_plan_path;
 use crate::extensions::plans::fs::plan_title::plan_title;
 
-/// Loads Markdown plan files from a `plans` directory, creating it when missing.
+/// Loads Markdown plan files from a `plans` directory.
 pub fn load_markdown_plans(plans_dir: &Path) -> Result<Vec<PlanEntry>> {
-    fs::create_dir_all(plans_dir)
-        .with_context(|| format!("failed to create plans directory {}", plans_dir.display()))?;
     let mut entries = Vec::new();
     collect_markdown_plans(plans_dir, plans_dir, &mut entries)?;
     entries.sort_by(|left, right| {
@@ -56,20 +54,6 @@ mod tests {
     use std::fs;
 
     use super::load_markdown_plans;
-
-    /// Creates the plans directory when it does not exist.
-    #[test]
-    fn creates_missing_plans_directory() -> anyhow::Result<()> {
-        let root = test_root("create");
-        let plans_dir = root.join("plans");
-
-        let plans = load_markdown_plans(&plans_dir)?;
-
-        assert!(plans.is_empty());
-        assert!(plans_dir.is_dir());
-        let _ = fs::remove_dir_all(root);
-        Ok(())
-    }
 
     /// Keeps Markdown files and ignores all other files.
     #[test]
